@@ -1179,7 +1179,14 @@ function mkBikeF(BC){try{
  // ---- ride state; the parked bike starts in the garage against the side wall, pointing at the garage door
  const BK={id:BC.id,x:BC.px,z:BC.pz,th:BC.th,sp:0,st:0,ln:0,wa:0,ca:0,y:-.09,cth:0,pt:0,fw:0,parked:true};if(!window.BKM)window.BKM=BK;window.BKS.push(BK);
  const R_=()=>window.RDN;
- const onNet=(x,z)=>{const R=R_();if(!R)return false;const az=Math.abs(z);
+ /* station subways under the tracks (centre lines z = -345 West Tarneit, +345 Tarneit): ramps down from ground level to the tunnel floor (-2.9) and back up,
+    plus the footpaths from each ground-level forecourt to the subway ramps; returns the ground height there, or null */
+ const SUBH=(x,z)=>{for(const sw of[-345,345]){const dz=Math.abs(z-sw);
+   if(dz<=1.6&&x>=-67.3&&x<=-22.7){const ax=Math.abs(x+45);return ax<=5.2?-2.9:-2.9+2.71*Math.min(1,(ax-5.2)/13)}
+   const zl=sw<0?[-345,-300,-345,-300]:[331,345,300,345];   // [east from,to, west from,to]
+   if(x>=-26.3&&x<=-22.7&&z>=zl[0]&&z<=zl[1])return -.135;if(x>=-67.3&&x<=-63.7&&z>=zl[2]&&z<=zl[3])return -.135}return null};
+ window.SUBH=SUBH;
+ const onNet=(x,z)=>{const R=R_();if(!R)return false;const az=Math.abs(z);if(SUBH(x,z)!==null)return true;
   if(x>=14.8&&x<=30.1&&az<=R.ZE)return true;
   if(window.FPN&&FPN(x,z))return true;   // footpath beside the railway
   if(window.STH&&STH(x,z)!==null)return true;   // station platforms and their stair ramps
@@ -1198,7 +1205,11 @@ function mkBikeF(BC){try{
  const local=(x,z)=>x>-39.9&&x<48&&z>-48&&z<48;
  const carHit=(x,z,r)=>{const R=R_();if(!R||!R.VH)return false;for(const q of R.VH){const p=q.g.position;if(Math.abs(x-p.x)<1.15+r&&Math.abs(z-p.z)<q.g.userData.L/2+r)return true}return false};
  const bkHit=(x,z,r)=>local(x,z)?gmHit(x,z,r):(!onNet(x,z)||carHit(x,z,r));
- const bkTerr=(x,z)=>{const R=R_();if(window.STH&&!local(x,z)){const h=STH(x,z);if(h!==null)return h}if(window.FPN&&!local(x,z)&&FPN(x,z))return -.135;if(local(x,z)||!R)return terr(x,z);const az=Math.abs(z);
+ const bkTerr=(x,z,ry)=>{const R=R_();
+  if(R&&!local(x,z)){const L=[],sb=SUBH(x,z);if(sb!==null)L.push(sb);if(window.STH){const h=STH(x,z);if(h!==null)L.push(h)}if(window.FPN&&FPN(x,z))L.push(-.135);
+   if(Math.abs(Math.abs(z)-R.ZC)<=3.6&&x<=R.XS-R.RC+.5)L.push(R.yAt(x)+.005);   /* bridge deck / ramps */
+   if(L.length){if(L.length===1||ry===undefined)return L[0];let b=L[0];for(const h of L)if(Math.abs(h-ry)<Math.abs(b-ry))b=h;return b}}   /* on the bridge you stay on the deck; under it you stay on the path */
+  if(local(x,z)||!R)return terr(x,z);const az=Math.abs(z);
   if(Math.abs(az-R.ZC)<=3.6&&x<=R.XS-R.RC+.5)return R.yAt(x)+.005;
   const inGap=Math.abs(az-R.ZC)<3.6;
   if(!inGap&&((x>=R.XM&&x<=R.XM+2.5)||(x>=R.XM-20.5&&x<=R.XM-18)))return -.12;
@@ -1232,8 +1243,8 @@ function mkBikeF(BC){try{
   if(Math.abs(K.sp)>.15&&moved<Math.abs(K.sp)*dt*.35)K.sp*=.7;
   const ds=Math.sign(K.sp)*moved;
   // height, slope and lean
-  const ty=bkTerr(K.x,K.z);K.y+=(ty-K.y)*Math.min(1,dt*12);
-  const yf=bkTerr(K.x+fx*.42,K.z+fz*.42),yb=bkTerr(K.x-fx*.42,K.z-fz*.42);K.pt+=(Math.atan2(yf-yb,.84)-K.pt)*Math.min(1,dt*8);
+  const ty=bkTerr(K.x,K.z,K.y);K.y+=(ty-K.y)*Math.min(1,dt*12);
+  const yf=bkTerr(K.x+fx*.42,K.z+fz*.42,K.y),yb=bkTerr(K.x-fx*.42,K.z-fz*.42,K.y);K.pt+=(Math.atan2(yf-yb,.84)-K.pt)*Math.min(1,dt*8);
   const lnT=Math.max(-.32,Math.min(.32,-Math.atan(K.sp*yr/9.8)*.9));K.ln+=(lnT-K.ln)*Math.min(1,dt*5);
   g.position.set(K.x,K.y,K.z);g.rotation.y=K.th;body.rotation.set(-K.pt,0,K.ln);steer.rotation.y=K.st;
   K.wa+=ds/WR;rw.rotation.x=K.wa;fw.rotation.x=K.wa;
@@ -1622,11 +1633,13 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=R.ZC+100,PL=
 }catch(e){console.error('station',e)}},0);
 // ---- shared footpath on the house side of the railway: from the foot of the Kmart-side bridge ramp, north along the line (under the Woolworths-side bridge, through a short lit tunnel)
 //      to the east entrance of West Tarneit station. Walkers, the kid's bike and the trike can all use it (it is added to the ride network below).
-setTimeout(()=>{try{const R=window.RDN;if(!R)return;const ZC=R.ZC,XP=-40.9,HW=1.75,ZSP=ZC-5.2,ZS=-ZC-100;
+setTimeout(()=>{try{const R=window.RDN;if(!R)return;const ZC=R.ZC,XP=-40.15,HW=2.5,ZSP=ZC-5.2,ZS=-ZC-100;
+ const ZL=110,LW=1.5,PTL=[[[14.8,ZL],[XP,ZL]],[[14.8,-ZL],[XP,-ZL]]];   // link footpaths (3 m wide) from the community street's footpath across the grass to the railway footpath, one toward each end of the street
  const ZS2=ZC+100,PTS=[[-2.2,ZSP],[XP,ZSP],[XP,-ZC-32],[-24.5,-ZC-50],[-24.5,ZS+9.5]],PTS2=[[XP,ZSP],[XP,ZC+32],[-24.5,ZC+50],[-24.5,ZS2+31-9.5]];
  const g=new THREE.Group();scene.add(g);const mP=new THREE.MeshStandardMaterial({color:0xc4c0b6,roughness:.9}),mK=new THREE.MeshStandardMaterial({color:0xa9a59b,roughness:.9}),mT=new THREE.MeshStandardMaterial({color:0xb9b6ae,roughness:.85}),mTd=new THREE.MeshStandardMaterial({color:0x8c8982,roughness:.9}),mLt=new THREE.MeshBasicMaterial({color:0xfff1cc});
  const seg=(x0,z0,x1,z1,w,y,h,m)=>{const L=Math.hypot(x1-x0,z1-z0),o=new THREE.Mesh(new THREE.BoxGeometry(w,h,L+(w>.5?w*.5:0)),m);o.position.set((x0+x1)/2,y,(z0+z1)/2);o.rotation.y=Math.atan2(x1-x0,z1-z0);o.receiveShadow=true;g.add(o);return o};
- [PTS,PTS2].forEach(P=>{for(let i=0;i<P.length-1;i++){const[a,b]=[P[i],P[i+1]];seg(a[0],a[1],b[0],b[1],HW*2,-.17,.06,mP)}})   // path surface, top at y = -0.14
+ [PTS,PTS2].forEach(P=>{for(let i=0;i<P.length-1;i++){const[a,b]=[P[i],P[i+1]];seg(a[0],a[1],b[0],b[1],P===PTS&&i===0?3.5:HW*2,-.17,.06,mP)}})
+ PTL.forEach(([a,b])=>{seg(a[0],a[1],b[0],b[1],LW*2,-.172,.06,mP);[-1,1].forEach(k=>seg(a[0],a[1]+k*(LW+.06),b[0]+HW,b[1]+k*(LW+.06),.12,-.12,.1,mK))})   // path surface, top at y = -0.14
  // link from the road edge at the foot of the Kmart-side bridge ramp
  {const o=new THREE.Mesh(new THREE.BoxGeometry(3,.06,2.2),mP);o.position.set(-2.8,-.17,ZC-3.7);g.add(o)}
  // tunnel under the Woolworths-side bridge: concrete side walls, roof slab, portal frames and a light strip
@@ -1641,16 +1654,16 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const ZC=R.ZC,XP=-40.9,HW=1.
  seg(XP+HW+.06,ZSP,XP+HW+.06,-ZC-32,.12,-.12,.1,mK);seg(XP+HW+.06,ZSP,XP+HW+.06,ZC+32,.12,-.12,.1,mK);
  // join the ride network (bike and trike): within HW+.15 of the path line
  const dseg=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz,t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/l2)),px=a[0]+t*dx,pz=a[1]+t*dz;return Math.hypot(x-px,z-pz)};
- window.FPN=(x,z)=>{for(const P of [PTS,PTS2])for(let i=0;i<P.length-1;i++)if(dseg(x,z,P[i],P[i+1])<=HW+.1)return true;return (x>=-4.4&&x<=-1.2&&Math.abs(z-(ZC-3.7))<=1.2)||(x>=-27&&x<=-22.5&&(Math.abs(z-ZS)<=9||Math.abs(z-(ZS2+31))<=9))};
+ window.FPN=(x,z)=>{for(const P of [PTS,PTS2])for(let i=0;i<P.length-1;i++)if(dseg(x,z,P[i],P[i+1])<=(P===PTS&&i===0?1.75:HW)+.1)return true;for(const[a,b]of PTL)if(dseg(x,z,a,b)<=LW+.1)return true;return (x>=-4.4&&x<=-1.2&&Math.abs(z-(ZC-3.7))<=1.2)||(x>=-27&&x<=-22.5&&(Math.abs(z-ZS)<=9||Math.abs(z-(ZS2+31))<=9))};
 
  // station platforms: bikes and trikes can ride up the stairs (as a smooth ramp) from the ground forecourts onto both platforms, in a lane clear of the track-edge strip and the shelter posts
  {const PT=1.1,RX=-45,GY=-.135;const STH1=(x,z,ZS,ZE)=>{const dz=Math.abs(z-ZS),de=Math.abs(z-ZE);if(z<ZS-40||z>ZS+40)return null;
    // east side (house side of the line)
-   if(x>=-42.4&&x<=-41.3)return PT;
+   if(x>=-42.4&&x<=-40.3)return PT;
    if(de<=8&&x>=-42.4&&x<=-33.5)return PT;
    if(de<=2.8&&x>-33.5&&x<=-26.5)return PT+(GY-PT)*Math.min(1,(x+33.5)/7);
    // west side (main-road side)
-   if(x>=-48.8&&x<=-47.7)return PT;
+   if(x>=-49.7&&x<=-47.7)return PT;
    if(dz<=8&&x>=-56.5&&x<=-47.7)return PT;
    if(dz<=2.8&&x>=-63.5&&x<-56.5)return PT+(GY-PT)*Math.min(1,(-56.5-x)/7);
    return null};window.STH=(x,z)=>{const a=STH1(x,z,ZS,ZS);return a!==null?a:STH1(x,z,ZS2,ZS2+31)}}
@@ -2421,9 +2434,8 @@ const SKY=new THREE.Group();scene.add(SKY);SKY.visible=false;
   b.scale.setScalar((1.9+Math.random()*.4)*p.sz);
   b.userData={W,fc,R:R+(Math.random()-.5)*10,a:Math.random()*6.28+i*.25,sp:(f%2?-1:1)*(.14+Math.random()*.05)*(si===2?1.4:1),y:16+f*3+Math.random()*7,ph:Math.random()*6.28,rate:(8+Math.random()*3)*(si===2?1.5:si===1?1.2:1),cyc:(5+Math.random()*4)*(si===2?.6:1),off:Math.random()*9};SKY.add(b);SKY.userData.bd.push(b)}})}
 async function skyWx(){try{SKY.userData.wxT=performance.now();const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+SS.lat+'&longitude='+SS.lng+'&current=cloud_cover,weather_code,precipitation,rain,showers&minutely_15=precipitation&past_minutely_15=2&forecast_minutely_15=1&timezone=auto');const j=await r.json(),c=j.current;if(c&&typeof c.cloud_cover==='number'){
- /* raining = a real rain/shower/storm weather code (light drizzle 51 ignored), OR at least 0.2 mm measured now, OR at least 0.2 mm in a past 15-minute slot
-    (forecast slots are ignored, and trace amounts below 0.2 mm are model noise, which was making it rain in the game when it was dry) */
- const w=c.weather_code,M=j.minutely_15||{},ct=c.time||'',mm=(M.precipitation||[]).filter((x,i)=>typeof x==='number'&&(!M.time||!ct||M.time[i]<=ct)),wet=(w>=53&&w!==71&&w!==73&&w!==75&&w!==77)||Math.max(c.rain||0,c.showers||0,c.precipitation||0)>=.2||mm.some(x=>x>=.2);
+ /* raining = a rain/drizzle/shower/storm weather code, OR any rain measured now, OR rain in the last ~30 minutes (the weather code alone often says just 'overcast' during light rain) */
+ const w=c.weather_code,mm=((j.minutely_15&&j.minutely_15.precipitation)||[]).filter(x=>typeof x==='number'),wet=(w>=51)||(c.precipitation||0)>0||(c.rain||0)>0||(c.showers||0)>0||mm.some(x=>x>0);
  const was=SKY.userData.wx&&SKY.userData.wx.wet;SKY.userData.wx={cover:c.cloud_cover,wet};if(wet!==was||!SKY.userData.wxS){SKY.userData.wxS=1;showCap('Tarneit right now: '+Math.round(c.cloud_cover)+'% cloud'+(wet?', raining':''),3500)}}}catch(e){try{SKY.userData.wx=null}catch(_){}}}
 function skyTick(dt){const v=NM.v,day=v<.7,on=(walk||tour)&&(day||SS.live);SKY.visible=on;if(!on)return;const t=performance.now()*.001,al=SS.live?1:Math.min(1,(.7-v)/.5),nf=SS.live?1-.86*Math.min(1,Math.max(0,v)):1;   // Current-time mode keeps the real clouds up at night too (dimmed); birds stay day-only
  const wx=SS.live?SKY.userData.wx:null,cv=wx?wx.cover/100:1,gr=wx?Math.min(1,Math.max(0,(wx.cover-55)/45)*.5+(wx.wet?.35:0)):0;   // real cloud cover for Tarneit in Current-time mode
@@ -3120,7 +3132,7 @@ function gmTick(dt){GMFR++;const K=GMK;gmDoors(K);const f=((AK.KeyW||AK.ArrowUp)
  if(Math.abs(K.sp)>.2&&moved<Math.abs(K.sp)*dt*.35)K.sp*=.8;
  const ds=Math.sign(K.sp)*moved;K.wp+=ds;
  if(BALL.m&&Math.abs(K.sp)>.25){const bp=BALL.m.position,dx=bp.x-K.x,dz=bp.z-K.z,d=Math.hypot(dx,dz);if(d<.3+BALL.R+.12&&d>.001){const hx=Math.sign(K.sp)*fx,hz=Math.sign(K.sp)*fz;if((dx*hx+dz*hz)/d>.2){let kx=dx/d*.6+hx*.4,kz=dz/d*.6+hz*.4;const kl=Math.hypot(kx,kz)||1;BALL.dx=kx/kl;BALL.dz=kz/kl;BALL.sp=Math.max(BALL.sp,2.2+Math.abs(K.sp)*1.6);SV=Math.min(1,.35+Math.abs(K.sp)*.35);sfx('bk');SV=1;const q=.3+BALL.R+.13;bp.x=K.x+dx/d*q;bp.z=K.z+dz/d*q}}}
- const ty=(window.BKNET?window.BKNET.terr:terr)(K.x,K.z);if(K.ty===undefined){K.ty=ty;K.y=ty;K.kp=0;K.kv=0}
+ const ty=(window.BKNET?window.BKNET.terr:terr)(K.x,K.z,K.ty);if(K.ty===undefined){K.ty=ty;K.y=ty;K.kp=0;K.kv=0}
  if(Math.abs(ty-K.ty)>.025&&moved<.2){K.kv+=Math.sign(ty-K.ty)*(.55+Math.abs(K.sp)*.3);sfx(ty<K.ty?'bd':'bu')}K.ty=ty;K.y+=(ty-K.y)*Math.min(1,dt*13);K.kv+=(-95*K.kp-9*K.kv)*dt;K.kp+=K.kv*dt;
  gmRoll(K,moved>0?Math.min(1,Math.abs(K.sp)/1.7):0);KID.position.set(K.x,K.y+Math.abs(K.kp)*.02,K.z);KB.rotation.z=K.kp;KID.rotation.y=Math.PI-K.h;KB.rotation.x=K.ln*.12*Math.min(1,Math.abs(K.sp)/1.2+.15);
  KW.forEach(w=>w.rotation.z-=ds/.075);KFW.rotation.z-=ds/.075;   // true rolling: wheel radius is 7.5 cm at the trike's scaleKF.rotation.y=-K.ln*.5;
@@ -3170,7 +3182,9 @@ $('bView').onclick=()=>CPV.toggle();
 addEventListener('keydown',e=>{if(e.code==='KeyV'&&GM&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||''))CPV.toggle()});
 // ---- third-person walking: you see your own avatar from behind; W/S (or the left stick) walk, A/D turn, the follow camera stays out of walls and under ceilings
 var SELF={d:3.2,sp:0,run:false,jy:0,jv:0,wv:0,was:false,ph:0,av:null,col:-1,mode:''};
-const _wbr=(x,z)=>{const R=window.RDN;if(R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5)return Math.max(0,R.yAt(x)+.18);const h=window.STH?STH(x,z):null;return h!==null&&h>0?h:0};   /* bridge ramps, station stairs and platforms */   /* bridge ramps */
+const _wbr=(x,z,ry)=>{const R=window.RDN,L=[];if(R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5)L.push(Math.max(0,R.yAt(x)+.18));const h=window.STH?STH(x,z):null;if(h!==null&&h>0)L.push(h);
+ const sb=window.SUBH?SUBH(x,z):null;if(sb!==null)L.push(Math.min(0,sb+.19));if(L.length&&window.FPN&&FPN(x,z))L.push(0);   /* the footpath under the bridge is a ground-level layer */
+ if(!L.length)return 0;if(L.length===1||ry===undefined)return L[0];let b=L[0];for(const v of L)if(Math.abs(v-ry)<Math.abs(b-ry))b=v;return b};   /* bridge ramps, station stairs and platforms */   /* bridge ramps */
 // ---- catch a train: walk (or ride the bike or trike) onto a platform at Tarneit or West Tarneit, and when a train to the other station
 //      is standing there, click it or press Use / E to board. Ride along (View switches between the outside view and the driver's cab),
 //      then Get off at the next station; if you came with the bike or trike you get off riding it. No train there yet? Use tells you when
@@ -3250,14 +3264,14 @@ function walkTick(dt){const S=SELF;
  if(t)G.th+=t*2.1*dt;
  const run=S.run||AK.ShiftLeft||AK.ShiftRight,tg=f>0?(run?6.5:2.4):f<0?-1.5:0;
  S.sp+=(tg-S.sp)*Math.min(1,dt*(f?5:9));if(!f&&Math.abs(S.sp)<.03)S.sp=0;S.mv=0;
- if(S.sp){const c=Math.cos(G.th),n=Math.sin(G.th),d=S.sp*dt,R=.22,x=G.t.x,z=G.t.z,g0=_wbr(x,z);   /* walls, fences, closed doors and other players block you (slide along them) */
+ if(S.sp){const c=Math.cos(G.th),n=Math.sin(G.th),d=S.sp*dt,R=.22,x=G.t.x,z=G.t.z,g0=_wbr(x,z,G.t.y-1.12);   /* walls, fences, closed doors and other players block you (slide along them) */
   /* move in short sub-steps (max 5 cm) so a slow frame can never jump you past a thin wall; if you are already overlapping something
      (a door closed on you, you stepped off a ride into it) you may only move in ways that get you less stuck, never deeper or through it */
   const ns=Math.max(1,Math.ceil(Math.abs(d)/.05)),dd=d/ns;
   for(let i=0;i<ns;i++){const ox=G.t.x,oz=G.t.z,nx=Math.min(60,Math.max(-240,ox-c*dd)),nz=Math.min(330,Math.max(-330,oz-n*dd));
    if(walkOK(ox,oz,nx,oz,R))G.t.x=nx;if(walkOK(G.t.x,oz,G.t.x,nz,R))G.t.z=nz;if(G.t.x===ox&&G.t.z===oz)break}
   S.mv=Math.hypot(G.t.x-x,G.t.z-z)/Math.max(dt,1e-4)*Math.sign(S.sp);if(Math.abs(S.mv)<Math.abs(S.sp)*.3)S.sp*=.85;
-  G.t.y+=_wbr(G.t.x,G.t.z)-g0;
+  G.t.y+=_wbr(G.t.x,G.t.z,G.t.y-1.12)-g0;
   // walk into the football and it gets kicked
   if(BALL.m&&S.sp>.4){const bp=BALL.m.position,dx=bp.x-G.t.x,dz=bp.z-G.t.z,dd=Math.hypot(dx,dz);if(dd<.32+BALL.R&&dd>.001&&(dx*-c+dz*-n)/dd>.2){BALL.dx=dx/dd*.6-c*.4;BALL.dz=dz/dd*.6-n*.4;const l=Math.hypot(BALL.dx,BALL.dz)||1;BALL.dx/=l;BALL.dz/=l;BALL.sp=Math.max(BALL.sp,2.5+S.sp*1.1);SV=.8;sfx('bk');SV=1}}}
  try{gmDoors({x:G.t.x,z:G.t.z})}catch(e){}   /* sliding doors, the garage door and the gate open as you walk up to them, like on the trike */
@@ -3327,7 +3341,7 @@ function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&
  const av=S.av;if(!av)return;
  av.g.visible=on&&(WCAM.on?WCAM.d>.35:V.r>.75);if(!av.g.visible)return;
  {const sc=window.MP&&MP.on?MP.col():0xffc93c;if(sc!==S.col){S.col=sc;av.mSh.color.setHex(sc)}}
- const x=V.t.x,z=V.t.z,b=_wbr(x,z);av.g.position.set(x,(b>0?V.t.y-1.12:terr(x,z)+V.t.y-1.12)+S.jy,z);av.g.rotation.y=Math.atan2(-Math.cos(V.th),-Math.sin(V.th));
+ const x=V.t.x,z=V.t.z,b=_wbr(x,z,V.t.y-1.12);av.g.position.set(x,(b>0?V.t.y-1.12:terr(x,z)+V.t.y-1.12)+S.jy,z);av.g.rotation.y=Math.atan2(-Math.cos(V.th),-Math.sin(V.th));
  const sp=Math.abs(S.mv||0),run=sp>3.5;av.ph+=(S.mv||0)*dt*(run?3.6:5.2);const amp=Math.min(1,sp/1.2)*(run?.95:.55),sw=Math.sin(av.ph)*amp;
  av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;av.A[0].rotation.z=0;av.A[1].rotation.z=0;
  if(S.jy>0){av.L[0].rotation.x=-.55;av.L[1].rotation.x=.35;av.A[0].rotation.z=-.5;av.A[1].rotation.z=.5}
