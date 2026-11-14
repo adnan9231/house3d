@@ -50,7 +50,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
 #topR button{height:42px;background:var(--panel);border:1px solid var(--bd);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);box-shadow:var(--shadow);padding:0 16px}
 #topR button:hover{background:var(--panel-s)}
 #topR #bWalk,#topR #bSnd,#topR #bGame,#topR #bView,#topR #bFS{width:42px;padding:0;justify-content:center;border-radius:50%}
-#topR svg{display:block;pointer-events:none} #topR #bGame,#topR #bTour{display:none!important} #topR,#actR{display:none!important}   /* all on-screen buttons removed: just the two move circles */   /* game-mode button removed: walk up to a bike or the trike and tap it (or press Use) to ride */
+#topR svg{display:block;pointer-events:none} #topR #bGame,#topR #bTour{display:none!important} #actR,#topR>button:not(#bMP):not(#bFS):not(#bPanel){display:none!important}   /* only Play together, full screen and Options stay in the top bar; the action buttons are replaced by the two move circles */   /* game-mode button removed: walk up to a bike or the trike and tap it (or press Use) to ride */
 #topR button.on{background:var(--ac);color:var(--ac-fg);border-color:transparent}
 #topR #bTour{background:linear-gradient(135deg,var(--ac-2),var(--ac));color:var(--ac-fg);border-color:transparent}
 #topR #bTour.on{background:#c62828;color:#fff}
