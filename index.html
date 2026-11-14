@@ -139,7 +139,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
  const gb=Element.prototype.getBoundingClientRect;Element.prototype.getBoundingClientRect=function(){const r=gb.call(this);if(!R())return r;const W=rIW();return new DOMRect(r.top,W-(r.left+r.width),r.height,r.width)};
 })();
 var GAMES_ON=true,CAR_ON=false;   /* CAR_ON: the Outlander in game mode (kept, switched off) */   /* game modes (trike game, bike ride, game button) are switched off; set to true to bring them all back */
-var GM=null,COL=[],SDR=[],EDR=null,GMR=[],RBN=0;
+var RT={on:false},GM=null,COL=[],SDR=[],EDR=null,GMR=[],RBN=0;
 const S=1/70,SZ=1/68,H=2.7,TE=.24,TI=.09,Z0=449.5,MZK=[[90,90],[292,303],[380,382],[468,468],[568,542],[585,584],[636,620],[770,770],[865,865]],MZ=p=>{const K=MZK;if(p<=K[0][0])return K[0][1]+(p-K[0][0]);for(let i=1;i<K.length;i++)if(p<=K[i][0])return K[i-1][1]+(p-K[i-1][0])*(K[i][1]-K[i-1][1])/(K[i][0]-K[i-1][0]);return K[K.length-1][1]+(p-K[K.length-1][0])},MZI=q=>{const K=MZK;if(q<=K[0][1])return K[0][0]+(q-K[0][1]);for(let i=1;i<K.length;i++)if(q<=K[i][1])return K[i-1][0]+(q-K[i-1][1])*(K[i][0]-K[i-1][0])/(K[i][1]-K[i-1][1]);return K[K.length-1][0]+(q-K[K.length-1][1])},X=p=>(p-850)*S,Z=p=>(MZ(p)-Z0)*SZ;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xbcd8ee);scene.fog=new THREE.Fog(0xbcd8ee,90,1700);
 const cam=new THREE.PerspectiveCamera(45,1,.1,2600);
@@ -754,6 +754,19 @@ const trainG=new THREE.Group();let trainTick=()=>{},trainReset=()=>{},trainGo=()
   const nv=NM.v;poolFx.forEach(a=>a.forEach(q=>{q.scale.setScalar(1.3+2.4*nv)}));TG.forEach(q=>{q.material.opacity=.3+.65*nv});TB[0].opacity=.06+.5*nv;
   if(any)trainSnd(nd>0?nz+span-11:nz,span,t);else if(typeof TS!=='undefined'&&TS)TS.out.gain.value=0};
  trainTick=function(t){if(hold||tourRun){for(let i=1;i<pool.length;i++)pool[i].visible=false;oldTick(t)}else schedTick(t)};
+ // ---- riding the trains: which train is standing at a station, when the next one comes, where a trip is
+ const TRN={L,gap,N,ZT,ZW,ok:()=>!hold&&!tourRun,
+  trainOf:o=>{for(let k=0;k<pool.length;k++)for(let p=o;p;p=p.parent)if(p===pool[k])return k;return -1},
+  tripOf:k=>{for(const [q,kk] of asg)if(kk===k)return q;return null},
+  dwell:(q,ahead)=>{const s=mel().sec,P=q.P;for(let i=0;i<P.length-1;i++){const a=P[i],b=P[i+1];if(a[2]&&b[2]&&a[1]===b[1]&&s>=a[0]&&s<=b[0]-(ahead||0))return{z:a[1],left:b[0]-s}}return null},
+  goes:(q,zs)=>{const st=new Set();q.P.forEach(p=>{if(p[2])st.add(p[1])});return st.has(ZT)&&st.has(ZW)&&(q.dir<0?zs===ZT:zs===ZW)},   /* stops here, then at the other station */
+  atStation:zs=>{for(const [q,k] of asg){if(!pool[k].visible)continue;const d=TRN.dwell(q,3);if(d&&d.z===zs)return{q,k,d}}return null},
+  next:zs=>{const s=mel().sec;let best=null;trips.forEach(q=>{if(!TRN.goes(q,zs))return;const P=q.P;for(let i=0;i<P.length-1;i++){const a=P[i],b=P[i+1];if(a[2]&&b[2]&&a[1]===zs&&b[1]===zs){if(b[0]-3>s&&(!best||a[0]-s<best.w))best={w:a[0]-s,q};break}}});return best},
+  g:q=>{const k=asg.get(q);return k==null?null:pool[k]},
+  live:q=>asg.has(q)&&mel().sec<=q.t1,
+  toDayEnd:()=>3.4*3600+86400-mel().sec,
+  skip:sec=>{window.TTOFF=(window.TTOFF||0)+sec}};   /* waiting for a train can be skipped: the timetable clock jumps ahead */
+ window.TRN=TRN;
 }
 let TS=null,hornT=0;
 function trainSnd(z,span,t){if(!AC)return;const c=AC;
@@ -1196,7 +1209,7 @@ function mkBikeF(BC){try{
  parkPose();g.visible=GAMES_ON;if(!window.BKG)window.BKG=g;BK.g=g;
  // click the parked bike to start riding
  const parts=[];g.traverse(o=>{if(o.isMesh)parts.push(o)});
- dRun(()=>iaReg(parts.filter(o=>!girl.children.includes(o)),'Kids bike',()=>{if(GM===BK)return '';setTimeout(GM?()=>gmTake(BK):bkEnter,0);return 'Hop on!'}));
+ dRun(()=>iaReg(parts.filter(o=>!girl.children.includes(o)),'Kids bike',()=>{if(GM===BK){setTimeout(rideOff,0);return 'Hopping off'}setTimeout(GM?()=>gmTake(BK):bkEnter,0);return 'Hop on!'}));
  function bkEnter(){if(tour||GM||!GAMES_ON)return;if(window.MP&&!MP.take(BK.id))return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;BK.fw=!ww;gtg=1;$('bWalk').classList.remove('on');   /* hopping on opens the garage door */
   window.CPV&&CPV.snap();act();BK.tint(window.MP&&MP.on?MP.col():0xffc93c);BK.rem=null;GM=BK;BK.parked=false;BK.sp=0;BK.st=0;BK.ln=0;BK.y=bkTerr(BK.x,BK.z);girl.visible=true;kick.visible=false;body.rotation.set(0,0,0);steer.rotation.y=0;
   BK.cth=Math.atan2(-Math.cos(BK.th),-Math.sin(BK.th));G.th=V.th=BK.cth;G.ph=V.ph=1.2;G.r=V.r=2.6;G.t.set(BK.x,BK.y+.95,BK.z);V.t.copy(G.t);fov(62);$('bGame').classList.add('on');
@@ -1251,7 +1264,7 @@ setTimeout(()=>{window.BKS=[];mkBikeF({id:'bike1',fr:0x2bb3a3,ac:0xf06aa8,px:5.3
 // ---- the kid's tricycle parks in the garage beside the bike; click it to start the tricycle game from wherever it is parked
 setTimeout(()=>{try{if(!KID)gmBuild();window.TKP={x:5.0,z:4.85,h:Math.PI};
  window.tkPark=()=>{const p=window.TKP;KK.visible=false;KID.visible=GAMES_ON;   /* nobody sits on the parked trike; the kid appears when you tap it to ride */KID.position.set(p.x,terr(p.x,p.z),p.z);KID.rotation.y=Math.PI-p.h;KB.rotation.set(0,0,0);KF.rotation.y=0};
- tkPark();dRun(()=>iaReg([KB],'Tricycle',()=>{if(GM===GMK)return '';setTimeout(GM?()=>gmTake(GMK):gmEnter,0);return 'Hop on!'}))}catch(e){console.error('trike',e)}},0);
+ tkPark();dRun(()=>iaReg([KB],'Tricycle',()=>{if(GM===GMK){setTimeout(rideOff,0);return 'Hopping off'}setTimeout(GM?()=>gmTake(GMK):gmEnter,0);return 'Hop on!'}))}catch(e){console.error('trike',e)}},0);
 // ---- the family car (Mitsubishi Outlander) parks in the garage beside the bike and trike; with game mode on, tap it to drive
 setTimeout(()=>{try{const g=carG,W=g.userData.W||[],HM={x:7.4,z:2.3,th:0},BKT=(x,z)=>window.BKT?window.BKT(x,z):terr(x,z),BKH=(x,z,r)=>window.BKH?window.BKH(x,z,r):gmHit(x,z,r);
  const CK={x:HM.x,z:HM.z,th:0,sp:0,st:0,y:0,cth:0,wa:0,pt:0,rl:0,fw:0,de:1};window.CARK=CK;g.rotation.order='YXZ';W.forEach(w=>w.rotation.order='YXZ');
@@ -1273,7 +1286,7 @@ setTimeout(()=>{try{const g=carG,W=g.userData.W||[],HM={x:7.4,z:2.3,th:0},BKT=(x
  function carEnter(){if(tour||GM||!GAMES_ON||!CAR_ON)return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;CK.fw=!ww;$('bWalk').classList.remove('on');
   window.CPV&&CPV.snap();GM=CK;CK.sp=0;CK.st=0;CK.y=BKT(CK.x,CK.z);dv.visible=!window.CPV||!CPV.on;CK.de=1;CK.cth=Math.atan2(-Math.sin(CK.th),-Math.cos(CK.th));G.th=V.th=CK.cth;G.ph=V.ph=1.2;G.r=V.r=4.5;G.t.set(CK.x,CK.y+1.3,CK.z);V.t.copy(G.t);fov(60);
   showCap(matchMedia('(pointer:fine)').matches?'Driving the Outlander (inside view): W / S accelerate and brake (hold S to reverse) · A / D steer · drag to look around · V switches inside / outside view · tap the walk button to park it':'Driving the Outlander (inside view): left stick drives and steers · drag the screen to look around · eye button switches the view · tap the walk button to park it',6500)}
- dRun(()=>iaReg([g],'Car',()=>{if(!GAMES_ON||GM)return '';setTimeout(carEnter,0);return 'Starting the car'}));
+ dRun(()=>iaReg([g],'Car',()=>{if(!GAMES_ON)return '';if(GM===CK){if(window.CPV&&CPV.on)return '';setTimeout(rideOff,0);return 'Parking the car'}if(GM){setTimeout(()=>{rideOff();setTimeout(carEnter,60)},0);return 'Starting the car'}setTimeout(carEnter,0);return 'Starting the car'}));
  window.carExit=()=>{if(GM!==CK)return;if(GR&&AC)GR.g.gain.setTargetAtTime(0,AC.currentTime,.05);GMT.forEach(t=>{if(t.a){t.s(0);t.a=0}});GMR.forEach(r=>r.k.forEach((k,i)=>{if(r.a[i]){SLD[k].tg=0;r.a[i]=0}}));SDR.forEach(d=>{if(d.a){const a=SLD[d.k],b=SLD[d.k+'#'];if(a)a.tg=0;if(b)b.tg=0;d.a=0}});
   GM=null;const ox=CK.x,oz=CK.z,oth=CK.th,oy=CK.y,c=Math.cos(oth),s=Math.sin(oth);park();
   // step out on the driver's side, facing the way the car was pointing
@@ -1786,7 +1799,7 @@ el.addEventListener('pointermove',e=>{if(dn&&Math.hypot(e.clientX-dn.x,e.clientY
 el.addEventListener('pointerup',e=>{clearInterval(hi);if(dn&&!dn.moved&&!dn.multi&&!walk){const n=nSteps(performance.now()-dn.t);stepFwd(n);showCap('Forward ×'+n,900)}if(dn&&!dn.moved&&!dn.multi&&walk&&!tour)iaClick(e.clientX,e.clientY);if(P.size<=1)dn=null});
 el.addEventListener('pointercancel',()=>{clearInterval(hi);dn=null});
 let sw=null;function walkOff(){if(GM)gmExit();walk=false;$('bWalk').classList.remove('on');if(sw){roof.visible=sw.r;labels.visible=sw.l;fences.visible=true;sync();sw=null}fov(45)}
-$('bWalk').onclick=e=>{if(GM){GM.fw=0;gmExit();return}   /* in a game, the walk button parks the trike, bike or car back in the garage and carries on walking */if(tour)stopTour(false);if(walk){G.t.set(21.2,1.12,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph;fov(72);showCap('Back at the house',1200);return}   /* walk mode stays on whenever no game or tour is running */walk=true;sw={r:roof.visible,l:labels.visible,f:fences.visible};roof.visible=true;fences.visible=true;labels.visible=false;sync();e.target.classList.toggle('on',walk);
+$('bWalk').onclick=e=>{if(RT.on)rtCancel();if(GM){GM.fw=0;gmExit();return}   /* in a game, the walk button parks the trike, bike or car back in the garage and carries on walking */if(tour)stopTour(false);if(walk){G.t.set(21.2,1.12,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph;fov(72);showCap('Back at the house',1200);return}   /* walk mode stays on whenever no game or tour is running */walk=true;sw={r:roof.visible,l:labels.visible,f:fences.visible};roof.visible=true;fences.visible=true;labels.visible=false;sync();e.target.classList.toggle('on',walk);
  fov(72);{G.t.set(21.2,1.12,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;showCap(matchMedia('(pointer:fine)').matches?'W/S walk · A/D turn · drag to look · wheel to zoom · Space jump · Shift run · E use · Q wave':'Left stick walks and turns · drag the screen to look · pinch to zoom · buttons on the right: jump, run, use, wave',6500)}};
 $('ui').addEventListener('click',e=>{if(e.target.closest('button')){$('ui').style.display='none';$('bPanel').textContent='Options'}});
 const TP=Math.PI*2,TW=[[1800,415,1,null,null,'eo'],[1560,415],[1400,422],[1425,350],[1395,122,2,1650,345],[1425,350],[1400,422],[1172,428,2,1162,640],[1165,445],[1162,480],[1162,520],[1240,590],[1300,640,2,1555,670,'go'],[1230,740],[1175,800,2,1125,820],[1125,820],[1010,826],[900,826,3],[1010,826],[1125,822],[1190,770],[1300,640,2,1555,670,'gc'],[1240,590],[1162,520],[1162,480],[1172,430],[1176,340],[1200,310,2,1330,215,'wn',1.3,-.1],[1330,120,2,1200,330,'rb3',1.3,-.1],[1176,340],[1172,422],[1060,428],[900,432],[780,432],[650,340,1],[520,240,2,325,244,'sL'],[440,330],[520,430],[700,434],[780,434],[770,330],[846,272,2,null,null,'isl',1.35,-.25],[918,300],[950,346],[1000,346,2,1075,349,'fr',1.25,-.05],[1045,300,2,1094,214,'pan',1.4,-.1],[1040,125,2,962,346,'pd',1.5,-.12],[1045,300],[1000,346],[962,346],[940,332,2,868,332,'mw',.52,-.02],[915,345,2,912,140,null,.52,-.06],[912,192,2,895,140,null,.52,-.02],[785,192,2,785,90,null,.52,-.02],[772,330],[805,440],[812,505],
@@ -2227,7 +2240,14 @@ function lightNear(cx,cy){const r=el.getBoundingClientRect();let best=-1,bd=34;
   const sx=r.left+(q.x+1)/2*r.width,sy=r.top+(1-q.y)/2*r.height,d=Math.hypot(sx-cx,sy-cy)*(dd<2.5?.8:1);if(d>=bd)return;
   RC.set(cam.position,_lp.clone().sub(cam.position).normalize());let ok=true;for(const h of RC.intersectObjects(scene.children,true)){if(h.distance>=dd-.12)break;const o=h.object;if(o.userData.ia!==undefined)continue;let vis=true;for(let z=o;z;z=z.parent)if(!z.visible){vis=false;break}if(!vis)continue;const mt=Array.isArray(o.material)?o.material[0]:o.material;if(!mt||o.isPoints||o.isSprite||o.isLine||mt.transparent&&mt.opacity<.95||mt.depthWrite===false||mt.blending===THREE.AdditiveBlending)continue;ok=false;break}
   if(ok){bd=d;best=id}});return best}
-function iaClick(cx,cy){let id=iaPick(cx,cy);if(id<0)id=lightNear(cx,cy);if(id<0)return;const t=IA[id].fn();if(t)showCap(t,1100);window.MP&&MP.ia(id)}
+// clicking the ride you are on (the bike, the trike or the rider on it) gets you off; clicking another ride swaps to it
+function rideRoot(){return !GM?null:GM===GMK?KID:GM===window.CARK?(typeof carG!=='undefined'?carG:null):GM.g||null}
+function clickOnMyRide(cx,cy){const root=rideRoot();if(!root)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
+ for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true,mine=false;for(let q=o;q;q=q.parent){if(!q.visible){vis=false;break}if(q===root)mine=true}if(!vis)continue;
+  const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false)continue;return mine}
+ return false}
+function iaClick(cx,cy){if(walk&&!tour&&trainClick(cx,cy))return;if(GM&&GM!==window.CARK&&clickOnMyRide(cx,cy)){rideOff();showCap('Hopping off',1100);return}
+ let id=iaPick(cx,cy);if(id<0)id=lightNear(cx,cy);if(id<0)return;const t=IA[id].fn();if(t)showCap(t,1100);window.MP&&MP.ia(id)}
 let hvT=0;el.addEventListener('pointermove',e=>{if(!walk||tour||e.buttons||e.pointerType!=='mouse')return;const n=performance.now();if(n-hvT<120)return;hvT=n;el.style.cursor=(iaPick(e.clientX,e.clientY)>=0||lightNear(e.clientX,e.clientY)>=0)?'pointer':''});
 $('bWalk').click();V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph;
 {let fsEsc=false;const de=document.documentElement,rq=de.requestFullscreen||de.webkitRequestFullscreen,fe=()=>document.fullscreenElement||document.webkitFullscreenElement;
@@ -2549,7 +2569,7 @@ function wZoom(d){if(GM){fov(Math.min(95,Math.max(25,cam.fov+d)));return}if(walk
 addEventListener('keydown',e=>{if(e.code in AK&&!tour&&walk&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||'')){AK[e.code]=1;e.preventDefault()}});
 addEventListener('keyup',e=>{if(e.code in AK)AK[e.code]=0});
 addEventListener('blur',()=>{for(const q in AK)AK[q]=0});
-var WHT=0;function arrowTick(dt){padVis();if(window.CPV&&CPV.act&&(!GM||!walk||tour))CPV.release();if(!walk||tour)return;if(GM){if(window.CPV)CPV.pre();if(GM===window.BKM)window.bkTick(dt);else if(GM===window.CARK)window.carTick(dt);else gmTick(dt);if(window.CPV)CPV.post(dt);return}walkTick(dt)}
+var WHT=0;function arrowTick(dt){padVis();if(window.CPV&&CPV.act&&(!GM||!walk||tour))CPV.release();if(!walk||tour)return;if(GM){if(window.CPV)CPV.pre();if(GM===window.BKM)window.bkTick(dt);else if(GM===window.CARK)window.carTick(dt);else gmTick(dt);if(window.CPV)CPV.post(dt);return}if(RT.on)return;walkTick(dt)}
 
 // ---- on-screen walk joysticks (touch devices): drive the same AK key state as the keyboard, so behaviour matches PC
 const PADON=true;   /* the move circles show on phones, tablets and computers */
@@ -3149,30 +3169,118 @@ $('bView').onclick=()=>CPV.toggle();
 addEventListener('keydown',e=>{if(e.code==='KeyV'&&GM&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||''))CPV.toggle()});
 // ---- third-person walking: you see your own avatar from behind; W/S (or the left stick) walk, A/D turn, the follow camera stays out of walls and under ceilings
 var SELF={d:3.2,sp:0,run:false,jy:0,jv:0,wv:0,was:false,ph:0,av:null,col:-1,mode:''};
-const _wbr=(x,z)=>{const R=window.RDN;return R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5?Math.max(0,R.yAt(x)+.18):0};   /* bridge ramps */
+const _wbr=(x,z)=>{const R=window.RDN;if(R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5)return Math.max(0,R.yAt(x)+.18);const h=window.STH?STH(x,z):null;return h!==null&&h>0?h:0};   /* bridge ramps, station stairs and platforms */   /* bridge ramps */
+// ---- catch a train: walk (or ride the bike or trike) onto a platform at Tarneit or West Tarneit, and when a train to the other station
+//      is standing there, click it or press Use / E to board. Ride along (View switches between the outside view and the driver's cab),
+//      then Get off at the next station; if you came with the bike or trike you get off riding it. No train there yet? Use tells you when
+//      the next one is due, and pressing it again skips the wait.
+const STN={'300':'Tarneit','-300':'West Tarneit'},_rtv=new THREE.Vector3(),_rtf=new THREE.Vector3();
+function stnNear(x,z){for(const zs of [300,-300])if(Math.abs(z-zs)<=45&&x>-60&&x<-30)return zs;return null}
+function trainUse(fromClick,onlyBoard){const T=window.TRN;if(!T||tour)return false;
+ if(RT.on){if(!onlyBoard)trainOff();return true}
+ const p=GM?{x:GM.x,z:GM.z}:{x:G.t.x,z:G.t.z},zs=stnNear(p.x,p.z);
+ if(zs===null){if(fromClick){showCap('Go to Tarneit or West Tarneit station to catch a train',2600);return true}return false}
+ if(GM&&GM===window.CARK){if(onlyBoard)return false;showCap("Cars can't go on the train: park it and walk up to the platform",2600);return true}
+ if(!T.ok()){if(onlyBoard)return false;showCap('The trains are busy with the tour right now',2200);return true}
+ const at=T.atStation(zs),other=-zs;
+ if(at&&T.goes(at.q,zs)){if(Math.abs(p.x+45)>7){if(onlyBoard)return false;showCap('Go up onto the platform to board',2200);return true}trainBoard(at.q,zs);return true}
+ if(onlyBoard)return false;
+ const n=T.next(zs),now=performance.now();
+ if(!n){if(RT.ask&&now-RT.ask<5000&&RT.askZ===zs){RT.ask=0;T.skip(T.toDayEnd()+5);showCap('Skipping to the morning…',2500);
+   setTimeout(()=>{const n2=T.next(zs);if(n2){if(n2.w>15)T.skip(n2.w-12);showCap('The first train to '+STN[other]+' is pulling in',3500)}},400);return true}
+  RT.ask=now;RT.askZ=zs;showCap('No more trains to '+STN[other]+' tonight. Press Use again to skip to the first one in the morning',5000);return true}
+ if(n.w>15&&RT.ask&&now-RT.ask<5000&&RT.askZ===zs){RT.ask=0;T.skip(n.w-12);showCap('Skipping the wait… the train to '+STN[other]+' is pulling in',3500);return true}
+ RT.ask=now;RT.askZ=zs;
+ if(n.w<=15){showCap('The train to '+STN[other]+' is just pulling in',2500);return true}
+ showCap((at?"This train isn't going to "+STN[other]+'. ':'')+'Next train to '+STN[other]+' in '+Math.ceil(n.w/60)+' min. Press Use again to skip the wait',5000);return true}
+function trainClick(cx,cy){const T=window.TRN;if(!T)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
+ for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true;for(let q=o;q;q=q.parent)if(!q.visible){vis=false;break}if(!vis)continue;
+  const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false||m.blending===THREE.AdditiveBlending)continue;
+  if(T.trainOf(o)<0)return false;return trainUse(true)}
+ return false}
+function trainBoard(q,zs){let veh=null;
+ if(GM===GMK){veh={k:'trike'};GM.fw=0;gmExit();if(KID)KID.visible=false}
+ else if(GM&&GM.enter){veh={k:'bike',b:GM};GM.fw=0;gmExit();if(veh.b.g)veh.b.g.visible=false}   /* the bike or trike comes on the train with you */
+ RT={on:true,q,from:zs,to:-zs,veh,arr:false,view:'out',thSet:0,ask:0};
+ G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55);rtPos();V.t.copy(G.t);
+ showCap('All aboard'+(veh?' with the '+(veh.k==='trike'?'trike':'bike'):'')+'! Next stop: '+STN[-zs]+'. View (V) switches to the driver\'s cab',4500)}
+function rtCancel(){const v=RT.veh;RT.on=false;if(v){if(v.k==='trike'&&KID)KID.visible=GAMES_ON;else if(v.b&&v.b.g)v.b.g.visible=GAMES_ON}}
+function trainAlight(zs){const veh=RT.veh,x=-41.85,z=zs>0?zs+31:zs;RT.on=false;RT.arr=false;   /* off on the house side, in front of the stairs, facing them */
+ let rode=false;
+ if(veh&&veh.k==='trike'){window.TKP={x,z,h:Math.PI};gmEnter();rode=GM===GMK}
+ else if(veh&&veh.b){const b=veh.b;if(b.g)b.g.visible=true;b.x=x;b.z=z;b.th=Math.PI/2;b.enter();rode=GM===b}
+ if(veh&&!rode){if(veh.k==='trike'&&KID)KID.visible=GAMES_ON}
+ if(!rode){G.t.set(x,1.12+_wbr(x,z),z);V.t.copy(G.t);G.th=V.th=Math.PI;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62)}
+ showCap('Welcome to '+STN[zs]+' station',3000)}
+function trainOff(){if(!RT.on)return;const d=TRN.dwell(RT.q,0);if(d&&(d.z===RT.to||d.z===RT.from))trainAlight(d.z);else showCap('Wait until the train stops at '+STN[RT.to],2000)}
+function trainView(){if(!RT.on)return;RT.view=RT.view==='out'?'cab':'out';RT.thSet=0;if(RT.view==='out'){G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55)}else{fov(62)}showCap(RT.view==='cab'?"Driver's cab":'Outside view',900)}
+function rtPos(){if(!RT.on)return;if(tour||!walk||GM){rtCancel();return}
+ const T=window.TRN,g=T&&T.g(RT.q);
+ if(!g||!T.live(RT.q)||!g.visible){trainAlight(RT.arr?RT.to:RT.from);return}
+ const d=T.dwell(RT.q,0);
+ if(d&&d.z===RT.to){if(!RT.arr){RT.arr=true;showCap(STN[RT.to]+'. Press Get off (E), or click the train',6000)}}
+ else if(RT.arr){trainAlight(RT.to);return}   /* the doors are closing at the last station on the map: everybody off */
+ g.updateMatrixWorld(true);
+ if(RT.view==='cab'){const fz=-(T.N-1)*(T.L+T.gap)-T.L/2;G.t.copy(g.localToWorld(_rtv.set(0,2.95,fz+.9)));G.r=V.r=.05;G.ph=Math.PI/2;
+  if(!RT.thSet){const f=_rtf.set(0,0,-1).applyQuaternion(g.quaternion);G.th=V.th=Math.atan2(-f.z,-f.x);V.ph=G.ph;RT.thSet=1}}
+ else G.t.copy(g.localToWorld(_rtv.set(0,2.2,-(T.L+T.gap))));
+ V.t.copy(G.t)}
+addEventListener('keydown',e=>{if(e.code==='KeyV'&&RT.on&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||''))trainView()});
+// how deep a circle of radius r at (x,z) sits inside walls, fences, closed doors and fixed obstacles (0 = clear)
+function gmDepth(x,z,r){let D=0;const q=(cx,cz,hx,hz)=>{const dx=Math.max(Math.abs(x-cx)-hx,0),dz=Math.max(Math.abs(z-cz)-hz,0),e=dx*dx+dz*dz;if(e<r*r)D+=r-Math.sqrt(e)};
+ for(let i=0;i<COL.length;i++){const c=COL[i];q(c[0],c[1],c[2],c[3])}
+ for(let i=0;i<GMF.length;i++){const c=GMF[i];q((c[0]+c[1])/2,(c[2]+c[3])/2,(c[1]-c[0])/2,(c[3]-c[2])/2)}
+ for(let i=0;i<SDR.length;i++){const d=SDR[i],sl=SLD[d.k];if(sl&&sl.p>.85)continue;q(d.r[0],d.r[1],d.r[2],d.r[3])}
+ for(let i=0;i<GMD.length;i++){const c=GMD[i];if(c[4]())q(c[0],c[1],c[2],c[3])}
+ for(let i=0;i<GMO.length;i++){const c=GMO[i];q(c[0],c[1],c[2],c[3])}
+ {const cb=window.CARB;if(cb&&GAMES_ON&&CAR_ON)q(cb.x,cb.z,2.38,.92)}
+ return D}
+// other players (walking, or riding a bike or the trike) are solid: you can't walk through them
+function peerHit(x,z,r){const M=window.MP;if(!M||!M.on||!M.bodies)return 0;let D=0;M.bodies().forEach(b=>{const m=r+b[2],e=Math.hypot(x-b[0],z-b[1]);if(e<m)D+=m-e});return D}
+// outside the neighbourhood you can walk wherever the bikes can ride: roads, footpaths, car parks, the station stairs and platforms
+function walkHit(x,z,r){const N=window.BKNET;if(N&&!(x>-39.9&&x<48&&z>-48&&z<48))return !N.onNet(x,z)||N.carHit(x,z,r);return gmHit(x,z,r)}
+function walkOK(ox,oz,nx,nz,r){if(!walkHit(nx,nz,r)&&!peerHit(nx,nz,r))return true;
+ const d0=gmDepth(ox,oz,r)+peerHit(ox,oz,r),d1=gmDepth(nx,nz,r)+peerHit(nx,nz,r);
+ if(d0<=1e-6&&!walkHit(ox,oz,r))return false;   /* clear now: never step into anything */
+ return d1<d0-1e-6||(d1<=1e-6&&d0<=1e-6)}      /* stuck: only moves that get you out (outside the mapped area everything stays free roam) */
 function walkTick(dt){const S=SELF;
  const f=((AK.KeyW||AK.ArrowUp)?1:0)-((AK.KeyS||AK.ArrowDown)?1:0),t=((AK.KeyD||AK.ArrowRight)?1:0)-((AK.KeyA||AK.ArrowLeft)?1:0),zm=(AK.Equal||AK.NumpadAdd?1:0)-(AK.Minus||AK.NumpadSubtract?1:0);
  if(zm)wZoom(-zm*4*dt);
  if(t)G.th+=t*2.1*dt;
  const run=S.run||AK.ShiftLeft||AK.ShiftRight,tg=f>0?(run?6.5:2.4):f<0?-1.5:0;
  S.sp+=(tg-S.sp)*Math.min(1,dt*(f?5:9));if(!f&&Math.abs(S.sp)<.03)S.sp=0;S.mv=0;
- if(S.sp){const c=Math.cos(G.th),n=Math.sin(G.th),d=S.sp*dt,R=.22,x=G.t.x,z=G.t.z,g0=_wbr(x,z),st=gmHit(x,z,R);   /* walls, fences and closed doors block you (slide along them); if you start inside something you can walk out */
-  const nx=Math.min(60,Math.max(-240,x-c*d)),nz=Math.min(330,Math.max(-330,z-n*d));
-  if(st||!gmHit(nx,z,R))G.t.x=nx;if(st||!gmHit(G.t.x,nz,R))G.t.z=nz;
+ if(S.sp){const c=Math.cos(G.th),n=Math.sin(G.th),d=S.sp*dt,R=.22,x=G.t.x,z=G.t.z,g0=_wbr(x,z);   /* walls, fences, closed doors and other players block you (slide along them) */
+  /* move in short sub-steps (max 5 cm) so a slow frame can never jump you past a thin wall; if you are already overlapping something
+     (a door closed on you, you stepped off a ride into it) you may only move in ways that get you less stuck, never deeper or through it */
+  const ns=Math.max(1,Math.ceil(Math.abs(d)/.05)),dd=d/ns;
+  for(let i=0;i<ns;i++){const ox=G.t.x,oz=G.t.z,nx=Math.min(60,Math.max(-240,ox-c*dd)),nz=Math.min(330,Math.max(-330,oz-n*dd));
+   if(walkOK(ox,oz,nx,oz,R))G.t.x=nx;if(walkOK(G.t.x,oz,G.t.x,nz,R))G.t.z=nz;if(G.t.x===ox&&G.t.z===oz)break}
   S.mv=Math.hypot(G.t.x-x,G.t.z-z)/Math.max(dt,1e-4)*Math.sign(S.sp);if(Math.abs(S.mv)<Math.abs(S.sp)*.3)S.sp*=.85;
   G.t.y+=_wbr(G.t.x,G.t.z)-g0;
   // walk into the football and it gets kicked
   if(BALL.m&&S.sp>.4){const bp=BALL.m.position,dx=bp.x-G.t.x,dz=bp.z-G.t.z,dd=Math.hypot(dx,dz);if(dd<.32+BALL.R&&dd>.001&&(dx*-c+dz*-n)/dd>.2){BALL.dx=dx/dd*.6-c*.4;BALL.dz=dz/dd*.6-n*.4;const l=Math.hypot(BALL.dx,BALL.dz)||1;BALL.dx/=l;BALL.dz/=l;BALL.sp=Math.max(BALL.sp,2.5+S.sp*1.1);SV=.8;sfx('bk');SV=1}}}
  try{gmDoors({x:G.t.x,z:G.t.z})}catch(e){}   /* sliding doors, the garage door and the gate open as you walk up to them, like on the trike */
- // follow camera: pull in where a wall or the ceiling is in the way
- const want=S.d,ph=G.ph,sp=Math.sin(ph),cs=Math.cos(ph),ins=insideHouse(G.t.x,G.t.z);let r=.3,hit=false;
- for(;r<want;r+=.08){const x=G.t.x+r*sp*Math.cos(G.th),z=G.t.z+r*sp*Math.sin(G.th);if(gmHit(x,z,.15)||(ins&&G.t.y+r*cs>2.42)){hit=true;break}}
- r=hit?Math.max(.3,r-.1):want;G.r=r;if(V.r>r)V.r=r}
-function walkJump(){const S=SELF;if(!walk||tour||GM||S.jy>0||S.jv)return;S.jv=4.6}
+ G.r=S.d}   /* the follow camera is kept clear of walls in walkCam(), every frame, from where it is actually drawn */
+// follow camera while walking: never behind a wall or above a ceiling, so you can always see yourself.
+// If the way straight back is blocked, the camera first rises and looks down over you; it only comes closer when it has to.
+// It snaps in at once when something gets in the way and eases back out when the way is clear again.
+const WCAM={r:0,ph:0,on:false,d:9};
+function walkCam(dt,ph0){const S=SELF;if(!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&&!(typeof SS!=='undefined'&&SS.view))){WCAM.on=false;WCAM.d=9;return}
+ const T=V.t,th=V.th,want=Math.max(1.2,S.d),ins=insideHouse(T.x,T.z),ceil=terr(T.x,T.z)+2.32,fl=terr(T.x,T.z)+.3;
+ const clear=ph=>{const sp=Math.sin(ph),cp=Math.cos(ph);let r=.2;for(;r<=want;r+=.04){const x=T.x+r*sp*Math.cos(th),z=T.z+r*sp*Math.sin(th),y=T.y+r*cp;
+   if(gmDepth(x,z,.12)>0)break;if((ins||insideHouse(x,z))&&y>ceil)break;if(y<terr(x,z)+.2)break}return Math.min(want,r-.04)};
+ const need=Math.min(want,1.6);let bp=ph0,br=clear(ph0);
+ if(br<need-1e-3){for(let ph=ph0-.15;ph>=.06;ph-=.15){const r=clear(ph);if(r>br+.05){br=r;bp=ph}if(r>=need-1e-3)break}}
+ if(!WCAM.on){WCAM.on=true;WCAM.r=br;WCAM.ph=bp}
+ WCAM.ph+=(bp-WCAM.ph)*Math.min(1,dt*(bp<WCAM.ph?10:3));WCAM.r+=(br-WCAM.r)*Math.min(1,dt*2.5);
+ let cr=clear(WCAM.ph);if(cr<Math.min(br,.9)){WCAM.ph=bp;cr=br}   /* rising too slowly would bring the camera right up to you: jump straight to the clear angle */
+if(WCAM.r>cr)WCAM.r=cr;if(WCAM.r<.2)WCAM.r=.2;   /* whatever the easing says, never past the first wall or the ceiling */
+ const sp=Math.sin(WCAM.ph);cam.position.set(T.x+WCAM.r*sp*Math.cos(th),T.y+WCAM.r*Math.cos(WCAM.ph),T.z+WCAM.r*sp*Math.sin(th));WCAM.d=WCAM.r}
+function walkJump(){const S=SELF;if(!walk||tour||GM||RT.on||S.jy>0||S.jv)return;S.jv=4.6}
 function walkWave(){if(!walk||tour||GM)return;SELF.wv=2.4}
 function bellSnd(){if(!sndOn||!actx())return;const t=AC.currentTime+.01;[0,.17].forEach(o=>{tn(t+o,1.1,'sine',2350,2310,.2);tn(t+o,.7,'sine',3480,3440,.09);tn(t+o,.3,'triangle',5150,5100,.035)})}
 // "Use": the nearest door, cupboard, tap, light, appliance, ball or ride in front of you, within about two metres
-function useNear(){if(!walk||tour||GM)return;const x=G.t.x,z=G.t.z,fx=-Math.cos(G.th),fz=-Math.sin(G.th),wp=new THREE.Vector3();let best=-1,bs=1e9;
+function useNear(){if(!walk||tour||GM)return;if(trainUse(false))return;const x=G.t.x,z=G.t.z,fx=-Math.cos(G.th),fz=-Math.sin(G.th),wp=new THREE.Vector3();let best=-1,bs=1e9;
  scene.traverse(o=>{const id=o.userData&&o.userData.ia;if(typeof id!=='number'||id<0||!o.isMesh||!IA[id])return;for(let p=o;p;p=p.parent)if(!p.visible)return;
   o.getWorldPosition(wp);const dx=wp.x-x,dz=wp.z-z,d=Math.hypot(dx,dz);if(d>2.1||Math.abs(wp.y-(G.t.y-.4))>2.3)return;const dot=d>.05?(dx*fx+dz*fz)/d:1;if(dot<0&&d>.6)return;
   const sc=d-dot*.9+(IA[id].label==='Light'?1.3:0);if(sc<bs){bs=sc;best=id}});
@@ -3193,6 +3301,7 @@ const ACTI={
  view:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
  swap:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg>'};
 const ACTS={walk:[['jump','Jump','Space',walkJump],['run','Run','Shift',()=>{SELF.run=!SELF.run;showCap(SELF.run?'Running':'Walking',800)}],['use','Use','E',useNear],['wave','Wave','Q',walkWave]],
+ train:[['off','Get off','E',()=>trainOff()],['view','View','V',()=>trainView()]],
  ride:[['off','Get off','E',rideOff],['bell','Bell','H',rideBell],['view','View','V',rideView],['swap','Swap ride','B',rideSwap]]};
 const actR=document.createElement('div');actR.id='actR';actR.setAttribute('role','group');actR.setAttribute('aria-label','Actions');
 for(let i=0;i<4;i++){const b=document.createElement('button');b.type='button';
@@ -3201,13 +3310,13 @@ for(let i=0;i<4;i++){const b=document.createElement('button');b.type='button';
  ['click','contextmenu','dblclick'].forEach(n=>b.addEventListener(n,e=>{e.preventDefault();e.stopPropagation()}));
  b.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();b._a&&b._a[3]()}});actR.appendChild(b)}
 document.body.appendChild(actR);
-function actSet(m){SELF.mode=m;if(!m){actR.classList.remove('show');return}ACTS[m].forEach((a,i)=>{const b=actR.children[i];b._a=a;b.innerHTML=ACTI[a[0]]+'<span>'+a[1]+'</span><kbd>'+a[2]+'</kbd>';b.title=a[1]+' ('+a[2]+')';b.setAttribute('aria-label',a[1])});actR.classList.add('show')}
+function actSet(m){SELF.mode=m;if(!m){actR.classList.remove('show');return}for(let i=0;i<4;i++)actR.children[i].style.display=ACTS[m][i]?'':'none';ACTS[m].forEach((a,i)=>{const b=actR.children[i];b._a=a;b.innerHTML=ACTI[a[0]]+'<span>'+a[1]+'</span><kbd>'+a[2]+'</kbd>';b.title=a[1]+' ('+a[2]+')';b.setAttribute('aria-label',a[1])});actR.classList.add('show')}
 addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.repeat||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||'')||!walk||tour)return;
- if(GM){if(e.code==='KeyE'){e.preventDefault();rideOff()}else if(e.code==='KeyH'){e.preventDefault();rideBell()}return}
+ if(GM){if(e.code==='KeyE'){e.preventDefault();if(!trainUse(false,true))rideOff()}else if(e.code==='KeyH'){e.preventDefault();rideBell()}return}
  if(e.code==='Space'){e.preventDefault();walkJump()}else if(e.code==='KeyE'){e.preventDefault();useNear()}else if(e.code==='KeyQ'){e.preventDefault();walkWave()}});
 // every frame, after the camera target has moved: place, turn and animate my avatar, and keep the buttons in step
-function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!window.SKYV&&!(typeof SS!=='undefined'&&SS.view));
- const m=walk&&!tour&&!window.SKYV?(GM?'ride':'walk'):'';if(m!==S.mode)actSet(m);
+function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&&!(typeof SS!=='undefined'&&SS.view));
+ const m=walk&&!tour&&!window.SKYV?(GM?'ride':RT.on?'train':'walk'):'';if(m!==S.mode)actSet(m);
  { const rb=actR.children[1];if(S.mode==='walk'&&rb)rb.classList.toggle('on',!!S.run) }
  if(on&&!S.was){G.ph=1.3;fov(62)}   /* stepping into walking (start, or off a ride): camera behind and a little above you */
  S.was=on;
@@ -3215,7 +3324,7 @@ function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!window.SKYV&&!(typeo
  if(S.wv>0)S.wv=Math.max(0,S.wv-dt);
  if(!S.av&&window.MP&&MP.mkAv){const P=MP.mkAv({name:'',col:MP.col()});S.av=P.av;S.col=MP.col();try{scene.remove(P.tag)}catch(e){}}
  const av=S.av;if(!av)return;
- av.g.visible=on&&V.r>.75;if(!av.g.visible)return;
+ av.g.visible=on&&(WCAM.on?WCAM.d>.35:V.r>.75);if(!av.g.visible)return;
  {const sc=window.MP&&MP.on?MP.col():0xffc93c;if(sc!==S.col){S.col=sc;av.mSh.color.setHex(sc)}}
  const x=V.t.x,z=V.t.z,b=_wbr(x,z);av.g.position.set(x,(b>0?V.t.y-1.12:terr(x,z)+V.t.y-1.12)+S.jy,z);av.g.rotation.y=Math.atan2(-Math.cos(V.th),-Math.sin(V.th));
  const sp=Math.abs(S.mv||0),run=sp>3.5;av.ph+=(S.mv||0)*dt*(run?3.6:5.2);const amp=Math.min(1,sp/1.2)*(run?.95:.55),sw=Math.sin(av.ph)*amp;
@@ -3225,12 +3334,12 @@ function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!window.SKYV&&!(typeo
  av.g.rotation.x=run?.08:0;if(av.pony){av.pony.rotation.x=-.15-Math.abs(Math.sin(av.ph))*amp*.35-(run?.35:0);av.pony.rotation.z=Math.sin(av.ph)*amp*.25}}
 
 (function envLoop(){requestAnimationFrame(envLoop);try{if(carG.visible&&carG.userData.envTick)carG.userData.envTick()}catch(e){}})();
-let lt=performance.now();(function loop(){requestAnimationFrame(loop);GU.o.value=gpr;GU.a.value=1-NM.v;GU.d.value=1-.4*(1-NM.v);GL.intensity=(1-NM.v)*(1.6+1.0*gpr);const nw=performance.now();const dtf=Math.min((nw-lt)/1000,.1);arrowTick(dtf);if((wNext-=dtf)<0){wNext=.15;windTick()}mmTick();nightTick(nw/1000);skyTick(dtf);rainTick(dtf);planeTick(dtf);SS.tick(dtf);treeTick(nw/1000);trainTick(nw/1000);cycTick(nw/1000);cowlTick(nw/1000);tapTick(dtf);wtTick(dtf);ballTick(dtf);stoveTick(dtf);animTick(dtf);hoodTick(dtf);if(etg!==sE){sE=etg;if(epr!==etg)woodSnd(etg,4)}if(gtg!==sG){sG=gtg;garSnd(gtg)}if(gt2!==sT){sT=gt2;sfx('gate')}for(const k in SLD){const sl=SLD[k];if(sl.tg!==sl.lt){if(sl.lt!==undefined)slideSnd(sl.tg);sl.lt=sl.tg}}
+let lt=performance.now();(function loop(){requestAnimationFrame(loop);GU.o.value=gpr;GU.a.value=1-NM.v;GU.d.value=1-.4*(1-NM.v);GL.intensity=(1-NM.v)*(1.6+1.0*gpr);const nw=performance.now();const dtf=Math.min((nw-lt)/1000,.1);arrowTick(dtf);if((wNext-=dtf)<0){wNext=.15;windTick()}mmTick();nightTick(nw/1000);skyTick(dtf);rainTick(dtf);planeTick(dtf);SS.tick(dtf);treeTick(nw/1000);trainTick(nw/1000);try{rtPos()}catch(e){console.error(e)}cycTick(nw/1000);cowlTick(nw/1000);tapTick(dtf);wtTick(dtf);ballTick(dtf);stoveTick(dtf);animTick(dtf);hoodTick(dtf);if(etg!==sE){sE=etg;if(epr!==etg)woodSnd(etg,4)}if(gtg!==sG){sG=gtg;garSnd(gtg)}if(gt2!==sT){sT=gt2;sfx('gate')}for(const k in SLD){const sl=SLD[k];if(sl.tg!==sl.lt){if(sl.lt!==undefined)slideSnd(sl.tg);sl.lt=sl.tg}}
 if(tour&&!scrub){if(!tPause)tourTick(dtf);if(tw){const q=tw;skE.value=Math.round(1000*(q.ph==='o'?.12*Math.min(q.t,38)/38:q.ph==='f'?.12+.02*Math.min(1,q.t/7):q.ph==='d'?.14+.02*Math.min(1,q.t/10):q.ph==='w'?.16+.81*q.s/tp.L:.97+.03*Math.min(1,q.t/10)))}}{const de=etg-epr;epr+=Math.sign(de)*Math.min(Math.abs(de),dtf/4);if(eD)eD.rotation.y=1.5*epr*epr*(3-2*epr);for(const q of SQ){const st=q.st[q.i];if(!st){q.done=1;continue}if(st[0]==='w'){q.w+=dtf;if(q.w>=st[1]){q.w=0;q.i++}}else{const sl=SLD[q.k+(st[2]||'')];if(!sl){q.done=1;continue}sl.tg=st[1];if(st[0]==='tp')q.i++;else if(Math.abs(sl.p-sl.tg)<.002)q.i++}}SQ=SQ.filter(q=>!q.done);for(const k in SLD){const sl=SLD[k],dd=sl.tg-sl.p;sl.p+=Math.sign(dd)*Math.min(Math.abs(dd),dtf/3);const e1=Math.min(1,sl.p),e2=Math.max(0,sl.p-1);sl.g.position[sl.ax]=sl.b0+sl.d*(e1*e1*(3-2*e1)+e2*e2*(3-2*e2))}const d=gtg-gpr;gpr+=Math.sign(d)*Math.min(Math.abs(d),dtf/3.5);if(gD){if(!gD.userData.cp){const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),2.08),cm=m=>{const c=m.clone();c.clippingPlanes=[pl];return c};ren.localClippingEnabled=true;gD.material=Array.isArray(gD.material)?gD.material.map(cm):cm(gD.material);gD.children.forEach(ch=>{if(ch.material)ch.material=cm(ch.material)});gD.userData.cp=1;gD.userData.y0=gD.position.y}
-gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-gp2;gp2+=Math.sign(d2)*Math.min(Math.abs(d2),dtf/3);if(gateG)gateG.rotation.y=Math.PI/2*gp2*.95}lt=nw;const k=.12;if(GM){V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph}else{V.t.lerp(G.t,k);V.r+=(G.r-V.r)*k;V.th+=(G.th-V.th)*k;V.ph+=(G.ph-V.ph)*k;}
+gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-gp2;gp2+=Math.sign(d2)*Math.min(Math.abs(d2),dtf/3);if(gateG)gateG.rotation.y=Math.PI/2*gp2*.95}lt=nw;const k=.12;if(GM){V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph}else{if(walk&&!tour&&V.t.distanceTo(G.t)<1.5)V.t.copy(G.t);else V.t.lerp(G.t,k);V.r+=(G.r-V.r)*k;V.th+=(G.th-V.th)*k;V.ph+=(G.ph-V.ph)*k;}
  LIFT=!walk&&!GM&&!window.SKYV&&V.r>2.5&&(!tour||!!(tw&&tw.ph==='o'&&tw.t>=16));let cph=V.ph;
  if(LIFT){const lt_=V.ph-clearPh(V.t,V.r,V.th,V.ph);if(LPH==null)LPH=lt_;LPH+=(lt_-LPH)*Math.min(1,dtf*(lt_>LPH?9:2.5));cph=Math.max(.12,V.ph-Math.max(0,LPH))}else LPH=null;
- try{selfTick(dtf)}catch(e){};cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=terr(cam.position.x,cam.position.z)+.3;if(cam.position.y<gy)cam.position.y=gy}cam.lookAt(V.t);ren.render(scene,cam)})();
+ try{selfTick(dtf)}catch(e){};cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=terr(cam.position.x,cam.position.z)+.3;if(cam.position.y<gy)cam.position.y=gy}try{walkCam(dtf,cph)}catch(e){}cam.lookAt(V.t);ren.render(scene,cam)})();
 
 // mobile: always lay out in landscape. Portrait phones get the page turned a quarter turn (CSS), so the user rotates the phone to read it.
 // innerWidth/innerHeight, pointer coordinates and bounding rects are mapped into the turned page so all controls keep working.
@@ -3251,7 +3360,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  const AD=(a,b)=>{const T=Math.PI*2;return((a-b+Math.PI)%T+T)%T-Math.PI};
  const bike=v=>(window.BKS||[]).find(b=>b.id===v);
  const pname=id=>{const p=MP.peers.get(id);return p&&p.name?p.name:'Someone'};
- MP.col=()=>ME.col;MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
+ MP.col=()=>ME.col;MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
 
  // ---------- transport: Trystero (nostr relays) on the web; a BroadcastChannel stand-in for local testing (?mptest=1)
  async function connect(code){
