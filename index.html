@@ -50,7 +50,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
 #topR button{height:42px;background:var(--panel);border:1px solid var(--bd);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);box-shadow:var(--shadow);padding:0 16px}
 #topR button:hover{background:var(--panel-s)}
 #topR #bWalk,#topR #bSnd,#topR #bGame,#topR #bView,#topR #bFS{width:42px;padding:0;justify-content:center;border-radius:50%}
-#topR svg{display:block;pointer-events:none} #topR #bGame,#topR #bTour{display:none!important}   /* game-mode button removed: walk up to a bike or the trike and tap it (or press Use) to ride */
+#topR svg{display:block;pointer-events:none} #topR #bGame,#topR #bTour{display:none!important} #topR,#actR{display:none!important}   /* all on-screen buttons removed: just the two move circles */   /* game-mode button removed: walk up to a bike or the trike and tap it (or press Use) to ride */
 #topR button.on{background:var(--ac);color:var(--ac-fg);border-color:transparent}
 #topR #bTour{background:linear-gradient(135deg,var(--ac-2),var(--ac));color:var(--ac-fg);border-color:transparent}
 #topR #bTour.on{background:#c62828;color:#fff}
@@ -2552,12 +2552,12 @@ addEventListener('blur',()=>{for(const q in AK)AK[q]=0});
 var WHT=0;function arrowTick(dt){padVis();if(window.CPV&&CPV.act&&(!GM||!walk||tour))CPV.release();if(!walk||tour)return;if(GM){if(window.CPV)CPV.pre();if(GM===window.BKM)window.bkTick(dt);else if(GM===window.CARK)window.carTick(dt);else gmTick(dt);if(window.CPV)CPV.post(dt);return}walkTick(dt)}
 
 // ---- on-screen walk joysticks (touch devices): drive the same AK key state as the keyboard, so behaviour matches PC
-const PADON=matchMedia('(pointer:coarse)').matches||matchMedia('(hover:none)').matches||('ontouchstart' in window);
+const PADON=true;   /* the move circles show on phones, tablets and computers */
 const padEls=[],padR=[],padG=[];
 function mkStick(id,lab,K,ax,arr){const d=document.createElement('div');d.className='pad';d.id=id;d.setAttribute('role','group');d.setAttribute('aria-label',id==='padL'?'Move joystick':'Look joystick');
  d.innerHTML='<i class="t">'+lab[0]+'</i><i class="b">'+lab[1]+'</i><i class="l">'+lab[2]+'</i><i class="r">'+lab[3]+'</i><b></b>';const kn=d.lastChild;let pid=null;
  const RMAX=36,TH=.32;
- const setK=(u,dn,lf,rt)=>{AK[K.u]=u;AK[K.d]=dn;AK[K.l]=lf;AK[K.r]=rt};
+ const setK=(u,dn,lf,rt)=>{if(ax!=='h'){AK[K.u]=u;AK[K.d]=dn}if(ax!=='v'){AK[K.l]=lf;AK[K.r]=rt}};   /* a one-axis circle only drives its own keys, so both circles can be held at once */
  const upd=e=>{const r=d.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);if(ax==='v')dx=0;if(ax==='h')dy=0;const m=Math.hypot(dx,dy);if(m>RMAX){dx=dx/m*RMAX;dy=dy/m*RMAX}
   kn.style.transform='translate('+dx+'px,'+dy+'px)';const nx=dx/RMAX,ny=dy/RMAX;setK(ny<-TH?1:0,ny>TH?1:0,nx<-TH?1:0,nx>TH?1:0)};
  const end=e=>{if(e.pointerId!==pid)return;pid=null;setK(0,0,0,0);kn.style.transform='';d.classList.remove('dn')};
@@ -2566,8 +2566,9 @@ function mkStick(id,lab,K,ax,arr){const d=document.createElement('div');d.classN
  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>d.addEventListener(n,end));d.addEventListener('contextmenu',e=>e.preventDefault());
  d.reset=()=>{pid=null;setK(0,0,0,0);kn.style.transform='';d.classList.remove('dn')};
  document.body.appendChild(d);(arr||padEls).push(d)}
-if(PADON){mkStick('padL',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'});
- mkStick('padGL',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},null,padG);
+if(PADON){   /* left circle: up = forward, down = back. right circle: left / right turns. Same circles while walking and riding */
+ mkStick('padL',['\u25B2','\u25BC','',''],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'v');mkStick('padR',['','','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'h');
+ mkStick('padGL',['\u25B2','\u25BC','',''],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'v',padG);mkStick('padGR',['','','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'h',padG);
  if(0)mkStick('padR',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'ArrowUp',d:'ArrowDown',l:'ArrowLeft',r:'ArrowRight'})}
 if(0){ // right side (replaced by the action buttons): swipe area to look around, with camera-height buttons above it
  {const sw=document.createElement('div');sw.id='swipeR';sw.setAttribute('aria-label','Swipe to look around');sw.innerHTML='<span>Swipe to look</span>';let sp=null,lx=0,ly=0;
