@@ -101,6 +101,17 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
 #hBtns.show{display:flex}#hBtns i{font:700 10px/1 var(--font);font-style:normal;color:rgba(255,255,255,.85);text-shadow:0 0 3px rgba(0,0,0,.6)}
 #hBtns button{width:50px;height:50px;padding:0;border-radius:50%;font:700 17px/1 var(--font);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.6);color:#fff;touch-action:none;box-shadow:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 #hBtns button.dn{background:color-mix(in srgb,var(--ac) 50%,transparent)}
+#bWalk{display:none!important}
+#actR{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));display:none;grid-template-columns:64px 64px;grid-template-rows:64px 64px;gap:12px;z-index:7;user-select:none;-webkit-user-select:none}
+#actR.show{display:grid}
+#actR button{position:relative;width:64px;height:64px;padding:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.6);color:#fff;font:700 10px/1 var(--font);letter-spacing:.02em;text-shadow:0 0 3px rgba(0,0,0,.55);box-shadow:none;touch-action:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .08s,background .15s}
+#actR button svg{filter:drop-shadow(0 0 2px rgba(0,0,0,.5))}
+#actR button.dn{transform:scale(.92);background:color-mix(in srgb,var(--ac) 55%,transparent)}
+#actR button.on{background:color-mix(in srgb,var(--ac) 70%,transparent);border-color:#fff}
+#actR button kbd{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:rgba(16,22,30,.8);color:#fff;font:700 9.5px/18px var(--font);text-shadow:none;display:none}
+@media (pointer:fine){#actR button kbd{display:block}}
+@media (pointer:coarse),(hover:none){#actR{grid-template-columns:70px 70px;grid-template-rows:70px 70px}#actR button{width:70px;height:70px}}
+
 </style></head><body>
 <div id="ui" style="display:none"><h1>Fegent Road – 4 bed family home</h1><p>Drag to look · tap to step forward, hold for more steps · scroll or pinch to zoom</p>
 <div class="grp" style="display:none"><span class="gl">Camera</span><div class="row"><button id="bFront">Front</button><button id="bAer">Aerial</button><button id="bTop">Plan view</button></div></div>
@@ -127,7 +138,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
  if(window.Touch){const tp=Touch.prototype,tx=Object.getOwnPropertyDescriptor(tp,'clientX'),ty=Object.getOwnPropertyDescriptor(tp,'clientY');if(tx&&ty){Object.defineProperty(tp,'clientX',{configurable:true,get(){return R()?ty.get.call(this):tx.get.call(this)}});Object.defineProperty(tp,'clientY',{configurable:true,get(){return R()?rIW()-tx.get.call(this):ty.get.call(this)}})}}
  const gb=Element.prototype.getBoundingClientRect;Element.prototype.getBoundingClientRect=function(){const r=gb.call(this);if(!R())return r;const W=rIW();return new DOMRect(r.top,W-(r.left+r.width),r.height,r.width)};
 })();
-var GAMES_ON=false,CAR_ON=false;   /* CAR_ON: the Outlander in game mode (kept, switched off) */   /* game modes (trike game, bike ride, game button) are switched off; set to true to bring them all back */
+var GAMES_ON=true,CAR_ON=false;   /* CAR_ON: the Outlander in game mode (kept, switched off) */   /* game modes (trike game, bike ride, game button) are switched off; set to true to bring them all back */
 var GM=null,COL=[],SDR=[],EDR=null,GMR=[],RBN=0;
 const S=1/70,SZ=1/68,H=2.7,TE=.24,TI=.09,Z0=449.5,MZK=[[90,90],[292,303],[380,382],[468,468],[568,542],[585,584],[636,620],[770,770],[865,865]],MZ=p=>{const K=MZK;if(p<=K[0][0])return K[0][1]+(p-K[0][0]);for(let i=1;i<K.length;i++)if(p<=K[i][0])return K[i-1][1]+(p-K[i-1][0])*(K[i][1]-K[i-1][1])/(K[i][0]-K[i-1][0]);return K[K.length-1][1]+(p-K[K.length-1][0])},MZI=q=>{const K=MZK;if(q<=K[0][1])return K[0][0]+(q-K[0][1]);for(let i=1;i<K.length;i++)if(q<=K[i][1])return K[i-1][0]+(q-K[i-1][1])*(K[i][0]-K[i-1][0])/(K[i][1]-K[i-1][1]);return K[K.length-1][0]+(q-K[K.length-1][1])},X=p=>(p-850)*S,Z=p=>(MZ(p)-Z0)*SZ;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xbcd8ee);scene.fog=new THREE.Fog(0xbcd8ee,90,1700);
@@ -1189,7 +1200,7 @@ function mkBikeF(BC){try{
  function bkEnter(){if(tour||GM||!GAMES_ON)return;if(window.MP&&!MP.take(BK.id))return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;BK.fw=!ww;gtg=1;$('bWalk').classList.remove('on');   /* hopping on opens the garage door */
   window.CPV&&CPV.snap();act();BK.tint(window.MP&&MP.on?MP.col():0xffc93c);BK.rem=null;GM=BK;BK.parked=false;BK.sp=0;BK.st=0;BK.ln=0;BK.y=bkTerr(BK.x,BK.z);girl.visible=true;kick.visible=false;body.rotation.set(0,0,0);steer.rotation.y=0;
   BK.cth=Math.atan2(-Math.cos(BK.th),-Math.sin(BK.th));G.th=V.th=BK.cth;G.ph=V.ph=1.2;G.r=V.r=2.6;G.t.set(BK.x,BK.y+.95,BK.z);V.t.copy(G.t);fov(62);$('bGame').classList.add('on');
-  showCap(matchMedia('(pointer:fine)').matches?'Bike ride: W / S pedal and brake · A / D steer · ride out the garage, along the street and over the bridges to Kmart or Woolworths':'Bike ride: left stick pedals and brakes, right stick steers',6500)}
+  showCap(matchMedia('(pointer:fine)').matches?'Bike ride: W / S pedal and brake · A / D steer · ride out the garage, along the street and over the bridges to Kmart or Woolworths':'Bike ride: left stick pedals, brakes and steers',6500)}
  BK.enter=bkEnter;window.BKH=bkHit;window.BKT=bkTerr;window.BKL=local;
  /* the bike you are on (or the last one ridden) is the one the rest of the game talks to */
  const act=()=>{window.BKM=BK;window.BKG=g;window.bkEnter=bkEnter;window.bkExit=BK.exit;window.bkTick=BK.tick;window.BKEYE=o=>head.getWorldPosition(o);window.BKHIDE=on=>{head.visible=!on}};
@@ -1261,7 +1272,7 @@ setTimeout(()=>{try{const g=carG,W=g.userData.W||[],HM={x:7.4,z:2.3,th:0},BKT=(x
  const hitAt=(x,z,th)=>{const c=Math.cos(th),s=Math.sin(th);for(const o of[-1.45,0,1.45])if(BKH(x+c*o,z+s*o,.93))return true;return false};
  function carEnter(){if(tour||GM||!GAMES_ON||!CAR_ON)return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;CK.fw=!ww;$('bWalk').classList.remove('on');
   window.CPV&&CPV.snap();GM=CK;CK.sp=0;CK.st=0;CK.y=BKT(CK.x,CK.z);dv.visible=!window.CPV||!CPV.on;CK.de=1;CK.cth=Math.atan2(-Math.sin(CK.th),-Math.cos(CK.th));G.th=V.th=CK.cth;G.ph=V.ph=1.2;G.r=V.r=4.5;G.t.set(CK.x,CK.y+1.3,CK.z);V.t.copy(G.t);fov(60);
-  showCap(matchMedia('(pointer:fine)').matches?'Driving the Outlander (inside view): W / S accelerate and brake (hold S to reverse) · A / D steer · drag to look around · V switches inside / outside view · tap the walk button to park it':'Driving the Outlander (inside view): left stick accelerates, brakes and reverses, right stick steers · drag the screen to look around · eye button switches the view · tap the walk button to park it',6500)}
+  showCap(matchMedia('(pointer:fine)').matches?'Driving the Outlander (inside view): W / S accelerate and brake (hold S to reverse) · A / D steer · drag to look around · V switches inside / outside view · tap the walk button to park it':'Driving the Outlander (inside view): left stick drives and steers · drag the screen to look around · eye button switches the view · tap the walk button to park it',6500)}
  dRun(()=>iaReg([g],'Car',()=>{if(!GAMES_ON||GM)return '';setTimeout(carEnter,0);return 'Starting the car'}));
  window.carExit=()=>{if(GM!==CK)return;if(GR&&AC)GR.g.gain.setTargetAtTime(0,AC.currentTime,.05);GMT.forEach(t=>{if(t.a){t.s(0);t.a=0}});GMR.forEach(r=>r.k.forEach((k,i)=>{if(r.a[i]){SLD[k].tg=0;r.a[i]=0}}));SDR.forEach(d=>{if(d.a){const a=SLD[d.k],b=SLD[d.k+'#'];if(a)a.tg=0;if(b)b.tg=0;d.a=0}});
   GM=null;const ox=CK.x,oz=CK.z,oth=CK.th,oy=CK.y,c=Math.cos(oth),s=Math.sin(oth);park();
@@ -1737,12 +1748,7 @@ function setGames(on){GAMES_ON=!!on;if(!GAMES_ON&&GM){GM.fw=0;gmExit()}
  const b=$('bGMo');if(b){b.classList.toggle('on',GAMES_ON);b.textContent='Game mode: '+(GAMES_ON?'on':'off')}
  showCap(GAMES_ON?'Game mode on: the trike and the two bikes are parked in the garage. Tap one to get in':'Game mode off',3000);if(GAMES_ON&&!GM)gmChoose()}   /* turning game mode on takes the camera straight to the parked trike and bike */
 $('bGMo').onclick=()=>setGames(!GAMES_ON);
-// game mode is switched from the walk button: double-click turns it on, a single click turns it off
-{const w=$('bWalk');w.style.touchAction='manipulation';w.addEventListener('dblclick',e=>{e.preventDefault();if(!GAMES_ON)setGames(true)});
- /* phones and tablets: iOS never sends dblclick for taps, so a double-tap is detected here (two taps within 400 ms); the second tap only turns game mode on */
- let pt='mouse',lt=0,lx=0,ly=0;w.addEventListener('pointerdown',e=>{pt=e.pointerType||'touch'},true);
- w.addEventListener('click',e=>{if(e.isTrusted&&pt!=='mouse'){const n=performance.now();if(n-lt<400&&Math.hypot(e.clientX-lx,e.clientY-ly)<40){lt=0;e.stopImmediatePropagation();e.preventDefault();if(!GAMES_ON)setGames(true);return}lt=n;lx=e.clientX;ly=e.clientY}
-  if(GAMES_ON&&!GM&&!window.GMCH)setGames(false)},true)}
+// game mode is always on: the walk (person) button is hidden and no longer switches it
 // ---- backyard football (Australia ball): touch/click it and it rolls away from you, slows down and bounces off the fences
 const BALL={m:null,dx:0,dz:0,sp:0};
 try{const R=.11,tx=cv(512,256,g=>{g.fillStyle='#f1f0ec';g.fillRect(0,0,512,256);const pan=(x,y,r,a)=>{g.save();g.translate(x,y);g.rotate(a);g.beginPath();for(let i=0;i<6;i++){const t=i/6*Math.PI*2;g.lineTo(Math.cos(t)*r,Math.sin(t)*r*.9)}g.closePath();g.fillStyle='#0d5456';g.fill();g.strokeStyle='#d9d7d0';g.lineWidth=3;g.stroke();g.clip();for(let u=-r;u<r;u+=7)for(let v=-r;v<r;v+=7){if(rnd()<.55+(u/r)*.35){g.fillStyle='#e9a23a';const q=2+rnd()*3.5;g.fillRect(u,v,q,q)}}g.restore()};
@@ -1781,7 +1787,7 @@ el.addEventListener('pointerup',e=>{clearInterval(hi);if(dn&&!dn.moved&&!dn.mult
 el.addEventListener('pointercancel',()=>{clearInterval(hi);dn=null});
 let sw=null;function walkOff(){if(GM)gmExit();walk=false;$('bWalk').classList.remove('on');if(sw){roof.visible=sw.r;labels.visible=sw.l;fences.visible=true;sync();sw=null}fov(45)}
 $('bWalk').onclick=e=>{if(GM){GM.fw=0;gmExit();return}   /* in a game, the walk button parks the trike, bike or car back in the garage and carries on walking */if(tour)stopTour(false);if(walk){G.t.set(21.2,1.28,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph;fov(72);showCap('Back at the house',1200);return}   /* walk mode stays on whenever no game or tour is running */walk=true;sw={r:roof.visible,l:labels.visible,f:fences.visible};roof.visible=true;fences.visible=true;labels.visible=false;sync();e.target.classList.toggle('on',walk);
- fov(72);{G.t.set(21.2,1.28,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;showCap(matchMedia('(pointer:fine)').matches?'Walk mode: W/S forward·back · A/D left·right · hold right mouse & drag (or arrow keys) to look · PgUp/PgDn height · wheel or +/− to zoom':'Walk mode: left stick moves · swipe on the right to look · ▲▼ change height · pinch to zoom',6500)}};
+ fov(72);{G.t.set(21.2,1.28,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;showCap(matchMedia('(pointer:fine)').matches?'W/S walk · A/D turn · drag to look · wheel to zoom · Space jump · Shift run · E use · Q wave':'Left stick walks and turns · drag the screen to look · pinch to zoom · buttons on the right: jump, run, use, wave',6500)}};
 $('ui').addEventListener('click',e=>{if(e.target.closest('button')){$('ui').style.display='none';$('bPanel').textContent='Options'}});
 const TP=Math.PI*2,TW=[[1800,415,1,null,null,'eo'],[1560,415],[1400,422],[1425,350],[1395,122,2,1650,345],[1425,350],[1400,422],[1172,428,2,1162,640],[1165,445],[1162,480],[1162,520],[1240,590],[1300,640,2,1555,670,'go'],[1230,740],[1175,800,2,1125,820],[1125,820],[1010,826],[900,826,3],[1010,826],[1125,822],[1190,770],[1300,640,2,1555,670,'gc'],[1240,590],[1162,520],[1162,480],[1172,430],[1176,340],[1200,310,2,1330,215,'wn',1.3,-.1],[1330,120,2,1200,330,'rb3',1.3,-.1],[1176,340],[1172,422],[1060,428],[900,432],[780,432],[650,340,1],[520,240,2,325,244,'sL'],[440,330],[520,430],[700,434],[780,434],[770,330],[846,272,2,null,null,'isl',1.35,-.25],[918,300],[950,346],[1000,346,2,1075,349,'fr',1.25,-.05],[1045,300,2,1094,214,'pan',1.4,-.1],[1040,125,2,962,346,'pd',1.5,-.12],[1045,300],[1000,346],[962,346],[940,332,2,868,332,'mw',.52,-.02],[915,345,2,912,140,null,.52,-.06],[912,192,2,895,140,null,.52,-.02],[785,192,2,785,90,null,.52,-.02],[772,330],[805,440],[812,505],
 [908,518],[1010,522],[1013,625],[1110,690,2,960,720,'wn',1.3,-.1],[950,745,2,1080,600,'rb1',1.3,-.1],[1010,625],[1010,580],[908,518],[729,518],
@@ -2537,19 +2543,13 @@ function planeTick(dt){commTick();mSilver.envMapIntensity=mSilverD.envMapIntensi
   const on=v>.25;p.lr.visible=p.lg.visible=on;p.ls.visible=on&&((tm*.83+p.R)%1.3)<.14;if(on){p.lr.material.opacity=p.lg.material.opacity=.95*v;p.ls.material.opacity=v}}}
 // ---- keyboard walking (PC): W/S forward/back, A/D strafe, arrow keys turn and look up/down
 const AK={ShiftLeft:0,ShiftRight:0,KeyW:0,KeyS:0,KeyA:0,KeyD:0,ArrowUp:0,ArrowDown:0,ArrowLeft:0,ArrowRight:0,PageUp:0,PageDown:0,Equal:0,Minus:0,NumpadAdd:0,NumpadSubtract:0};
-function wZoom(d){if(GM){fov(Math.min(95,Math.max(25,cam.fov+d)));return}   // walk-mode zoom (wheel, pinch, +/-) moves you straight ahead in the direction you are looking, so you can head directly to the shopping centres across country
+function wZoom(d){if(GM){fov(Math.min(95,Math.max(25,cam.fov+d)));return}if(walk&&!tour){SELF.d=Math.min(7,Math.max(1.2,SELF.d+d*.35));return}   // walk-mode zoom (wheel, pinch, +/-) moves you straight ahead in the direction you are looking, so you can head directly to the shopping centres across country
  const s=-d*1.2,c=Math.cos(G.th),n=Math.sin(G.th),R=window.RDN,gnd=(x,z)=>R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5?Math.max(0,R.yAt(x)+.18):0,g0=gnd(G.t.x,G.t.z);
  G.t.x=Math.min(60,Math.max(-240,G.t.x-c*s));G.t.z=Math.min(330,Math.max(-330,G.t.z-n*s));G.t.y+=gnd(G.t.x,G.t.z)-g0;V.t.copy(G.t)}   /* zoom moves you at once, with no glide afterwards */
 addEventListener('keydown',e=>{if(e.code in AK&&!tour&&walk&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||'')){AK[e.code]=1;e.preventDefault()}});
 addEventListener('keyup',e=>{if(e.code in AK)AK[e.code]=0});
 addEventListener('blur',()=>{for(const q in AK)AK[q]=0});
-var WHT=0;function arrowTick(dt){padVis();if(window.CPV&&CPV.act&&(!GM||!walk||tour))CPV.release();if(!walk||tour)return;if(GM){if(window.CPV)CPV.pre();if(GM===window.BKM)window.bkTick(dt);else if(GM===window.CARK)window.carTick(dt);else gmTick(dt);if(window.CPV)CPV.post(dt);return}const f=AK.KeyW-AK.KeyS,sd=AK.KeyD-AK.KeyA,t=AK.ArrowRight-AK.ArrowLeft,l=AK.ArrowUp-AK.ArrowDown,zm=(AK.Equal||AK.NumpadAdd?1:0)-(AK.Minus||AK.NumpadSubtract?1:0),hg=AK.PageUp-AK.PageDown;if(!f&&!sd)WHT=0;if(!f&&!sd&&!t&&!l&&!zm&&!hg)return;
- if(zm)wZoom(-zm*9*dt);if(hg)G.t.y=Math.min(30,Math.max(.4,G.t.y+hg*(1.2+G.t.y*.45)*dt));
- if(t)G.th+=t*1.7*dt;if(l)G.ph=Math.min(2.2,Math.max(.9,G.ph+l*1.1*dt));
- if(f||sd){WHT=(WHT||0)+dt;const c=Math.cos(G.th),n=Math.sin(G.th),v=((AK.ShiftLeft||AK.ShiftRight)?7:1.8+5.2*Math.min(1,Math.max(0,(WHT-1.5)/2.5)))*dt;   /* keep walking (key, joystick) and it speeds up from 1.8 to 7 m/s, on PC and mobile alike */let mx=-c*f+n*sd,mz=-n*f-c*sd;const m=Math.hypot(mx,mz)||1;mx=mx/m*v;mz=mz/m*v;
-  // walk anywhere in the neighbourhood: the street, both bridges, the main road and both shopping centres (hold Shift to move faster); eye height follows the bridge ramps
-  const gnd=(x,z)=>{const R=window.RDN;return R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5?Math.max(0,R.yAt(x)+.18):0},g0=gnd(G.t.x,G.t.z);
-  G.t.x=Math.min(60,Math.max(-240,G.t.x+mx));G.t.z=Math.min(330,Math.max(-330,G.t.z+mz));G.t.y+=gnd(G.t.x,G.t.z)-g0}}
+var WHT=0;function arrowTick(dt){padVis();if(window.CPV&&CPV.act&&(!GM||!walk||tour))CPV.release();if(!walk||tour)return;if(GM){if(window.CPV)CPV.pre();if(GM===window.BKM)window.bkTick(dt);else if(GM===window.CARK)window.carTick(dt);else gmTick(dt);if(window.CPV)CPV.post(dt);return}walkTick(dt)}
 
 // ---- on-screen walk joysticks (touch devices): drive the same AK key state as the keyboard, so behaviour matches PC
 const PADON=matchMedia('(pointer:coarse)').matches||matchMedia('(hover:none)').matches||('ontouchstart' in window);
@@ -2566,10 +2566,10 @@ function mkStick(id,lab,K,ax,arr){const d=document.createElement('div');d.classN
  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>d.addEventListener(n,end));d.addEventListener('contextmenu',e=>e.preventDefault());
  d.reset=()=>{pid=null;setK(0,0,0,0);kn.style.transform='';d.classList.remove('dn')};
  document.body.appendChild(d);(arr||padEls).push(d)}
-if(PADON){mkStick('padL',['W','S','A','D'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'});
- mkStick('padGL',['\u25B2','\u25BC','',''],{u:'KeyW',d:'KeyS',l:'_n',r:'_n'},'v',padG);mkStick('padGR',['','','\u25C0','\u25B6'],{u:'_n',d:'_n',l:'KeyA',r:'KeyD'},'h',padG);
+if(PADON){mkStick('padL',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'});
+ mkStick('padGL',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},null,padG);
  if(0)mkStick('padR',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'ArrowUp',d:'ArrowDown',l:'ArrowLeft',r:'ArrowRight'})}
-if(PADON){ // right side: swipe area to look around, with camera-height buttons above it
+if(0){ // right side (replaced by the action buttons): swipe area to look around, with camera-height buttons above it
  {const sw=document.createElement('div');sw.id='swipeR';sw.setAttribute('aria-label','Swipe to look around');sw.innerHTML='<span>Swipe to look</span>';let sp=null,lx=0,ly=0;
   sw.addEventListener('pointerdown',e=>{if(sp!==null)return;e.preventDefault();e.stopPropagation();sp=e.pointerId;lx=e.clientX;ly=e.clientY;try{sw.setPointerCapture(sp)}catch(_){}sw.classList.add('dn')});
   sw.addEventListener('pointermove',e=>{if(e.pointerId!==sp)return;e.preventDefault();const k=2.4*Math.tan(cam.fov*Math.PI/360)/innerHeight;G.th+=(e.clientX-lx)*k;G.ph=Math.min(2.2,Math.max(.9,G.ph-(e.clientY-ly)*k));lx=e.clientX;ly=e.clientY});
@@ -3071,7 +3071,7 @@ function gmCupPost(){if(!KCUP||KCUP.s<=1){return}const c=KCUP,s=c.s,h=KARM[1].hg
  const tl=e(s-1)*.9+(s>=1.98?.12*Math.sin(c.t*2.2):0);c.g.rotation.set(0,0,tl);
  c.g.position.copy(p).add(new THREE.Vector3(0,-.1,-.045).applyEuler(c.g.rotation))}
 function gmEnter(){if(tour||!GAMES_ON)return;if(window.MP&&!MP.take('trike'))return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;GMK.fw=!ww;gtg=1;$('bWalk').classList.remove('on');   /* hopping on opens the garage door */   /* game mode is its own mode: the walk button stays off */if(!KID)gmBuild();window.CPV&&CPV.snap();GM=GMK;{const p=window.TKP;GMK.x=p?p.x:6.4;GMK.z=p?p.z:-.4;GMK.h=p?p.h:0}GMK.cth=GMK.h;GMK.sp=0;GMK.st=0;GMK.ln=0;GMK.cp=undefined;GMK.it=0;if(KCUP)KCUP.s=0;GMK.ty=undefined;KID.visible=true;KK.visible=true;G.th=V.th=GMK.h;G.ph=V.ph=1.28;G.r=V.r=1.9;G.t.set(GMK.x,.45,GMK.z);V.t.copy(G.t);fov(62);$('bGame').classList.add('on');
- showCap(matchMedia('(pointer:fine)').matches?'Game mode: W / S ride forward and back · A / D steer (arrow keys work too)':'Game mode: left stick rides forward / back, right stick steers',5000)}
+ showCap(matchMedia('(pointer:fine)').matches?'Game mode: W / S ride forward and back · A / D steer (arrow keys work too)':'Trike: left stick rides and steers',5000)}
 function gmExit(){if(!GM)return;if(GM===window.CARK){window.carExit();return}if(GM===window.BKM){window.bkExit();return}if(GR&&AC)GR.g.gain.setTargetAtTime(0,AC.currentTime,.05);GMR.forEach(r=>r.k.forEach((k,i)=>{if(r.a[i]){SLD[k].tg=0;r.a[i]=0}}));GMT.forEach(t=>{if(t.a){t.s(0);t.a=0}});SDR.forEach(d=>{if(d.a){const a=SLD[d.k],b=SLD[d.k+'#'];if(a)a.tg=0;if(b)b.tg=0;d.a=0}});GM=null;if(KID){if(window.tkPark){const lc=GMK.x>-39.9&&GMK.x<48&&GMK.z>-48&&GMK.z<48;window.TKP=lc?{x:GMK.x,z:GMK.z,h:GMK.h}:{x:5.0,z:4.85,h:Math.PI};tkPark();window.MP&&MP.drop('trike',TKP.x,TKP.z,TKP.h)}else KID.visible=false}$('bGame').classList.remove('on');G.r=V.r=.05;G.ph=V.ph=Math.PI/2;G.t.y=V.t.y=1.28;G.th=V.th=GMK.h;fov(72);if(GMK.fw&&walk){GMK.fw=0;walkOff();go('Aer');cap.style.opacity=0}else if(walk)$('bWalk').classList.add('on')}
 // switch between the trike and the bike mid-game: the one you leave goes back to the garage, the other starts right where you are (button or the B key)
 function gmSwitch(){if(!GM||tour||!GAMES_ON)return;const bk=GM===GMK?((window.BKS||[]).find(b=>!window.MP||!MP.on||!MP.own[b.id]||MP.own[b.id].id===MP.self)||null):window.BKM,loc=(x,z)=>x>-39.9&&x<48&&z>-48&&z<48;
@@ -3146,13 +3146,90 @@ window.CPV=(function(){
  return S})();
 $('bView').onclick=()=>CPV.toggle();
 addEventListener('keydown',e=>{if(e.code==='KeyV'&&GM&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||''))CPV.toggle()});
+// ---- third-person walking: you see your own avatar from behind; W/S (or the left stick) walk, A/D turn, the follow camera stays out of walls and under ceilings
+var SELF={d:3.2,sp:0,run:false,jy:0,jv:0,wv:0,was:false,ph:0,av:null,col:-1,mode:''};
+const _wbr=(x,z)=>{const R=window.RDN;return R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5?Math.max(0,R.yAt(x)+.18):0};   /* bridge ramps */
+function walkTick(dt){const S=SELF;
+ const f=((AK.KeyW||AK.ArrowUp)?1:0)-((AK.KeyS||AK.ArrowDown)?1:0),t=((AK.KeyD||AK.ArrowRight)?1:0)-((AK.KeyA||AK.ArrowLeft)?1:0),zm=(AK.Equal||AK.NumpadAdd?1:0)-(AK.Minus||AK.NumpadSubtract?1:0);
+ if(zm)wZoom(-zm*4*dt);
+ if(t)G.th+=t*2.1*dt;
+ const run=S.run||AK.ShiftLeft||AK.ShiftRight,tg=f>0?(run?6.5:2.4):f<0?-1.5:0;
+ S.sp+=(tg-S.sp)*Math.min(1,dt*(f?5:9));if(!f&&Math.abs(S.sp)<.03)S.sp=0;S.mv=0;
+ if(S.sp){const c=Math.cos(G.th),n=Math.sin(G.th),d=S.sp*dt,R=.22,x=G.t.x,z=G.t.z,g0=_wbr(x,z),st=gmHit(x,z,R);   /* walls, fences and closed doors block you (slide along them); if you start inside something you can walk out */
+  const nx=Math.min(60,Math.max(-240,x-c*d)),nz=Math.min(330,Math.max(-330,z-n*d));
+  if(st||!gmHit(nx,z,R))G.t.x=nx;if(st||!gmHit(G.t.x,nz,R))G.t.z=nz;
+  S.mv=Math.hypot(G.t.x-x,G.t.z-z)/Math.max(dt,1e-4)*Math.sign(S.sp);if(Math.abs(S.mv)<Math.abs(S.sp)*.3)S.sp*=.85;
+  G.t.y+=_wbr(G.t.x,G.t.z)-g0;
+  // walk into the football and it gets kicked
+  if(BALL.m&&S.sp>.4){const bp=BALL.m.position,dx=bp.x-G.t.x,dz=bp.z-G.t.z,dd=Math.hypot(dx,dz);if(dd<.32+BALL.R&&dd>.001&&(dx*-c+dz*-n)/dd>.2){BALL.dx=dx/dd*.6-c*.4;BALL.dz=dz/dd*.6-n*.4;const l=Math.hypot(BALL.dx,BALL.dz)||1;BALL.dx/=l;BALL.dz/=l;BALL.sp=Math.max(BALL.sp,2.5+S.sp*1.1);SV=.8;sfx('bk');SV=1}}}
+ try{gmDoors({x:G.t.x,z:G.t.z})}catch(e){}   /* sliding doors, the garage door and the gate open as you walk up to them, like on the trike */
+ // follow camera: pull in where a wall or the ceiling is in the way
+ const want=S.d,ph=G.ph,sp=Math.sin(ph),cs=Math.cos(ph),ins=insideHouse(G.t.x,G.t.z);let r=.3,hit=false;
+ for(;r<want;r+=.08){const x=G.t.x+r*sp*Math.cos(G.th),z=G.t.z+r*sp*Math.sin(G.th);if(gmHit(x,z,.15)||(ins&&G.t.y+r*cs>2.42)){hit=true;break}}
+ r=hit?Math.max(.3,r-.1):want;G.r=r;if(V.r>r)V.r=r}
+function walkJump(){const S=SELF;if(!walk||tour||GM||S.jy>0||S.jv)return;S.jv=4.6}
+function walkWave(){if(!walk||tour||GM)return;SELF.wv=2.4}
+function bellSnd(){if(!sndOn||!actx())return;const t=AC.currentTime+.01;[0,.17].forEach(o=>{tn(t+o,1.1,'sine',2350,2310,.2);tn(t+o,.7,'sine',3480,3440,.09);tn(t+o,.3,'triangle',5150,5100,.035)})}
+// "Use": the nearest door, cupboard, tap, light, appliance, ball or ride in front of you, within about two metres
+function useNear(){if(!walk||tour||GM)return;const x=G.t.x,z=G.t.z,fx=-Math.cos(G.th),fz=-Math.sin(G.th),wp=new THREE.Vector3();let best=-1,bs=1e9;
+ scene.traverse(o=>{const id=o.userData&&o.userData.ia;if(typeof id!=='number'||id<0||!o.isMesh||!IA[id])return;for(let p=o;p;p=p.parent)if(!p.visible)return;
+  o.getWorldPosition(wp);const dx=wp.x-x,dz=wp.z-z,d=Math.hypot(dx,dz);if(d>2.1||Math.abs(wp.y-(G.t.y-.4))>2.3)return;const dot=d>.05?(dx*fx+dz*fz)/d:1;if(dot<0&&d>.6)return;
+  const sc=d-dot*.9+(IA[id].label==='Light'?1.3:0);if(sc<bs){bs=sc;best=id}});
+ if(best<0){showCap('Nothing to use here. Walk up to a door, tap, light or ride and press Use',2200);return}
+ const r=IA[best].fn();showCap(r||IA[best].label,1300);window.MP&&MP.ia(best)}
+function rideOff(){if(!GM)return;GM.fw=0;gmExit()}
+function rideBell(){if(!GM)return;bellSnd();if(!sndOn)showCap('\u{1F514} Ring ring! (sound is off)',1200);window.MP&&MP.on&&MP.fx&&MP.fx('bell')}
+function rideView(){if(GM&&window.CPV)CPV.toggle()}
+function rideSwap(){if(GM)gmSwitch()}
+// ---- the four action buttons (bottom right): what they do depends on whether you are walking or riding
+const ACTI={
+ jump:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/><path d="M5 21h14"/></svg>',
+ run:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="15" cy="4.5" r="2"/><path d="M8 21l3-6 3 2v5M6 12l3-4h5l3 4 3 1M11 15l-1-5"/></svg>',
+ use:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5.5a1.5 1.5 0 013 0V11M12 10V4a1.5 1.5 0 013 0v7M15 10.5V6a1.5 1.5 0 013 0v8a7 7 0 01-7 7h-1a6 6 0 01-5-3l-2.6-4.4a1.5 1.5 0 012.5-1.6L9 14V8a1.5 1.5 0 013 0"/></svg>',
+ wave:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11.5V6a1.5 1.5 0 013 0v5M10 10V4.5a1.5 1.5 0 013 0V10M13 10V5.5a1.5 1.5 0 013 0V13M16 11a1.5 1.5 0 013 0v3a7 7 0 01-12.6 4.2L4 15"/><path d="M3 6.5a5 5 0 012-3M20 3.5a5 5 0 011.5 2.5"/></svg>',
+ off:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/></svg>',
+ bell:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 21a2 2 0 004 0"/></svg>',
+ view:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+ swap:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg>'};
+const ACTS={walk:[['jump','Jump','Space',walkJump],['run','Run','Shift',()=>{SELF.run=!SELF.run;showCap(SELF.run?'Running':'Walking',800)}],['use','Use','E',useNear],['wave','Wave','Q',walkWave]],
+ ride:[['off','Get off','E',rideOff],['bell','Bell','H',rideBell],['view','View','V',rideView],['swap','Swap ride','B',rideSwap]]};
+const actR=document.createElement('div');actR.id='actR';actR.setAttribute('role','group');actR.setAttribute('aria-label','Actions');
+for(let i=0;i<4;i++){const b=document.createElement('button');b.type='button';
+ b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();b.classList.add('dn');const a=b._a;if(a)try{a[3]()}catch(er){console.error(er)}});
+ ['pointerup','pointercancel','pointerleave'].forEach(n=>b.addEventListener(n,()=>b.classList.remove('dn')));
+ ['click','contextmenu','dblclick'].forEach(n=>b.addEventListener(n,e=>{e.preventDefault();e.stopPropagation()}));
+ b.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();b._a&&b._a[3]()}});actR.appendChild(b)}
+document.body.appendChild(actR);
+function actSet(m){SELF.mode=m;if(!m){actR.classList.remove('show');return}ACTS[m].forEach((a,i)=>{const b=actR.children[i];b._a=a;b.innerHTML=ACTI[a[0]]+'<span>'+a[1]+'</span><kbd>'+a[2]+'</kbd>';b.title=a[1]+' ('+a[2]+')';b.setAttribute('aria-label',a[1])});actR.classList.add('show')}
+addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.repeat||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||'')||!walk||tour)return;
+ if(GM){if(e.code==='KeyE'){e.preventDefault();rideOff()}else if(e.code==='KeyH'){e.preventDefault();rideBell()}return}
+ if(e.code==='Space'){e.preventDefault();walkJump()}else if(e.code==='KeyE'){e.preventDefault();useNear()}else if(e.code==='KeyQ'){e.preventDefault();walkWave()}});
+// every frame, after the camera target has moved: place, turn and animate my avatar, and keep the buttons in step
+function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!window.SKYV&&!(typeof SS!=='undefined'&&SS.view));
+ const m=walk&&!tour&&!window.SKYV?(GM?'ride':'walk'):'';if(m!==S.mode)actSet(m);
+ { const rb=actR.children[1];if(S.mode==='walk'&&rb)rb.classList.toggle('on',!!S.run) }
+ if(on&&!S.was){G.ph=1.3;fov(62)}   /* stepping into walking (start, or off a ride): camera behind and a little above you */
+ S.was=on;
+ if(S.jy>0||S.jv){S.jv-=15*dt;S.jy+=S.jv*dt;if(S.jy<=0){S.jy=0;S.jv=0;sfx('fc')}}
+ if(S.wv>0)S.wv=Math.max(0,S.wv-dt);
+ if(!S.av&&window.MP&&MP.mkAv){const P=MP.mkAv({name:'',col:MP.col()});S.av=P.av;S.col=MP.col();try{scene.remove(P.tag)}catch(e){}}
+ const av=S.av;if(!av)return;
+ av.g.visible=on&&V.r>.75;if(!av.g.visible)return;
+ if(window.MP&&MP.col()!==S.col){S.col=MP.col();av.mSh.color.setHex(S.col)}
+ const x=V.t.x,z=V.t.z,b=_wbr(x,z);av.g.position.set(x,(b>0?V.t.y-1.28:terr(x,z)+V.t.y-1.28)+S.jy,z);av.g.rotation.y=Math.atan2(-Math.cos(V.th),-Math.sin(V.th));
+ const sp=Math.abs(S.mv||0),run=sp>3.5;av.ph+=(S.mv||0)*dt*(run?3.6:5.2);const amp=Math.min(1,sp/1.2)*(run?.95:.55),sw=Math.sin(av.ph)*amp;
+ av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;av.A[0].rotation.z=0;av.A[1].rotation.z=0;
+ if(S.jy>0){av.L[0].rotation.x=-.55;av.L[1].rotation.x=.35;av.A[0].rotation.z=-.5;av.A[1].rotation.z=.5}
+ if(S.wv>0){av.A[1].rotation.x=0;av.A[1].rotation.z=2.6+Math.sin(S.wv*12)*.35}
+ av.g.rotation.x=run?.08:0}
+
 (function envLoop(){requestAnimationFrame(envLoop);try{if(carG.visible&&carG.userData.envTick)carG.userData.envTick()}catch(e){}})();
 let lt=performance.now();(function loop(){requestAnimationFrame(loop);GU.o.value=gpr;GU.a.value=1-NM.v;GU.d.value=1-.4*(1-NM.v);GL.intensity=(1-NM.v)*(1.6+1.0*gpr);const nw=performance.now();const dtf=Math.min((nw-lt)/1000,.1);arrowTick(dtf);if((wNext-=dtf)<0){wNext=.15;windTick()}mmTick();nightTick(nw/1000);skyTick(dtf);rainTick(dtf);planeTick(dtf);SS.tick(dtf);treeTick(nw/1000);trainTick(nw/1000);cycTick(nw/1000);cowlTick(nw/1000);tapTick(dtf);wtTick(dtf);ballTick(dtf);stoveTick(dtf);animTick(dtf);hoodTick(dtf);if(etg!==sE){sE=etg;if(epr!==etg)woodSnd(etg,4)}if(gtg!==sG){sG=gtg;garSnd(gtg)}if(gt2!==sT){sT=gt2;sfx('gate')}for(const k in SLD){const sl=SLD[k];if(sl.tg!==sl.lt){if(sl.lt!==undefined)slideSnd(sl.tg);sl.lt=sl.tg}}
 if(tour&&!scrub){if(!tPause)tourTick(dtf);if(tw){const q=tw;skE.value=Math.round(1000*(q.ph==='o'?.12*Math.min(q.t,38)/38:q.ph==='f'?.12+.02*Math.min(1,q.t/7):q.ph==='d'?.14+.02*Math.min(1,q.t/10):q.ph==='w'?.16+.81*q.s/tp.L:.97+.03*Math.min(1,q.t/10)))}}{const de=etg-epr;epr+=Math.sign(de)*Math.min(Math.abs(de),dtf/4);if(eD)eD.rotation.y=1.5*epr*epr*(3-2*epr);for(const q of SQ){const st=q.st[q.i];if(!st){q.done=1;continue}if(st[0]==='w'){q.w+=dtf;if(q.w>=st[1]){q.w=0;q.i++}}else{const sl=SLD[q.k+(st[2]||'')];if(!sl){q.done=1;continue}sl.tg=st[1];if(st[0]==='tp')q.i++;else if(Math.abs(sl.p-sl.tg)<.002)q.i++}}SQ=SQ.filter(q=>!q.done);for(const k in SLD){const sl=SLD[k],dd=sl.tg-sl.p;sl.p+=Math.sign(dd)*Math.min(Math.abs(dd),dtf/3);const e1=Math.min(1,sl.p),e2=Math.max(0,sl.p-1);sl.g.position[sl.ax]=sl.b0+sl.d*(e1*e1*(3-2*e1)+e2*e2*(3-2*e2))}const d=gtg-gpr;gpr+=Math.sign(d)*Math.min(Math.abs(d),dtf/3.5);if(gD){if(!gD.userData.cp){const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),2.08),cm=m=>{const c=m.clone();c.clippingPlanes=[pl];return c};ren.localClippingEnabled=true;gD.material=Array.isArray(gD.material)?gD.material.map(cm):cm(gD.material);gD.children.forEach(ch=>{if(ch.material)ch.material=cm(ch.material)});gD.userData.cp=1;gD.userData.y0=gD.position.y}
 gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-gp2;gp2+=Math.sign(d2)*Math.min(Math.abs(d2),dtf/3);if(gateG)gateG.rotation.y=Math.PI/2*gp2*.95}lt=nw;const k=.12;if(GM){V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph}else{V.t.lerp(G.t,k);V.r+=(G.r-V.r)*k;V.th+=(G.th-V.th)*k;V.ph+=(G.ph-V.ph)*k;}
  LIFT=!walk&&!GM&&!window.SKYV&&V.r>2.5&&(!tour||!!(tw&&tw.ph==='o'&&tw.t>=16));let cph=V.ph;
  if(LIFT){const lt_=V.ph-clearPh(V.t,V.r,V.th,V.ph);if(LPH==null)LPH=lt_;LPH+=(lt_-LPH)*Math.min(1,dtf*(lt_>LPH?9:2.5));cph=Math.max(.12,V.ph-Math.max(0,LPH))}else LPH=null;
- cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=terr(cam.position.x,cam.position.z)+.3;if(cam.position.y<gy)cam.position.y=gy}cam.lookAt(V.t);ren.render(scene,cam)})();
+ try{selfTick(dtf)}catch(e){};cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=terr(cam.position.x,cam.position.z)+.3;if(cam.position.y<gy)cam.position.y=gy}cam.lookAt(V.t);ren.render(scene,cam)})();
 
 // mobile: always lay out in landscape. Portrait phones get the page turned a quarter turn (CSS), so the user rotates the phone to read it.
 // innerWidth/innerHeight, pointer coordinates and bounding rects are mapped into the turned page so all controls keep working.
@@ -3173,7 +3250,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  const AD=(a,b)=>{const T=Math.PI*2;return((a-b+Math.PI)%T+T)%T-Math.PI};
  const bike=v=>(window.BKS||[]).find(b=>b.id===v);
  const pname=id=>{const p=MP.peers.get(id);return p&&p.name?p.name:'Someone'};
- MP.col=()=>ME.col;
+ MP.col=()=>ME.col;MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
 
  // ---------- transport: Trystero (nostr relays) on the web; a BroadcastChannel stand-in for local testing (?mptest=1)
  async function connect(code){
@@ -3202,7 +3279,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   add(new THREE.SphereGeometry(.19,14,10),mSh,0,1.2,0).scale.set(1,.45,.72);add(new THREE.CylinderGeometry(.05,.05,.08,10),mSk,0,1.29,0);
   add(new THREE.SphereGeometry(.12,16,12),mSk,0,1.42,0);{const h=add(new THREE.SphereGeometry(.125,16,12,0,Math.PI*2,0,Math.PI*.55),mHr,0,1.44,-.01);h.scale.set(1,1,1.04)}
   [-1,1].forEach(s=>add(new THREE.SphereGeometry(.014,8,6),Mt(0x1b1b1b),s*.042,1.44,.11));
-  g.visible=false;scene.add(g);P.av={g,L,A,mSh,ph:0};
+  g.traverse(o=>{o.raycast=()=>{}});g.visible=false;scene.add(g);P.av={g,L,A,mSh,ph:0,wv:0,jy:0};
   const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(P.name,P.col),transparent:true,depthTest:false,depthWrite:false,fog:false}));tag.scale.set(1.25,.27,1);tag.renderOrder=20;tag.visible=false;scene.add(tag);P.tag=tag;P.tagKey=P.name+'|'+P.col}
  function freshen(P){if(!P.av)mkAvatar(P);const k=P.name+'|'+P.col;if(k!==P.tagKey){P.tagKey=k;P.tag.material.map.dispose();P.tag.material.map=tagTex(P.name,P.col);P.av.mSh.color.setHex(P.col);const b=bike(P.mode);if(b&&MP.own[P.mode]&&MP.own[P.mode].id===P.id)b.tint(P.col)}}
  function dropAvatar(P){if(P.av){scene.remove(P.av.g);P.av=null}if(P.tag){scene.remove(P.tag);P.tag.material.map.dispose();P.tag=null}}
@@ -3268,19 +3345,20 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   case 'mode':setModeRx(d.m);break;
   case 'snap':applySnap(d,from);break;
   case 'req':ev(snap(true),from);break;
-  case 'hey':P.jt=d.jt;break}}
+  case 'hey':P.jt=d.jt;break;
+  case 'fx':if(d.k==='bell'){bellSnd();if(P.name)showCap('\u{1F514} '+P.name+' rang their bell',1500)}break}}
  function peer(id){let P=MP.peers.get(id);if(!P){P={id,name:'',col:0x888888,mode:'x',modeT:now(),last:now(),tp:null,vs:null,jt:0,ax:0,az:0,ay:0,ath:0,init:false};MP.peers.set(id,P);ui()}return P}
  function onSt(d,from){const P=peer(from);P.last=now();const nm=String(d.n||'Guest').slice(0,20);if(P.name!==nm||P.col!==d.c){const first=!P.name;P.name=nm;P.col=d.c|0;freshen(P);if(first)showCap(P.name+' joined',2500);ui()}
   if(P.mode!==d.m){const old=P.mode;P.mode=d.m;P.modeT=now();ui();if(VEH.includes(old)&&MP.own[old]&&MP.own[old].id===from&&!d.m.startsWith('bike')&&d.m!=='trike'){/* the drop message normally follows; if it was lost the watchdog parks it */}}
   if(VEH.includes(d.m)){P.vs=d.v;claim(d.m,from,d.ct||0)}
-  if(d.m==='w'&&d.p)P.tp=d.p}
+  if(d.m==='w'&&d.p)P.tp=d.p;P.jy=+d.j||0;P.em=d.e|0;P.run=d.r|0}
  function onJoin(id){peer(id);ev(snap(false),id);ev({t:'hey',jt:MP.jt},id)}
  function onLeave(id){const P=MP.peers.get(id);if(!P)return;VEH.forEach(v=>{if(MP.own[v]&&MP.own[v].id===id)release(v)});dropAvatar(P);MP.peers.delete(id);if(P.name)showCap(P.name+' left',2500);ui()}
 
  // ---------- my state, ten times a second
  setInterval(()=>{if(!MP.on||!MP.T)return;let m='x',p=null,v=null;
   if(walk&&!tour){const r=riding();if(r==='trike'){m=r;v=tkSer()}else if(r&&bike(r)){m=r;v=bike(r).ser()}else if(!GM){m='w';p=[+V.t.x.toFixed(3),+V.t.y.toFixed(3),+V.t.z.toFixed(3),+V.th.toFixed(3)]}}
-  try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,m,p,v,ct:MP.ct[m]||0})}catch(e){}
+  try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
   doorWatch()},100);
 
  // ---------- every frame: move the other players, their rides and their name tags
@@ -3289,8 +3367,8 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   VEH.forEach(v=>{const o=MP.own[v];if(!o||o.id===MP.self)return;const P=MP.peers.get(o.id);if(!P||t-P.last>6000)release(v);else if(P.mode!==v&&t-P.modeT>2500){const s=P.vs;release(v,s?s[0]:undefined,s?s[2]:undefined,s?s[3]:undefined)}});
   MP.peers.forEach(P=>{if(!P.av)return;const av=P.av;let tagAt=null;
    if(P.mode==='w'&&P.tp){const [x,y,z,th]=P.tp,gy=gnd(x,z);if(!P.init){P.ax=x;P.az=z;P.ath=th;P.init=true}const k=Math.min(1,dt*9),ox=P.ax,oz=P.az;P.ax+=(x-P.ax)*k;P.az+=(z-P.az)*k;P.ath+=AD(th,P.ath)*k;
-    const sp=Math.hypot(P.ax-ox,P.az-oz)/Math.max(dt,1e-3);av.ph+=Math.hypot(P.ax-ox,P.az-oz)*5.2;const sw=Math.sin(av.ph)*Math.min(1,sp/1.2)*.55;av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;
-    av.g.visible=true;av.g.position.set(P.ax,Math.min(gy,y-.6),P.az);av.g.rotation.y=Math.atan2(-Math.cos(P.ath),-Math.sin(P.ath));tagAt=[P.ax,av.g.position.y+1.75,P.az]}
+    const sp=Math.hypot(P.ax-ox,P.az-oz)/Math.max(dt,1e-3);av.ph+=Math.hypot(P.ax-ox,P.az-oz)*5.2;const sw=Math.sin(av.ph)*Math.min(1,sp/1.2)*(sp>3.5?.9:.55);av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;av.jy+=((P.jy||0)-av.jy)*Math.min(1,dt*14);if(av.jy>.03){av.L[0].rotation.x=-.5;av.L[1].rotation.x=.3}av.wv=P.em?av.wv+dt:0;av.A[1].rotation.z=P.em?2.6+Math.sin(av.wv*12)*.35:0;if(P.em)av.A[1].rotation.x=0;
+    av.g.visible=true;av.g.position.set(P.ax,Math.min(gy,y-.6)+av.jy,P.az);av.g.rotation.y=Math.atan2(-Math.cos(P.ath),-Math.sin(P.ath));tagAt=[P.ax,av.g.position.y+1.75,P.az]}
    else{av.g.visible=false;P.init=false;const o=MP.own[P.mode];if(o&&o.id===P.id&&P.vs){if(P.mode==='trike'){tkNet(P.vs,dt);tagAt=[TR.x,TR.y+1.1,TR.z]}else{const b=bike(P.mode);if(b){b.net(P.vs,dt);tagAt=[b.x,b.y+1.6,b.z]}}}}
    if(tagAt){P.tag.visible=true;P.tag.position.set(tagAt[0],tagAt[1],tagAt[2]);const d=cam.position.distanceTo(P.tag.position),s=Math.max(1,d/9);P.tag.scale.set(1.25*s,.27*s,1)}else P.tag.visible=false})})();
 
