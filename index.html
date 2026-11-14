@@ -50,7 +50,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
 #topR button{height:42px;background:var(--panel);border:1px solid var(--bd);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);box-shadow:var(--shadow);padding:0 16px}
 #topR button:hover{background:var(--panel-s)}
 #topR #bWalk,#topR #bSnd,#topR #bGame,#topR #bView,#topR #bFS{width:42px;padding:0;justify-content:center;border-radius:50%}
-#topR svg{display:block;pointer-events:none}
+#topR svg{display:block;pointer-events:none} #topR #bGame,#topR #bTour{display:none!important}   /* game-mode button removed: walk up to a bike or the trike and tap it (or press Use) to ride */
 #topR button.on{background:var(--ac);color:var(--ac-fg);border-color:transparent}
 #topR #bTour{background:linear-gradient(135deg,var(--ac-2),var(--ac));color:var(--ac-fg);border-color:transparent}
 #topR #bTour.on{background:#c62828;color:#fff}
@@ -3433,7 +3433,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
    VEH.forEach(v=>{if(riding()===v){const ts=Date.now();MP.own[v]={id:MP.self,ts};MP.ct[v]=ts}});
    const b=bike(riding());if(b)b.tint(ME.col);
    try{const u=new URL(location.href);u.searchParams.set('room',code);history.replaceState(null,'',u)}catch(e){}
-   showCap('Joined room '+code+'. Share the invite link so others can join',3500)}
+   showCap('Joined room '+code+'. Share the invite link so others can join',3500);pn.classList.remove('show')}
   catch(e){console.error('mp',e);sSt.textContent='Could not connect. Check the internet connection and try again.';MP.on=false}
   bGo.disabled=false;ui()}
  function leave(){if(!MP.on)return;try{MP.T.leave()}catch(e){}MP.T=null;MP.on=false;
