@@ -765,7 +765,12 @@ const trainG=new THREE.Group();let trainTick=()=>{},trainReset=()=>{},trainGo=()
   g:q=>{const k=asg.get(q);return k==null?null:pool[k]},
   live:q=>asg.has(q)&&mel().sec<=q.t1,
   toDayEnd:()=>3.4*3600+86400-mel().sec,
-  skip:sec=>{window.TTOFF=(window.TTOFF||0)+sec}};   /* waiting for a train can be skipped: the timetable clock jumps ahead */
+  skip:sec=>{window.TTOFF=(window.TTOFF||0)+sec},
+  now:()=>mel().sec,
+  /* the next trains at a station in one direction, for the platform boards: stopping trains (arrive, depart, next stop) and express trains passing through */
+  deps:(zs,dir,n)=>{const s=mel().sec,o=[];trips.forEach(q=>{if(q.dir!==dir)return;const P=q.P;for(let i=0;i<P.length;i++){const a=P[i],b=P[i+1];if(a[1]!==zs)continue;
+    if(a[2]&&b&&b[2]&&b[1]===zs){if(b[0]>s){let nx=null;for(let j=i+2;j<P.length;j++)if(P[j][2]&&P[j][1]!==zs){nx=P[j][1];break}o.push({arr:a[0],dep:b[0],stop:true,nx})}}
+    else if(!a[2]&&a[0]>s-2)o.push({arr:a[0],dep:a[0],stop:false});break}});return o.sort((x,y)=>x.arr-y.arr).slice(0,n||3)}};   /* waiting for a train can be skipped: the timetable clock jumps ahead */
  window.TRN=TRN;
 }
 let TS=null,hornT=0;
@@ -1631,6 +1636,47 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=R.ZC+100,PL=
 
  let lv=-1;(function tick(){requestAnimationFrame(tick);const v=NM.v||0;if(Math.abs(v-lv)<.004)return;lv=v;sprM.opacity=.9*v;poolM.opacity=.5*v;mLens.color.setHex(0xc9ced2).lerp(new THREE.Color(0xfff1cc),v)})();
 }catch(e){console.error('station',e)}},0);
+// ---- next-train information boards: one on each platform at Tarneit and West Tarneit, hanging between two black posts a little past the entrance.
+//      Platform 1 (house side) shows the up trains to Southern Cross, Platform 2 (main-road side) the down trains to Geelong. Amber LED-style text on black,
+//      double-sided so it reads from either end of the platform: the next train's time, destination and minutes to go (Arriving / Now boarding with a
+//      door countdown), its next stop, and the two trains after it. Express trains that run through without stopping are shown too. Runs off the same
+//      Melbourne-clock timetable as the trains themselves, so skipping a wait moves the boards along with it.
+setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,PT=1.1,W=512,H=256,FN='px Arial,Helvetica,sans-serif',AMB='#ffb400',STNM={'300':'Tarneit','-300':'West Tarneit'};
+ const mPo=new THREE.MeshStandardMaterial({color:0x1d1f22,roughness:.5,metalness:.5}),boards=[];
+ const hm=s=>{s=((Math.floor(s)%86400)+86400)%86400;return Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')};
+ const fit=(c,t,px,max)=>{let f=px;c.font='bold '+f+FN;while(f>12&&c.measureText(t).width>max){f--;c.font='bold '+f+FN}};
+ [[R.ZC+100,300],[-R.ZC-100,-300]].forEach(([ZS,zs])=>[1,-1].forEach(s=>{
+  const cn=document.createElement('canvas');cn.width=W;cn.height=H;const tx=new THREE.CanvasTexture(cn);tx.encoding=THREE.sRGBEncoding;tx.anisotropy=8;
+  const mB=new THREE.MeshBasicMaterial({map:tx}),g=new THREE.Group();g.position.set(RX+3.525*s,PT,ZS+12);scene.add(g);
+  const bx=(w,h,d,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mPo);o.position.set(x,y,z);o.castShadow=true;g.add(o)};
+  [-1,1].forEach(x=>bx(.09,3.35,.09,x,1.675,0));bx(2.12,.08,.12,0,3.32,0);bx(1.96,1.02,.1,0,2.62,0);   // posts, top bar and the board's housing
+  [1,-1].forEach(f=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.86,.93),mB);p.position.set(0,2.62,f*.052);if(f<0)p.rotation.y=Math.PI;g.add(p)});
+  boards.push({c:cn,t:tx,zs,dir:s>0?1:-1,pl:s>0?'Platform 1':'Platform 2',dest:s>0?'Southern Cross':'Geelong',beyond:s>0?'Sunshine':'Wyndham Vale',key:''})}));
+ const draw=(b,blink)=>{const T=window.TRN,c=b.c.getContext('2d'),now=T&&T.now?T.now():null,L=now==null?[]:T.deps(b.zs,b.dir,3);
+  // only repaint when something on the board has changed
+  const key=(now==null?'':hm(now))+'|'+L.map(e=>e.arr+':'+(e.stop&&now>=e.arr?'n'+Math.ceil(e.dep-now):e.arr-now<=60?'a':Math.ceil((e.arr-now)/60))).join(',')+'|'+(L[0]&&L[0].stop&&now>=L[0].arr?blink:'');
+  if(key===b.key)return;b.key=key;
+  c.fillStyle='#050607';c.fillRect(0,0,W,H);c.fillStyle='#1c2229';c.fillRect(0,0,W,46);c.textBaseline='middle';
+  c.fillStyle='#ffffff';c.textAlign='left';c.font='bold 26'+FN;c.fillText(b.pl,14,24);c.textAlign='right';c.fillText(now==null?'--:--':hm(now),W-14,24);
+  c.textAlign='center';c.font='18'+FN;c.fillStyle='#9aa6b2';c.fillText(STNM[b.zs],W/2,24);
+  if(!L.length){c.fillStyle=AMB;c.textAlign='center';c.font='bold 30'+FN;c.fillText(now==null?'Information unavailable':'No more trains tonight',W/2,110);
+   c.font='20'+FN;c.fillStyle='#c98e00';c.fillText('Services resume in the morning',W/2,150);b.t.needsUpdate=true;return}
+  const st=e=>{const w=e.arr-now;if(e.stop&&now>=e.arr)return['Now','#3ddc84'];if(w<=60)return[e.stop?'Arriving':'Passing',AMB];return[Math.ceil(w/60)+' min',AMB]};
+  const e=L[0],[s0,c0]=st(e);
+  c.textAlign='left';c.fillStyle=AMB;c.font='bold 34'+FN;c.fillText(hm(e.stop?e.dep:e.arr),14,88);
+  c.textAlign='right';c.font='bold 34'+FN;const sw=c.measureText(s0).width;if(!(s0==='Now'&&blink)){c.fillStyle=c0;c.fillText(s0,W-14,88)}
+  c.textAlign='left';c.fillStyle=AMB;const dn=e.stop?b.dest:'Express';fit(c,dn,34,W-14-sw-18-118);c.fillText(dn,118,88);
+  c.font='20'+FN;c.fillStyle=e.stop?'#e0a000':'#ff7a45';
+  let sub;if(!e.stop)sub='Not stopping here – stand clear of the platform edge';
+  else{sub=e.nx==null&&b.dir>0?'Stops: Sunshine, Footscray, Southern Cross':'Next stop: '+(e.nx!=null?STNM[e.nx]:b.beyond);if(now>=e.arr){const d=Math.max(0,Math.ceil(e.dep-now));sub='Now boarding – doors close in '+Math.floor(d/60)+':'+String(d%60).padStart(2,'0')}}
+  fit(c,sub,20,W-28);c.font=c.font.replace('bold ','');c.fillText(sub,14,132);
+  c.fillStyle='#2a2f35';c.fillRect(10,156,W-20,2);
+  L.slice(1).forEach((f,i)=>{const y=186+i*40,[sf]=st(f);c.fillStyle='#d99a00';c.textAlign='left';c.font='bold 24'+FN;c.fillText(hm(f.stop?f.dep:f.arr),14,y);
+   c.textAlign='right';c.fillText(sf,W-14,y);const w2=c.measureText(sf).width;c.textAlign='left';const d2=f.stop?b.dest:'Express – not stopping';fit(c,d2,24,W-14-w2-18-100);c.fillText(d2,100,y)});
+  if(L.length<2){c.fillStyle='#8a6a20';c.textAlign='left';c.font='20'+FN;c.fillText('Last train tonight',14,186)}
+  b.t.needsUpdate=true};
+ let bl=false;const tick=()=>{bl=!bl;boards.forEach(b=>draw(b,bl))};tick();setInterval(tick,700);
+}catch(e){console.error('platform boards',e)}},0);
 // ---- shared footpath on the house side of the railway: from the foot of the Kmart-side bridge ramp, north along the line (under the Woolworths-side bridge, through a short lit tunnel)
 //      to the east entrance of West Tarneit station. Walkers, the kid's bike and the trike can all use it (it is added to the ride network below).
 setTimeout(()=>{try{const R=window.RDN;if(!R)return;const ZC=R.ZC,XP=-40.15,HW=2.5,ZSP=ZC-5.2,ZS=-ZC-100;
