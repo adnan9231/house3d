@@ -866,19 +866,47 @@ const busG=new THREE.Group();
   pr(.5,.13,.5,.05,mSe,-.55,1.08,2.3);pr(.5,.42,.09,.04,mSe,-.55,1.33,2.02);
   const wg=new THREE.Group();wg.position.set(-.55,1.5,2.8);wg.rotation.x=-1.0;busG.add(wg);const sw=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,24),mBk);wg.add(sw);
   [0,2.1,4.2].forEach(a=>{const k=new THREE.Mesh(new THREE.BoxGeometry(.19,.03,.02),mBk);k.position.set(Math.cos(a)*.095,Math.sin(a)*.095,0);k.rotation.z=a;sw.add(k)});busG.userData.wheel=sw;   /* spokes, so you can see it turn */
-  // the driver: a grown-up in a light-blue uniform shirt and navy trousers, sitting on the right with both hands on the wheel
+  // the driver: a grown-up in a light-blue uniform shirt and navy trousers, sitting on the right. The upper body sways with the bus
+  // (pushed outward in turns, back when pulling away, forward when braking), the head looks into the turn, and both hands stay on
+  // the rim of the wheel as it turns: the arms bend at the elbows to follow them.
   {const mSk=M({color:0xc99a78,roughness:.75}),mSt=M({color:0x8fb4d9,roughness:.8}),mTr=M({color:0x1f2a44,roughness:.85}),mHr=M({color:0x2b2420,roughness:.9}),mSo=M({color:0x111111,roughness:.6});
-   const V3=(x,y,z)=>new THREE.Vector3(x,y,z),lim=(a,b,r,m)=>{const d=b.clone().sub(a),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.9,d.length(),10),m);o.position.copy(a).add(b).multiplyScalar(.5);o.quaternion.setFromUnitVectors(V3(0,1,0),d.normalize());o.castShadow=true;busG.add(o);return o};
-   const ball=(r,m,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m);o.position.set(x,y,z);o.scale.set(sx||1,sy||1,sz||1);busG.add(o);return o};
-   const X=-.55;
+   const V3=(x,y,z)=>new THREE.Vector3(x,y,z),UP=V3(0,1,0);
+   const lim=(a,b,r,m,par)=>{const d=b.clone().sub(a),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.9,d.length(),10),m);o.position.copy(a).add(b).multiplyScalar(.5);o.quaternion.setFromUnitVectors(UP,d.normalize());o.castShadow=true;(par||busG).add(o);return o};
+   const ball=(r,m,x,y,z,sx,sy,sz,par)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m);o.position.set(x,y,z);o.scale.set(sx||1,sy||1,sz||1);(par||busG).add(o);return o};
+   const X=-.55,HP=V3(X,1.24,2.22);
    ball(.17,mTr,X,1.26,2.24,1,.6,1);                                  // hips on the seat
-   lim(V3(X,1.24,2.2),V3(X,1.74,2.16),.17,mSt);ball(.18,mSt,X,1.73,2.16,1.15,.55,.9);   // torso and shoulders
-   lim(V3(X,1.8,2.17),V3(X,1.88,2.18),.05,mSk);ball(.115,mSk,X,1.99,2.2,.95,1.08,1);   // neck and head
-   ball(.118,mHr,X,2.03,2.17,1,.85,1.02);
    [-1,1].forEach(s=>{const hx=X+s*.1;
     lim(V3(hx,1.24,2.26),V3(hx,1.22,2.7),.07,mTr);lim(V3(hx,1.22,2.7),V3(hx,.7,2.78),.055,mTr);   // thighs forward, shins down to the floor
-    const sh=new THREE.Mesh(new THREE.BoxGeometry(.1,.08,.25),mSo);sh.position.set(hx,.68,2.86);busG.add(sh);
-    const sx=X+s*.21,hd=V3(X+s*.17,1.53,2.72);lim(V3(sx,1.7,2.17),V3(sx,1.46,2.42),.05,mSt);lim(V3(sx,1.46,2.42),hd,.04,mSk);ball(.045,mSk,hd.x,hd.y,hd.z)})}
+    const sh=new THREE.Mesh(rbox(.1,.08,.25,.035),mSo);sh.position.set(hx,.68,2.86);busG.add(sh)});
+   const up=new THREE.Group();up.position.copy(HP);up.rotation.order='ZXY';busG.add(up);   // upper body, pivoting at the hips
+   const L=(x,y,z)=>V3(x-HP.x,y-HP.y,z-HP.z);
+   {const t=new THREE.Mesh(new THREE.CylinderGeometry(.205,.16,.5,18),mSt);t.position.set(0,1.47-HP.y,2.18-HP.z);t.scale.z=.7;t.castShadow=true;up.add(t)}   // torso: broad chest tapering to the waist
+   ball(.205,mSt,0,1.69-HP.y,2.175-HP.z,1.28,.4,.72,up);                     // shoulder line across the top of the chest
+   [-1,1].forEach(s=>{ball(.075,mSt,s*.21,1.675-HP.y,2.175-HP.z,1.05,1.12,1.05,up);   // rounded shoulder caps, where the arms join
+    ball(.06,mSt,s*.11,1.73-HP.y,2.17-HP.z,1.6,.55,.9,up)});                // slope from the neck to each shoulder
+   {const c=new THREE.Mesh(new THREE.CylinderGeometry(.062,.07,.03,14),mSt);c.position.set(0,1.79-HP.y,2.18-HP.z);up.add(c)}   // shirt collar
+   lim(L(X,1.8,2.17),L(X,1.88,2.18),.05,mSk,up);
+   const hd=new THREE.Group();hd.position.copy(L(X,1.86,2.18));up.add(hd);ball(.115,mSk,0,.13,.02,.95,1.08,1,hd);ball(.118,mHr,0,.17,-.01,1,.85,1.02,hd);
+   [-1,1].forEach(s=>ball(.014,M({color:0x1d1a18}),s*.04,.15,.125,1,1,.6,hd));
+   // arms: upper arm and forearm as unit cylinders, re-aimed every frame from the shoulder to the hand on the wheel rim
+   const unit=(r,m)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.9,1,10),m);o.castShadow=true;busG.add(o);return o};
+   const ARM=[-1,1].map(s=>({s,sh:L(X+s*.21,1.67,2.175),u:unit(.05,mSt),f:unit(.04,mSk),e:ball(.045,mSt,0,0,0),h:ball(.045,mSk,0,0,0)}));
+   const L1=.3,L2=.35,_s=V3(0,0,0),_h=V3(0,0,0),_d=V3(0,0,0),_p=V3(0,0,0),_e=V3(0,0,0),_q=V3(0,0,0);
+   const aim=(o,a,b)=>{_q.copy(b).sub(a);const l=_q.length();o.position.copy(a).add(b).multiplyScalar(.5);o.scale.set(1,l,1);o.quaternion.setFromUnitVectors(UP,_q.normalize())};
+   const cw=Math.cos(1.0),sw_=Math.sin(1.0);
+   busG.userData.pose=(dt,yr,acc)=>{   /* yr: turning rate (rad/s, + = left), acc: m/s² */
+    const lean=Math.max(-.16,Math.min(.16,yr*.12)),pitch=Math.max(-.12,Math.min(.12,-acc*.035));
+    up.rotation.z+=(lean-up.rotation.z)*Math.min(1,dt*5);up.rotation.x+=(pitch-up.rotation.x)*Math.min(1,dt*5);
+    hd.rotation.y+=(Math.max(-.5,Math.min(.5,yr*.6))-hd.rotation.y)*Math.min(1,dt*3);hd.rotation.z=-up.rotation.z*.6;
+    up.updateMatrix();const wl=busG.userData.wheel,th=wl?wl.rotation.z:0;
+    ARM.forEach(A=>{_s.copy(A.sh).applyMatrix4(up.matrix);
+     const a=(A.s<0?Math.PI:0)+th,rx=.19*Math.cos(a),ry=.19*Math.sin(a);_h.set(-.55+rx,1.5+ry*cw,2.8-ry*sw_);   /* the hand on the rim (wheel tilted back 1 rad) */
+     _d.copy(_h).sub(_s);let d=_d.length();const dm=(L1+L2)*.98;if(d>dm){_h.copy(_s).addScaledVector(_d,dm/d);d=dm}_d.normalize();
+     const ax=(L1*L1-L2*L2+d*d)/(2*d),hh=Math.sqrt(Math.max(0,L1*L1-ax*ax));
+     _p.set(A.s*.6,-1,0);_p.addScaledVector(_d,-_p.dot(_d)).normalize();   /* elbows bend down and out */
+     _e.copy(_s).addScaledVector(_d,ax).addScaledVector(_p,hh);
+     aim(A.u,_s,_e);aim(A.f,_e,_h);A.e.position.copy(_e);A.h.position.copy(_h)})};
+   busG.userData.pose(1,0,0)}
   [-1,1].forEach(s=>p(.03,.03,6,mRl,s*.8,2.32,-.3))}   // grab rails along the ceiling
  busG.userData.glass=mGl;busG.visible=false;scene.add(busG);
  busG.rotation.order='YXZ';window.BUSW=WH}
@@ -1209,7 +1237,15 @@ setTimeout(()=>{try{
   const sx=29.7,sz0=ZH-1.6,sz1=ZH+2.6;[sz0,sz1].forEach(z=>[sx-.75,sx+.6].forEach(x=>box(.07,2.4,.07,mPo,x,-.18+1.2,z)));
   box(1.6,.06,sz1-sz0+.4,mGs,sx-.05,-.18+2.42,(sz0+sz1)/2);box(.03,1.9,sz1-sz0,mGs,sx+.6,-.18+1.3,(sz0+sz1)/2);
   [sz0,sz1].forEach(z=>box(1.2,1.9,.03,mGs,sx,-.18+1.3,z));box(.4,.06,sz1-sz0-.4,mBn,sx+.3,-.18+.48,(sz0+sz1)/2);
-  sign(26.7,ZH+5.5,Math.PI/2);
+  {const tT=cv(256,384,c=>{c.fillStyle='#f7f7f4';c.fillRect(0,0,256,384);c.fillStyle='#e8701a';c.fillRect(0,0,256,150);
+    c.fillStyle='#fff';c.fillRect(48,28,160,82);c.fillStyle='#e8701a';c.fillRect(58,38,140,36);[[74,92],[182,92]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,13,0,7);c.fillStyle='#1d2a3a';c.fill()});   /* bus pictogram */
+    c.fillStyle='#fff';c.fillRect(64,44,26,24);c.fillRect(98,44,26,24);c.fillRect(132,44,26,24);c.fillRect(166,44,26,24);
+    c.fillStyle='#1d2a3a';c.font='bold 74px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('BUS',128,222);c.fillText('STOP',128,300);
+    c.font='bold 21px Arial,Helvetica,sans-serif';c.fillStyle='#e8701a';c.fillText('Tarneit · West Tarneit',128,354)});tT.wrapS=tT.wrapT=THREE.ClampToEdgeWrapping;
+   const fM=new THREE.MeshBasicMaterial({map:tT}),eM=M({color:0x3a3f45,metalness:.4,roughness:.5}),TX=27.6,TZ=ZH+5.5;
+   box(.14,3.6,.14,mPo,TX,-.18+1.8,TZ);
+   const tb=new THREE.Mesh(rbox(.9,1.35,.9,.06,2),[fM,fM,eM,eM,fM,fM]);tb.position.set(TX,-.18+3.0,TZ);tb.castShadow=true;scene.add(tb);
+   box(1.0,.08,1.0,eM,TX,-.18+3.72,TZ);box(1.0,.06,1.0,eM,TX,-.18+2.29,TZ)}   // cap and base trim
   [ZT,ZW].forEach(zs=>sign(-70.8,zs+7.6,-Math.PI/2))}
  // traffic waits for the girl on her bike: a lane holds still while she is just ahead of one of its vehicles, and the minibus pauses the same way
  const rider=()=>{const b=GM;return b&&(b===window.BKM||b===window.CARK)?b:null},ahead=(px,pz,fx,fz,b,len)=>{const dx=b.x-px,dz=b.z-pz,a=dx*fx+dz*fz,l=Math.abs(-dx*fz+dz*fx);return a>0&&a<len&&l<1.7};
@@ -1239,7 +1275,8 @@ setTimeout(()=>{try{
      BW.forEach(w=>w.rotation.x+=dt*BS.v/.34)}else BS.v=0}
    else BS.v=0;
    const i=idxAt(BS.d),A=BR[i],B=BR[(i+1)%NB],f=(BS.d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]);
-   bus.position.lerpVectors(A,B,f);const C=BR[(i+NB-2)%NB],D=BR[(i+3)%NB],dx=D.x-C.x,dz=D.z-C.z,dy=D.y-C.y;{const ny=Math.atan2(dx,dz);let dyw=ny-bus.rotation.y;while(dyw>Math.PI)dyw-=2*Math.PI;while(dyw<-Math.PI)dyw+=2*Math.PI;const wl=bus.userData.wheel;if(wl&&dt>0){const tg=Math.max(-2.6,Math.min(2.6,dyw/dt*-3));wl.rotation.z+=(tg-wl.rotation.z)*Math.min(1,dt*4)}bus.rotation.y=ny}bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz))}})(0)
+   bus.position.lerpVectors(A,B,f);const C=BR[(i+NB-2)%NB],D=BR[(i+3)%NB],dx=D.x-C.x,dz=D.z-C.z,dy=D.y-C.y;{const ny=Math.atan2(dx,dz);let dyw=ny-bus.rotation.y;while(dyw>Math.PI)dyw-=2*Math.PI;while(dyw<-Math.PI)dyw+=2*Math.PI;const wl=bus.userData.wheel;if(wl&&dt>0){const tg=Math.max(-2.6,Math.min(2.6,dyw/dt*-3));wl.rotation.z+=(tg-wl.rotation.z)*Math.min(1,dt*4)}bus.rotation.y=ny;
+    if(dt>0){const u=bus.userData;u.yr=(u.yr||0)+(dyw/dt-(u.yr||0))*Math.min(1,dt*4);u.acc=(u.acc||0)+((BS.v-(u.pv||0))/dt-(u.acc||0))*Math.min(1,dt*3);u.pv=BS.v;if(u.pose)u.pose(dt,u.yr,u.acc)}}   /* how hard it is turning and speeding up or braking: the driver and passengers sway with it */bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz))}})(0)
 }catch(e){console.error('roads',e)}},0);
 // ---- kids' 20-inch bike: parked in the garage; click it to ride as a 7-year-old girl. She can ride the street, over both bridges, along the main road and into the store car parks.
 function mkBikeF(BC){try{
@@ -3458,14 +3495,16 @@ function busPos(){const B=window.BUS,g=B&&B.g,av=SELF.av;if(!g||!av){rtCancel();
  const ry=g.rotation.y;let d=ry-RT.ry;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;RT.ry=ry;G.th-=d;V.th-=d;   /* turn with the bus */
  g.updateMatrixWorld(true);
  // walk the avatar along its path in the bus's own frame (getting on or off), then sit or step off
- if(RT.ph!=='ride'){const P=RT.P;
+ if(RT.ph!=='ride'){const P=RT.P;av.g.rotation.x=0;av.g.rotation.z=0;
   if(RT.ph==='exit'&&RT.sit>0){RT.sit=Math.max(0,RT.sit-dt*2);av.g.position.lerpVectors(P[0],BSEAT,RT.sit);busAvPose(av,false,RT.sit,dt)}
   else if(RT.seg<P.length-1){const a=P[RT.seg],b=P[RT.seg+1],L=Math.max(.01,a.distanceTo(b));RT.f+=dt*1.25/L;
    if(RT.f>=1){RT.f=0;RT.seg++}const f=Math.min(1,RT.f);av.g.position.lerpVectors(a,b,f);const yw=Math.atan2(b.x-a.x,b.z-a.z);let dy=yw-RT.yaw;while(dy>Math.PI)dy-=2*Math.PI;while(dy<-Math.PI)dy+=2*Math.PI;RT.yaw+=dy*Math.min(1,dt*10);av.g.rotation.y=RT.yaw;busAvPose(av,true,0,dt)}
   else if(RT.ph==='enter'){RT.sit=Math.min(1,RT.sit+dt*1.8);const e=P[P.length-1];av.g.position.lerpVectors(e,BSEAT,RT.sit);let dy=0-RT.yaw;while(dy>Math.PI)dy-=2*Math.PI;while(dy<-Math.PI)dy+=2*Math.PI;RT.yaw+=dy*Math.min(1,dt*8);av.g.rotation.y=RT.yaw;busAvPose(av,false,RT.sit,dt);
    if(RT.sit>=1){RT.ph='ride';av.g.rotation.y=RT.yaw=0;const n=B.nextStop();showCap('Sitting down. Next stop: '+(n>=0?B.stops[n].n:'')+'. View (V) follows the bus from outside',4000)}}
   else{busAlight(RT.k);return}}
- else{av.g.position.copy(BSEAT);av.g.rotation.set(0,0,0);busAvPose(av,false,1,dt)}
+ else{const u=g.userData,ln=Math.max(-.2,Math.min(.2,(u.yr||0)*.15)),pt=Math.max(-.14,Math.min(.14,-(u.acc||0)*.04));   /* pushed outward in turns, back when the bus pulls away, forward when it brakes */
+  RT.sl=(RT.sl||0)+(ln-(RT.sl||0))*Math.min(1,dt*5);RT.sp=(RT.sp||0)+(pt-(RT.sp||0))*Math.min(1,dt*5);
+  av.g.rotation.set(RT.sp,0,RT.sl,'ZXY');_bq.setFromEuler(av.g.rotation);_bv.set(0,.6,0).applyQuaternion(_bq);av.g.position.copy(BSEAT).add(new THREE.Vector3(0,.6,0)).sub(_bv);busAvPose(av,false,1,dt)}
  // camera: follow the avatar while walking; just behind and above the seat while riding; or the whole bus from outside
  if(RT.view==='out'){G.t.copy(g.localToWorld(_rtv.set(0,2.4,0)));G.r=16;G.ph=1.2}
  else{const p=av.g.position,inside=Math.abs(p.x)<1.05||RT.ph==='ride';
@@ -3479,7 +3518,7 @@ function busOff(){const B=window.BUS,k=B?B.at():-1;if(RT.ph!=='ride')return;
   RT.ph='exit';RT.k=k;RT.sit=1;RT.seg=0;RT.f=0;RT.P=busAvPath([[.55,.62,1.05],[.1,.62,1.05],[.1,.62,1.7],[.75,.62,2.45],[1.8,0,2.45],[sp.x,0,sp.z]]);RT.yaw=0;
   showCap('Getting off at '+t.w,2000);return}
  const n=B?B.nextStop():-1;showCap('Wait until the bus stops'+(n>=0?' at '+B.stops[n].n:''),2000)}
-function busAvFree(){const av=SELF.av;if(av&&av.g.parent!==scene){scene.add(av.g);av.g.rotation.set(0,0,0)}busGlass(false)}
+function busAvFree(){const av=SELF.av;if(av&&av.g.parent!==scene){scene.add(av.g);av.g.rotation.set(0,0,0,'XYZ')}busGlass(false)}
 function busAlight(k){const t=window.BUS.stops[k];RT={on:false};busAvFree();
  G.t.set(t.ax,1.12+_wbr(t.ax,t.az),t.az);V.t.copy(G.t);G.th=V.th=t.th;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62);
  showCap('Welcome to '+t.w,3000)}
