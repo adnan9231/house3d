@@ -2031,7 +2031,7 @@ $('bPanel').onclick=e=>{const u=$('ui'),h=u.style.display==='none';u.style.displ
 let capT;function showCap(t,ms){cap.textContent=t;cap.style.opacity=1;clearTimeout(capT);if(ms)capT=setTimeout(()=>cap.style.opacity=0,ms)}
 const cap=$('cap');
 function sync(){const b=(id,v)=>$(id).classList.toggle('on',v);b('bLab',labels.visible);b('bRoof',roof.visible);$('bRoof').textContent='Roof: '+(roof.visible?'on':'off')}
-function stepFwd(n){for(let i=0;i<Math.min(n,6);i++)setTimeout(()=>foot(G.t.x,G.t.z),i*320);const w=walk,st=w?1.2:Math.max(1.2,G.r*.08),d=n*st;const gnd=(x,z)=>{const R=window.RDN;return w&&R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5?Math.max(0,R.yAt(x)+.18):0},g0=gnd(G.t.x,G.t.z);G.t.x=Math.min(60,Math.max(-240,G.t.x-Math.cos(G.th)*d));G.t.z=Math.min(330,Math.max(-330,G.t.z-Math.sin(G.th)*d));G.t.y+=gnd(G.t.x,G.t.z)-g0}   /* walking forward reaches the whole area, including both shopping centres */
+function stepFwd(n){for(let i=0;i<Math.min(n,6);i++)setTimeout(()=>foot(G.t.x,G.t.z),i*320);const w=walk,st=w?1.2:Math.max(1.2,G.r*.08),d=n*st;const gnd=(x,z)=>{const R=window.RDN;return w&&R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5?Math.max(0,R.yAt(x)+.18):0},g0=gnd(G.t.x,G.t.z);G.t.x=Math.min(60,Math.max(-240,G.t.x-Math.cos(G.th)*d));G.t.z=Math.min(380,Math.max(-380,G.t.z-Math.sin(G.th)*d));G.t.y+=gnd(G.t.x,G.t.z)-g0}   /* walking forward reaches the whole area, including both shopping centres */
 let dn=null,hi;const nSteps=t=>Math.min(8,1+Math.floor(t/350));
 let lastTp=null,tPause=false,tpT=0;const togglePause=()=>{if(!tour)return;tPause=!tPause;showCap(tPause?'❚❚ Paused':'▶ Playing',900)};
 addEventListener('keydown',e=>{if(tour&&(e.code==='Space'||e.key===' ')&&!/INPUT|TEXTAREA|SELECT|BUTTON/.test((e.target.tagName||''))){e.preventDefault();togglePause()}});
@@ -2807,7 +2807,7 @@ function planeTick(dt){commTick();mSilver.envMapIntensity=mSilverD.envMapIntensi
 const AK={ShiftLeft:0,ShiftRight:0,KeyW:0,KeyS:0,KeyA:0,KeyD:0,ArrowUp:0,ArrowDown:0,ArrowLeft:0,ArrowRight:0,PageUp:0,PageDown:0,Equal:0,Minus:0,NumpadAdd:0,NumpadSubtract:0};
 function wZoom(d){if(GM){fov(Math.min(95,Math.max(25,cam.fov+d)));return}if(walk&&!tour){SELF.d=Math.min(7,Math.max(1.2,SELF.d+d*.35));return}   // walk-mode zoom (wheel, pinch, +/-) moves you straight ahead in the direction you are looking, so you can head directly to the shopping centres across country
  const s=-d*1.2,c=Math.cos(G.th),n=Math.sin(G.th),R=window.RDN,gnd=(x,z)=>R&&Math.abs(Math.abs(z)-R.ZC)<=4.5&&x<=R.XS-R.RC+.5?Math.max(0,R.yAt(x)+.18):0,g0=gnd(G.t.x,G.t.z);
- G.t.x=Math.min(60,Math.max(-240,G.t.x-c*s));G.t.z=Math.min(330,Math.max(-330,G.t.z-n*s));G.t.y+=gnd(G.t.x,G.t.z)-g0;V.t.copy(G.t)}   /* zoom moves you at once, with no glide afterwards */
+ G.t.x=Math.min(60,Math.max(-240,G.t.x-c*s));G.t.z=Math.min(380,Math.max(-380,G.t.z-n*s));G.t.y+=gnd(G.t.x,G.t.z)-g0;V.t.copy(G.t)}   /* zoom moves you at once, with no glide afterwards */
 addEventListener('keydown',e=>{if(e.code in AK&&!tour&&walk&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||'')){AK[e.code]=1;e.preventDefault()}});
 addEventListener('keyup',e=>{if(e.code in AK)AK[e.code]=0});
 addEventListener('blur',()=>{for(const q in AK)AK[q]=0});
@@ -3495,12 +3495,17 @@ function busUse(fromClick,onlyBoard){const B=window.BUS;if(!B||!B.g||tour||GM)re
 // you are seen walking to the door, stepping up and along the aisle, and sitting down in the front passenger seat on the kerb side;
 // riding, the camera sits just behind and above you (look around by dragging), so you see out of the side and front windows and the driver at the wheel.
 // When the bus is standing at a stop, click anywhere (or Get off / E) and you stand up and walk back out of the door to the footpath.
+// seats: one player per double seat, kerb side first, front to back; you take the first seat nobody else on the bus is sitting in (or heading for)
+const BSEATS=[];[.6,-.25,-1.1,-1.95,-2.8].forEach(z=>[.55,-.55].forEach(x=>BSEATS.push(new THREE.Vector3(x,.6,z))));
+function busTaken(){const t=new Set();if(window.MP&&MP.on)MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&P.tp[5]>=0)t.add(P.tp[5]|0)});return t}
+function busPick(){const t=busTaken();for(let i=0;i<BSEATS.length;i++)if(!t.has(i))return i;return 0}
 const BSEAT=new THREE.Vector3(.55,.6,.6),_bv=new THREE.Vector3(),_bq=new THREE.Quaternion();
 window.BUSHOLD=()=>RT.on&&RT.bus&&RT.ph!=='ride';   /* the bus waits while you are getting on or off */
 function busAvPath(pts){const P=[];pts.forEach(p=>P.push(new THREE.Vector3(p[0],p[1],p[2])));return P}
 function busBoard(k){const B=window.BUS,g=B.g,av=SELF.av;if(!av){showCap('Just a moment…',1200);return}
  g.updateMatrixWorld(true);const lp=g.worldToLocal(_bv.set(G.t.x,g.position.y,G.t.z)).clone();lp.y=0;
- RT={on:true,bus:true,last:k,view:'in',ry:g.rotation.y,ask:0,ph:'enter',P:busAvPath([[lp.x,0,lp.z],[1.8,0,2.45],[.75,.62,2.45],[.1,.62,1.7],[.1,.62,1.05],[.55,.62,1.05]]),seg:0,f:0,sit:0,lt:performance.now(),yaw:0};
+ const si=busPick(),st=BSEATS[si];BSEAT.copy(st);
+ RT={on:true,bus:true,last:k,view:'in',ry:g.rotation.y,ask:0,ph:'enter',seat:si,P:busAvPath([[lp.x,0,lp.z],[1.8,0,2.45],[.75,.62,2.45],[.1,.62,1.7],[.1,.62,st.z+.45],[st.x,.62,st.z+.45]]),seg:0,f:0,sit:0,lt:performance.now(),yaw:0};
  g.add(av.g);av.g.position.copy(RT.P[0]);av.g.rotation.set(0,0,0);av.g.visible=true;busGlass(true);
  G.ph=1.3;G.r=SELF.d;fov(62);busPos();V.t.copy(G.t);
  showCap('All aboard the bus! Next stop: '+B.stops[B.next(k)].n,4000)}
@@ -3524,20 +3529,21 @@ function busPos(){const B=window.BUS,g=B&&B.g,av=SELF.av;if(!g||!av){rtCancel();
   else if(RT.ph==='enter'){RT.sit=Math.min(1,RT.sit+dt*1.8);const e=P[P.length-1];av.g.position.lerpVectors(e,BSEAT,RT.sit);let dy=0-RT.yaw;while(dy>Math.PI)dy-=2*Math.PI;while(dy<-Math.PI)dy+=2*Math.PI;RT.yaw+=dy*Math.min(1,dt*8);av.g.rotation.y=RT.yaw;busAvPose(av,false,RT.sit,dt);
    if(RT.sit>=1){RT.ph='ride';av.g.rotation.y=RT.yaw=0;const n=B.nextStop();showCap('Sitting down. Next stop: '+(n>=0?B.stops[n].n:'')+'. View (V) follows the bus from outside',4000)}}
   else{busAlight(RT.k);return}}
- else{const u=g.userData,ln=Math.max(-.2,Math.min(.2,(u.yr||0)*.15)),pt=Math.max(-.14,Math.min(.14,-(u.acc||0)*.04));   /* pushed outward in turns, back when the bus pulls away, forward when it brakes */
+ else{if(window.MP&&MP.on&&(RT.chk=(RT.chk||0)+dt)>.5){RT.chk=0;let c=false;MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&(P.tp[5]|0)===RT.seat&&P.tp[4]>.5&&P.id<MP.self)c=true});if(c){RT.seat=busPick();BSEAT.copy(BSEATS[RT.seat])}}
+  const u=g.userData,ln=Math.max(-.2,Math.min(.2,(u.yr||0)*.15)),pt=Math.max(-.14,Math.min(.14,-(u.acc||0)*.04));   /* pushed outward in turns, back when the bus pulls away, forward when it brakes */
   RT.sl=(RT.sl||0)+(ln-(RT.sl||0))*Math.min(1,dt*5);RT.sp=(RT.sp||0)+(pt-(RT.sp||0))*Math.min(1,dt*5);
   av.g.rotation.set(RT.sp,0,RT.sl,'ZXY');_bq.setFromEuler(av.g.rotation);_bv.set(0,.6,0).applyQuaternion(_bq);av.g.position.copy(BSEAT).add(new THREE.Vector3(0,.6,0)).sub(_bv);busAvPose(av,false,1,dt)}
  // camera: follow the avatar while walking; just behind and above the seat while riding; or the whole bus from outside
  if(RT.view==='out'){G.t.copy(g.localToWorld(_rtv.set(0,2.4,0)));G.r=16;G.ph=1.2}
  else{const p=av.g.position,inside=Math.abs(p.x)<1.05||RT.ph==='ride';
-  if(RT.ph==='ride')G.t.copy(g.localToWorld(_rtv.set(.3,1.74,1.0)));else G.t.copy(g.localToWorld(_rtv.set(p.x,p.y+1.05,p.z)));
+  if(RT.ph==='ride')G.t.copy(g.localToWorld(_rtv.set(BSEAT.x-.25,1.74,BSEAT.z+.4)));else G.t.copy(g.localToWorld(_rtv.set(p.x,p.y+1.05,p.z)));
   G.r=inside?1.3:SELF.d;G.ph=inside?1.22:1.3;
   if(RT.ph!=='ride'){let w=-Math.PI/2-(ry+RT.yaw)-G.th;while(w>Math.PI)w-=2*Math.PI;while(w<-Math.PI)w+=2*Math.PI;G.th+=w*Math.min(1,dt*3)}}
  V.t.copy(G.t)}
 function busGlass(on){const m=typeof busG!=='undefined'&&busG.userData.glass;if(m)m.opacity=on?.2:.42}   /* clear windows while you are on the bus */
 function busOff(){const B=window.BUS,k=B?B.at():-1;if(RT.ph!=='ride')return;
  if(k>=0){const g=B.g,t=B.stops[k];g.updateMatrixWorld(true);const sp=g.worldToLocal(_bv.set(t.ax,g.position.y,t.az)).clone();sp.y=0;
-  RT.ph='exit';RT.k=k;RT.sit=1;RT.seg=0;RT.f=0;RT.P=busAvPath([[.55,.62,1.05],[.1,.62,1.05],[.1,.62,1.7],[.75,.62,2.45],[1.8,0,2.45],[sp.x,0,sp.z]]);RT.yaw=0;
+  RT.ph='exit';RT.k=k;RT.sit=1;RT.seg=0;RT.f=0;RT.P=busAvPath([[BSEAT.x,.62,BSEAT.z+.45],[.1,.62,BSEAT.z+.45],[.1,.62,1.7],[.75,.62,2.45],[1.8,0,2.45],[sp.x,0,sp.z]]);RT.yaw=0;
   showCap('Getting off at '+t.w,2000);return}
  const n=B?B.nextStop():-1;showCap('Wait until the bus stops'+(n>=0?' at '+B.stops[n].n:''),2000)}
 function busAvFree(){const av=SELF.av;if(av&&av.g.parent!==scene){scene.add(av.g);av.g.rotation.set(0,0,0,'XYZ')}busGlass(false)}
@@ -3574,7 +3580,7 @@ function walkTick(dt){const S=SELF;
   /* move in short sub-steps (max 5 cm) so a slow frame can never jump you past a thin wall; if you are already overlapping something
      (a door closed on you, you stepped off a ride into it) you may only move in ways that get you less stuck, never deeper or through it */
   const ns=Math.max(1,Math.ceil(Math.abs(d)/.05)),dd=d/ns;
-  for(let i=0;i<ns;i++){const ox=G.t.x,oz=G.t.z,nx=Math.min(60,Math.max(-240,ox-c*dd)),nz=Math.min(330,Math.max(-330,oz-n*dd));
+  for(let i=0;i<ns;i++){const ox=G.t.x,oz=G.t.z,nx=Math.min(60,Math.max(-240,ox-c*dd)),nz=Math.min(380,Math.max(-380,oz-n*dd));
    if(walkOK(ox,oz,nx,oz,R))G.t.x=nx;if(walkOK(G.t.x,oz,G.t.x,nz,R))G.t.z=nz;if(G.t.x===ox&&G.t.z===oz)break}
   S.mv=Math.hypot(G.t.x-x,G.t.z-z)/Math.max(dt,1e-4)*Math.sign(S.sp);if(Math.abs(S.mv)<Math.abs(S.sp)*.3)S.sp*=.85;
   G.t.y+=_wbr(G.t.x,G.t.z,G.t.y-1.12)-g0;
@@ -3586,10 +3592,16 @@ function walkTick(dt){const S=SELF;
 // If the way straight back is blocked, the camera first rises and looks down over you; it only comes closer when it has to.
 // It snaps in at once when something gets in the way and eases back out when the way is clear again.
 const WCAM={r:0,ph:0,on:false,d:9};
+// station subways: when you (or your ride) are down a subway ramp or in the tunnel, the camera keeps to the ramp corridor, above its floor and under the tunnel roof
+function subIn(t){if(!window.SUBH)return null;for(const sw of[-345,345])if(Math.abs(t.z-sw)<=1.7&&t.x>=-67.3&&t.x<=-22.7){const h=SUBH(t.x,t.z);if(h!==null&&h<-.45)return sw}return null}
+function camFl(x,z,sw){if(sw!==null&&Math.abs(z-sw)<=1.75&&window.SUBH){const h=SUBH(x,z);if(h!==null)return h}return terr(x,z)}
+function subBlk(x,y,z,sw){if(sw===null)return false;if(x>=-67.3&&x<=-22.7&&Math.abs(z-sw)>1.75&&y<.9)return true;if(Math.abs(x+45)<=5.6&&y>-.75)return true;return false}
+function subCam(){const sw=subIn(V.t);if(sw===null)return;const c=cam.position;c.z=Math.max(sw-1.5,Math.min(sw+1.5,c.z));const f=camFl(c.x,c.z,sw)+.35;
+ const cap=-.8+Math.max(0,Math.abs(c.x+45)-5.4)*.6;if(c.y>cap)c.y=cap;if(c.y<f)c.y=f}
 function walkCam(dt,ph0){const S=SELF;if(!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&&!(typeof SS!=='undefined'&&SS.view))){WCAM.on=false;WCAM.d=9;return}
- const T=V.t,th=V.th,want=Math.max(1.2,S.d),ins=insideHouse(T.x,T.z),ceil=terr(T.x,T.z)+2.32,fl=terr(T.x,T.z)+.3;
+ const T=V.t,th=V.th,sw=subIn(T),want=Math.max(1.2,S.d),ins=insideHouse(T.x,T.z),ceil=terr(T.x,T.z)+2.32,fl=terr(T.x,T.z)+.3;
  const clear=ph=>{const sp=Math.sin(ph),cp=Math.cos(ph);let r=.2;for(;r<=want;r+=.04){const x=T.x+r*sp*Math.cos(th),z=T.z+r*sp*Math.sin(th),y=T.y+r*cp;
-   if(gmDepth(x,z,.12)>0)break;if((ins||insideHouse(x,z))&&y>ceil)break;if(y<terr(x,z)+.2)break}return Math.min(want,r-.04)};
+   if(gmDepth(x,z,.12)>0)break;if((ins||insideHouse(x,z))&&y>ceil)break;if(subBlk(x,y,z,sw))break;if(y<camFl(x,z,sw)+.2)break}return Math.min(want,r-.04)};
  const need=Math.min(want,1.6);let bp=ph0,br=clear(ph0);
  if(br<need-1e-3){for(let ph=ph0-.15;ph>=.06;ph-=.15){const r=clear(ph);if(r>br+.05){br=r;bp=ph}if(r>=need-1e-3)break}}
  if(!WCAM.on){WCAM.on=true;WCAM.r=br;WCAM.ph=bp}
@@ -3705,7 +3717,7 @@ if(tour&&!scrub){if(!tPause)tourTick(dtf);if(tw){const q=tw;skE.value=Math.round
 gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-gp2;gp2+=Math.sign(d2)*Math.min(Math.abs(d2),dtf/3);if(gateG)gateG.rotation.y=Math.PI/2*gp2*.95}lt=nw;const k=.12;if(GM){V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph}else{if(walk&&!tour&&V.t.distanceTo(G.t)<1.5)V.t.copy(G.t);else V.t.lerp(G.t,k);V.r+=(G.r-V.r)*k;V.th+=(G.th-V.th)*k;V.ph+=(G.ph-V.ph)*k;}
  LIFT=!walk&&!GM&&!window.SKYV&&V.r>2.5&&(!tour||!!(tw&&tw.ph==='o'&&tw.t>=16));let cph=V.ph;
  if(LIFT){const lt_=V.ph-clearPh(V.t,V.r,V.th,V.ph);if(LPH==null)LPH=lt_;LPH+=(lt_-LPH)*Math.min(1,dtf*(lt_>LPH?9:2.5));cph=Math.max(.12,V.ph-Math.max(0,LPH))}else LPH=null;
- try{selfTick(dtf)}catch(e){};cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=terr(cam.position.x,cam.position.z)+.3;if(cam.position.y<gy)cam.position.y=gy}try{walkCam(dtf,cph)}catch(e){}cam.lookAt(V.t);ren.render(scene,cam)})();
+ try{selfTick(dtf)}catch(e){};cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=camFl(cam.position.x,cam.position.z,subIn(V.t))+.3;if(cam.position.y<gy)cam.position.y=gy}try{walkCam(dtf,cph)}catch(e){}try{subCam()}catch(e){}cam.lookAt(V.t);ren.render(scene,cam)})();
 
 // mobile: always lay out in landscape. Portrait phones get the page turned a quarter turn (CSS), so the user rotates the phone to read it.
 // innerWidth/innerHeight, pointer coordinates and bounding rects are mapped into the turned page so all controls keep working.
@@ -3726,7 +3738,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  const AD=(a,b)=>{const T=Math.PI*2;return((a-b+Math.PI)%T+T)%T-Math.PI};
  const bike=v=>(window.BKS||[]).find(b=>b.id===v);
  const pname=id=>{const p=MP.peers.get(id);return p&&p.name?p.name:'Someone'};
- MP.col=()=>ME.col;MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
+ MP.col=()=>ME.col;MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.mode==='b')return;if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
 
  // ---------- transport: Trystero (nostr relays) on the web; a BroadcastChannel stand-in for local testing (?mptest=1)
  async function connect(code){
@@ -3851,13 +3863,14 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  function onSt(d,from){const P=peer(from);P.last=now();const nm=String(d.n||'Guest').slice(0,20);if(P.name!==nm||P.col!==d.c){const first=!P.name;P.name=nm;P.col=d.c|0;freshen(P);if(first)showCap(P.name+' joined',2500);ui()}
   if(P.mode!==d.m){const old=P.mode;P.mode=d.m;P.modeT=now();ui();if(VEH.includes(old)&&MP.own[old]&&MP.own[old].id===from&&!d.m.startsWith('bike')&&d.m!=='trike'){/* the drop message normally follows; if it was lost the watchdog parks it */}}
   if(VEH.includes(d.m)){P.vs=d.v;claim(d.m,from,d.ct||0)}
-  if(d.m==='w'&&d.p)P.tp=d.p;P.jy=+d.j||0;P.em=d.e|0;P.run=d.r|0}
+  if((d.m==='w'||d.m==='b')&&d.p)P.tp=d.p;P.jy=+d.j||0;P.em=d.e|0;P.run=d.r|0}
  function onJoin(id){peer(id);ev(snap(false),id);ev({t:'hey',jt:MP.jt},id)}
  function onLeave(id){const P=MP.peers.get(id);if(!P)return;VEH.forEach(v=>{if(MP.own[v]&&MP.own[v].id===id)release(v)});dropAvatar(P);MP.peers.delete(id);if(P.name)showCap(P.name+' left',2500);ui()}
 
  // ---------- my state, ten times a second
  setInterval(()=>{if(!MP.on||!MP.T)return;let m='x',p=null,v=null;
-  if(walk&&!tour){const r=riding();if(r==='trike'){m=r;v=tkSer()}else if(r&&bike(r)){m=r;v=bike(r).ser()}else if(!GM){m='w';p=[+V.t.x.toFixed(3),+V.t.y.toFixed(3),+V.t.z.toFixed(3),+V.th.toFixed(3)]}}
+  if(RT.on&&RT.bus&&SELF.av&&SELF.av.g.parent!==scene){const q=SELF.av.g.position;m='b';p=[+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+(RT.yaw||0).toFixed(3),RT.ph==='ride'?1:+(RT.sit||0).toFixed(2),RT.seat|0]}
+  else if(walk&&!tour){const r=riding();if(r==='trike'){m=r;v=tkSer()}else if(r&&bike(r)){m=r;v=bike(r).ser()}else if(!GM){m='w';p=[+V.t.x.toFixed(3),+V.t.y.toFixed(3),+V.t.z.toFixed(3),+V.th.toFixed(3)]}}
   try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
   doorWatch()},100);
 
@@ -3866,7 +3879,10 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   // rides held by someone who has gone quiet or got off without a message go back where they belong
   VEH.forEach(v=>{const o=MP.own[v];if(!o||o.id===MP.self)return;const P=MP.peers.get(o.id);if(!P||t-P.last>6000)release(v);else if(P.mode!==v&&t-P.modeT>2500){const s=P.vs;release(v,s?s[0]:undefined,s?s[2]:undefined,s?s[3]:undefined)}});
   MP.peers.forEach(P=>{if(!P.av)return;const av=P.av;let tagAt=null;
-   if(P.mode==='w'&&P.tp){const [x,y,z,th]=P.tp,gy=gnd(x,z);if(!P.init){P.ax=x;P.az=z;P.ath=th;P.init=true}const k=Math.min(1,dt*9),ox=P.ax,oz=P.az;P.ax+=(x-P.ax)*k;P.az+=(z-P.az)*k;P.ath+=AD(th,P.ath)*k;
+   if(P.mode==='b'&&P.tp&&window.BUS&&BUS.g){const g=BUS.g,[x,y,z,yw,si]=P.tp;g.updateMatrixWorld(true);P.init=false;
+    const wp=g.localToWorld(new THREE.Vector3(x,y,z));
+    av.g.visible=true;av.g.position.copy(wp);g.getWorldQuaternion(av.g.quaternion);av.g.rotateY(yw);P.ax=wp.x;P.az=wp.z;busAvPose(av,si<=.02,Math.max(0,si),dt);tagAt=[wp.x,wp.y+1.5,wp.z]}
+   else if(P.mode==='w'&&P.tp){const [x,y,z,th]=P.tp,gy=gnd(x,z);if(!P.init){P.ax=x;P.az=z;P.ath=th;P.init=true}const k=Math.min(1,dt*9),ox=P.ax,oz=P.az;P.ax+=(x-P.ax)*k;P.az+=(z-P.az)*k;P.ath+=AD(th,P.ath)*k;
     const sp=Math.hypot(P.ax-ox,P.az-oz)/Math.max(dt,1e-3);av.ph+=Math.hypot(P.ax-ox,P.az-oz)*5.2;const amp_=Math.min(1,sp/1.2)*(sp>3.5?.9:.55),sw=Math.sin(av.ph)*amp_;av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;avBend(av,av.ph,amp_,sp>3.5);av.jy+=((P.jy||0)-av.jy)*Math.min(1,dt*14);if(av.jy>.03){av.L[0].rotation.x=-.5;av.L[1].rotation.x=.3;if(av.K){av.K[0].rotation.x=1.0;av.K[1].rotation.x=.6}}av.wv=P.em?av.wv+dt:0;av.A[1].rotation.z=P.em?2.6+Math.sin(av.wv*12)*.35:0;if(P.em)av.A[1].rotation.x=0;
     av.g.visible=true;av.g.position.set(P.ax,Math.min(gy,y-.6)+av.jy,P.az);av.g.rotation.y=Math.atan2(-Math.cos(P.ath),-Math.sin(P.ath));tagAt=[P.ax,av.g.position.y+1.5,P.az]}
    else{av.g.visible=false;P.init=false;const o=MP.own[P.mode];if(o&&o.id===P.id&&P.vs){if(P.mode==='trike'){tkNet(P.vs,dt);tagAt=[TR.x,TR.y+1.1,TR.z]}else{const b=bike(P.mode);if(b){b.net(P.vs,dt);tagAt=[b.x,b.y+1.6,b.z]}}}}
@@ -3899,7 +3915,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  COLS.forEach(c=>{const b=document.createElement('button');b.style.background=hex(c);b.setAttribute('aria-label','Shirt colour '+hex(c));b.onclick=()=>{ME.col=c;LS.set('col',c);[...sw.children].forEach(x=>x.classList.toggle('on',x===b));const bk=bike(riding());if(bk)bk.tint(c)};if(c===ME.col)b.classList.add('on');sw.appendChild(b)});
  iN.oninput=()=>{ME.name=iN.value.trim().slice(0,20);LS.set('name',ME.name)};
  const clean=s=>s.toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24);iR.oninput=()=>{const c=clean(iR.value);if(c!==iR.value)iR.value=c};
- const doing=P=>P.mode==='w'?'walking':VEH.includes(P.mode)?'on '+VNAME[P.mode]:'looking around';
+ const doing=P=>P.mode==='w'?'walking':P.mode==='b'?'on the bus':VEH.includes(P.mode)?'on '+VNAME[P.mode]:'looking around';
  function ui(){const n=MP.peers.size,bd=btn.querySelector('i');bd.textContent=n+1;bd.style.display=MP.on?'block':'none';btn.classList.toggle('on',MP.on);
   bGo.textContent=MP.on?'Leave room':'Join room';iR.disabled=MP.on;
   if(MP.on)sSt.innerHTML='In room <b></b> · '+(n?n+' other'+(n>1?'s':'')+' here':'waiting for others to join');if(MP.on)sSt.querySelector('b').textContent=MP.room;
