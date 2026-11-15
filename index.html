@@ -812,8 +812,7 @@ const busG=new THREE.Group();
  const mSg=new THREE.MeshBasicMaterial({map:cv(256,32,g=>{g.fillStyle='#0b0b0c';g.fillRect(0,0,256,32);g.fillStyle='#ffb020';g.font='bold 22px monospace';g.textAlign='center';g.fillText('TARNEIT',128,24)})});mSg.map.wrapS=mSg.map.wrapT=THREE.ClampToEdgeWrapping;
  const b=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;busG.add(o);return o};
  b(2.1,2.2,7,mW,0,1.5,0);                                   // white body
- b(2.12,.62,4.3,mO,0,.8,-1.3);b(2.12,.62,1.7,mR,0,.8,1.7);  // orange and red lower band (red toward the front)
- b(2.12,.9,1.2,mO,0,1.95,-2.85);                            // orange rear quarter panel
+ [-1,1].forEach(s=>{b(.02,.62,4.3,mO,s*1.05,.8,-1.3);b(.02,.62,1.7,mR,s*1.05,.8,1.7);b(.02,.9,1.2,mO,s*1.05,1.95,-2.85)});   // orange and red lower band (red toward the front), orange rear quarter panels; thin side panels so the inside stays clear
  b(2.13,.85,4.0,mGl,0,1.95,.2);                             // side windows
  b(.02,1.75,.95,mGl,1.07,1.33,2.45);                        // front passenger door (left side, kerb side)
  b(1.9,1.05,.03,mGl,0,1.88,3.505);                          // windscreen
@@ -823,7 +822,17 @@ const busG=new THREE.Group();
  b(1.6,.24,2.4,mW,0,2.72,-.4);                              // roof air-conditioning pod
  [-1.08,1.08].forEach(x=>b(.06,.12,.22,mBk,x,2.15,3.25));   // mirrors
  const WH=[];[2.35,-2.1].forEach(z=>[-.93,.93].forEach(x=>{const w=new THREE.Group();w.position.set(x,.34,z);const ty=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.26,22),mTy);ty.rotation.z=Math.PI/2;ty.castShadow=true;w.add(ty);const rm=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.27,16),mRim);rm.rotation.z=Math.PI/2;w.add(rm);busG.add(w);WH.push(w)}));
- busG.visible=false;scene.add(busG);
+ // interior, seen from a seat when riding: floor, lower side walls, roof lining, blue double seats, driver's seat and wheel (driver on the right)
+ {const mFl=M({color:0x3a3f45}),mIn=M({color:0xd9dcd8,roughness:.8,side:THREE.DoubleSide}),mSe=M({color:0x1f4fa8,roughness:.85}),mRl=M({color:0xc0c4c8,metalness:.6,roughness:.35});
+  const p=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);busG.add(o);return o};
+  p(1.96,.04,6.8,mFl,0,.62,0);p(1.96,.03,6.8,mIn,0,2.5,0);
+  [-1,1].forEach(s=>{p(.03,.9,s>0?4.3:6.8,mIn,s*.99,1.07,s>0?-1.25:0);p(.03,.95,1.3,mIn,s*.99,1.95,-2.75);p(.03,.12,6.8,mIn,s*.99,2.44,0)});
+  p(1.96,.9,.03,mIn,0,1.07,-3.42);p(1.96,.5,.45,mBk,0,1.08,3.2);
+  [-2.8,-1.95,-1.1,-.25,.6].forEach(z=>[-1,1].forEach(s=>{p(.82,.12,.45,mSe,s*.55,1.08,z);p(.82,.62,.08,mSe,s*.55,1.42,z-.2);p(.04,.04,.6,mRl,s*.12,1.75,z-.05)}));
+  p(.5,.12,.5,mSe,-.55,1.08,2.3);p(.5,.65,.08,mSe,-.55,1.45,2.05);
+  const sw=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,24),mBk);sw.position.set(-.55,1.5,2.8);sw.rotation.x=-1.0;busG.add(sw);
+  [-1,1].forEach(s=>p(.03,.03,6,mRl,s*.35,2.2,-.3))}   // grab rails along the ceiling
+ busG.userData.glass=mGl;busG.visible=false;scene.add(busG);
  busG.rotation.order='YXZ';window.BUSW=WH}
 // ---- street layout beyond the houses: the street turns toward the railway at both ends, climbs over the line on a bridge and crosses a main road at an intersection;
 //      a supermarket (right of the house when facing it) and a department store (left) sit just past the intersections. Built once the rest of the scene exists.
@@ -1099,23 +1108,89 @@ setTimeout(()=>{try{
    [[cpx0-.4,z0+12],[cpx0-.4,z0+34],[cpx0-.4,z0+66],[cpx0-.4,z0+92],[rows[0],gap[0]-1],[rows[1],gap[1]+1]].forEach(([x,z])=>tree(x,z))}
  };
  woolSite();kmSite();
- // ---- minibus route: from the main-road intersection on the supermarket side, over the bridge, along the street, back over the other bridge to the intersection on the department-store side; once a minute
- const BR=[],push=(x,y,z)=>BR.push(new THREE.Vector3(x,y,z)),LO=1.7;
- for(let x=XM+2;x<=XS-RC;x+=.5)push(x,yAt(x),-ZC-LO);
- for(let a=-90;a<=0;a+=3){const r=a*Math.PI/180;push(XS-RC+(RC+LO)*Math.cos(r),YR,-ZE+(RC+LO)*Math.sin(r))}
- for(let z=-ZE;z<=ZE;z+=2)push(XS+LO,YR,z);
- for(let a=0;a<=90;a+=3){const r=a*Math.PI/180;push(XS-RC+(RC+LO)*Math.cos(r),YR,ZE+(RC+LO)*Math.sin(r))}
- for(let x=XS-RC;x>=XM+2;x-=.5)push(x,yAt(x),ZC+LO);
- const CUM=[0];for(let i=1;i<BR.length;i++)CUM.push(CUM[i-1]+BR[i].distanceTo(BR[i-1]));const BLEN=CUM[CUM.length-1];
- const bus=window.busG||(typeof busG!=='undefined'?busG:null),BW=window.BUSW||[],BPER=60,BSPD=BLEN/52;let bi=1,BT=-4;
+ // ---- minibus route (one loop): the bus stop opposite the house -> along the community street -> over the Kmart-side bridge -> left onto the main road -> Tarneit station
+ //      (bus bay in the car park, beside the forecourt) -> south along the main road -> West Tarneit station (bus bay) -> north on the main road -> over the
+ //      Woolworths-side bridge -> back along the community street to the house stop. Left-hand driving; it gives way to main-road traffic before turning,
+ //      and main-road traffic waits behind it. Walkers can get on and off at the three stops (see "ride the minibus" further down).
+ const LO=1.7,ZT=ZC+100,ZW=-ZC-100,L0=XM-1.75,L2=XM-16.25,ZH=2,BX=-73;
+ const WP=[[XS+LO,ZC+LO,RC+LO],[L0,ZC+LO,4],[L0,ZT-LO,4],[BX,ZT-LO,4],[BX,ZT+8,4],[-86,ZT+8,3],[-86,ZT+LO,3],[L2,ZT+LO,5],
+  [L2,ZW-LO,5],[BX,ZW-LO,4],[BX,ZW+8,4],[-86,ZW+8,3],[-86,ZW+LO,3],[L0,ZW+LO,4],[L0,-ZC-LO,4],[XS+LO,-ZC-LO,RC+LO]];
+ const hY=(x,z)=>Math.abs(Math.abs(z)-ZC)<4&&x<XS-RC+1?yAt(x):YR;
+ const BR=[],BRr=[],put=(x,z,r)=>{BR.push(new THREE.Vector3(x,hY(x,z),z));BRr.push(r)};
+ {const n=WP.length,cs=[];
+  for(let i=0;i<n;i++){const P=WP[i],A=WP[(i+n-1)%n],C=WP[(i+1)%n];let ux=P[0]-A[0],uz=P[1]-A[1],vx=C[0]-P[0],vz=C[1]-P[1];const lu=Math.hypot(ux,uz),lv=Math.hypot(vx,vz);ux/=lu;uz/=lu;vx/=lv;vz/=lv;
+   const th=Math.acos(Math.max(-1,Math.min(1,ux*vx+uz*vz))),r=P[2],t=Math.min(r*Math.tan(th/2),lu/2-.01,lv/2-.01),rr=t/Math.tan(th/2);
+   const ax=P[0]-ux*t,az=P[1]-uz*t,bx=P[0]+vx*t,bz=P[1]+vz*t,cr=ux*vz-uz*vx;
+   const cx=ax+(cr>0?uz:-uz)*-rr,cz=az+(cr>0?-ux:ux)*-rr;cs.push({ax,az,bx,bz,cx,cz,rr})}
+  for(let i=0;i<n;i++){const c=cs[i],nx=cs[(i+1)%n];
+   const a0=Math.atan2(c.az-c.cz,c.ax-c.cx);let da=Math.atan2(c.bz-c.cz,c.bx-c.cx)-a0;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;
+   const na=Math.max(2,Math.ceil(Math.abs(da)*c.rr/.5));for(let k=0;k<na;k++){const a=a0+da*k/na;put(c.cx+c.rr*Math.cos(a),c.cz+c.rr*Math.sin(a),c.rr)}
+   const L=Math.hypot(nx.ax-c.bx,nx.az-c.bz),ns=Math.max(1,Math.ceil(L/.5));for(let k=0;k<ns;k++){const f=k/ns;put(c.bx+(nx.ax-c.bx)*f,c.bz+(nx.az-c.bz)*f,1e9)}}}
+ const NB=BR.length,CUM=[0];for(let i=1;i<=NB;i++)CUM.push(CUM[i-1]+BR[i%NB].distanceTo(BR[i-1]));const BLEN=CUM[NB];
+ const near=(x,z)=>{let bi=0,bd=1e18;for(let i=0;i<NB;i++){const d=(BR[i].x-x)**2+(BR[i].z-z)**2;if(d<bd){bd=d;bi=i}}return bi};
+ // stops: where the bus waits (index on the route), how long, and where you step off (ax, az, facing th)
+ const STOPS=[{n:'the bus stop by the house',w:'the bus stop',i:near(XS+LO,ZH),dw:12,ax:27.4,az:ZH+2.5,th:0},
+  {n:'Tarneit station',w:'Tarneit station',i:near(BX,ZT+3),dw:18,ax:-69,az:ZT+3,th:Math.PI},
+  {n:'West Tarneit station',w:'West Tarneit station',i:near(BX,ZW+3),dw:18,ax:-69,az:ZW+3,th:Math.PI}];
+ STOPS.forEach(t=>t.d=CUM[t.i]);
+ // speed limits along the route: main road 13 m/s (the pace of its kerb lanes), bridges 12, the community street 11, station car parks 7, slower round corners; braking and pulling away
+ const VL=BR.map((p,i)=>{const r=BRr[i],x=p.x,az=Math.abs(p.z);let v=x<XM+1?13:Math.abs(az-ZC)<4?12:x<-60?(Math.abs(az-300)<30&&x>XM+40?7:9):11;return Math.min(v,Math.sqrt(2.2*r))});
+ STOPS.forEach(t=>VL[t.i]=0);
+ for(let pass=0;pass<2;pass++)for(let j=2*NB-1;j>=0;j--){const i=j%NB,k=(i+1)%NB,ds=CUM[i+1]-CUM[i];VL[i]=Math.min(VL[i],Math.sqrt(VL[k]*VL[k]+2*1.6*ds))}
+ for(let pass=0;pass<2;pass++)for(let j=0;j<2*NB;j++){const i=j%NB,k=(i+NB-1)%NB,ds=CUM[k+1]-CUM[k];VL[i]=Math.min(VL[i],Math.max(VL[i]===0&&STOPS.some(t=>t.i===i)?0:.8,Math.sqrt(VL[k]*VL[k]+2*1.2*ds)))}
+ const TT=[0];for(let i=1;i<=NB;i++)TT.push(TT[i-1]+(CUM[i]-CUM[i-1])/Math.max(.8,(VL[i-1]+VL[i%NB])/2));   // seconds of driving from the start of the loop
+ // give way before turning onto (or across) the main road: wait while traffic in these lanes is near the junction
+ const GW=[[near(XM+3,ZC+LO),[0],ZC+LO],[near(XM+3,ZT+LO),[0,1,3,2],ZT+LO],[near(L2,ZW+5),[3,1,0],ZW-LO],[near(XM+3,ZW+LO),[0],ZW+LO]].map(([i,ln,zj])=>({d:CUM[i],ln,zj}));
+ const bus=window.busG||(typeof busG!=='undefined'?busG:null),BW=window.BUSW||[];
+ const BS={d:(STOPS[0].d-160+BLEN)%BLEN,v:0,dw:0,at:-1,lastAt:-1,gw:-1};
+ const idxAt=d=>{let lo=0,hi=NB;while(hi-lo>1){const m=(lo+hi)>>1;if(CUM[m]<=d)lo=m;else hi=m}return lo};
+ const fwd=(a,b)=>((b-a)%BLEN+BLEN)%BLEN;
+ const tAt=d=>{const i=idxAt(d),f=(d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]);return TT[i]+(TT[i+1]-TT[i])*f};
+ const eta=k=>{const t=STOPS[k];if(BS.at===k)return 0;let w=(tAt(t.d)-tAt(BS.d)+TT[NB])%TT[NB]+(BS.at>=0?BS.dw:0);
+  STOPS.forEach((o,j)=>{if(j!==k&&j!==BS.at&&fwd(BS.d,o.d)<fwd(BS.d,t.d))w+=o.dw});return w};
+ window.BUS={g:bus,stops:STOPS,at:()=>BS.at,eta,next:k=>(k+1)%STOPS.length,
+  nextStop:()=>{let b=-1,bd=1e9;STOPS.forEach((o,j)=>{if(j===BS.at)return;const f=fwd(BS.d,o.d);if(f<bd){bd=f;b=j}});return b},
+  skipTo:k=>{BS.d=(STOPS[k].d-70+BLEN)%BLEN;BS.at=-1;BS.dw=0;BS.v=VL[idxAt(BS.d)]||5}};
+ // bus stop opposite the house: shelter (glass back and roof, bench) and a pole sign; plain pole signs at the two station bus bays
+ {const mPo=M({color:0x4a4f55,metalness:.5,roughness:.4}),mGs=new THREE.MeshStandardMaterial({color:0x9fc4d4,transparent:true,opacity:.35,roughness:.1,side:THREE.DoubleSide}),mBn=M({color:0x8a6a4a});
+  const sgT=cv(192,256,c=>{c.fillStyle='#f5f5f2';c.fillRect(0,0,192,256);c.fillStyle='#e8701a';c.fillRect(0,0,192,96);c.fillStyle='#ffffff';c.font='bold 64px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('BUS',96,72);
+   c.fillStyle='#1d2a3a';c.font='bold 22px Arial,Helvetica,sans-serif';c.fillText('Tarneit Stn',96,140);c.fillText('West Tarneit Stn',96,176);c.font='18px Arial,Helvetica,sans-serif';c.fillText('Community street loop',96,222)});
+  const sgM=new THREE.MeshBasicMaterial({map:sgT,side:THREE.DoubleSide});
+  const box=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o};
+  const sign=(x,z,ry)=>{box(.08,2.7,.08,mPo,x,-.18+1.35,z);const s=new THREE.Mesh(new THREE.PlaneGeometry(.48,.64),sgM);s.position.set(x,-.18+2.3,z);s.rotation.y=ry;scene.add(s)};
+  const sx=29.7,sz0=ZH-1.6,sz1=ZH+2.6;[sz0,sz1].forEach(z=>[sx-.75,sx+.6].forEach(x=>box(.07,2.4,.07,mPo,x,-.18+1.2,z)));
+  box(1.6,.06,sz1-sz0+.4,mGs,sx-.05,-.18+2.42,(sz0+sz1)/2);box(.03,1.9,sz1-sz0,mGs,sx+.6,-.18+1.3,(sz0+sz1)/2);
+  [sz0,sz1].forEach(z=>box(1.2,1.9,.03,mGs,sx,-.18+1.3,z));box(.4,.06,sz1-sz0-.4,mBn,sx+.3,-.18+.48,(sz0+sz1)/2);
+  sign(26.7,ZH+5.5,Math.PI/2);
+  [ZT,ZW].forEach(zs=>sign(-70.8,zs+7.6,-Math.PI/2))}
  // traffic waits for the girl on her bike: a lane holds still while she is just ahead of one of its vehicles, and the minibus pauses the same way
  const rider=()=>{const b=GM;return b&&(b===window.BKM||b===window.CARK)?b:null},ahead=(px,pz,fx,fz,b,len)=>{const dx=b.x-px,dz=b.z-pz,a=dx*fx+dz*fz,l=Math.abs(-dx*fz+dz*fx);return a>0&&a<len&&l<1.7};
  let lt=0;(function roadLoop(now){requestAnimationFrame(roadLoop);const dt=Math.min(.1,Math.max(0,(now-lt)/1000));lt=now;
-  const rd=rider();LANES.forEach(ln=>{ln.hold=!!rd&&VH.some(q=>q.ln===ln&&ahead(ln.x,ln.dir*(q.s-SPAN/2),0,ln.dir,rd,q.g.userData.L/2+5))});
+  const rd=rider();
+  // the minibus: blocked by a car right in front of it, by the girl on her bike, or by a walker in the road; otherwise main-road cars wait behind it
+  let bBlk=false;const bp=bus.position,bfx=Math.sin(bus.rotation.y),bfz=Math.cos(bus.rotation.y);
+  for(const q of VH){const p=q.g.position,dx=p.x-bp.x,dz=p.z-bp.z,a=dx*bfx+dz*bfz,l=Math.abs(-dx*bfz+dz*bfx);if(a>0&&a<3.5+q.g.userData.L/2+3&&l<1.15+q.g.userData.L/2*Math.abs(bfx)+.95*Math.abs(bfz)){bBlk=true;break}}
+  if(!bBlk&&rd&&ahead(bp.x,bp.z,bfx,bfz,rd,9))bBlk=true;
+  if(!bBlk&&walk&&!tour&&!GM&&!RT.on&&!STOPS.some(t=>Math.hypot(G.t.x-t.ax,G.t.z-t.az)<3.5)&&ahead(bp.x,bp.z,bfx,bfz,{x:G.t.x,z:G.t.z},7))bBlk=true;
+  const bhx=1.05*Math.abs(bfz)+3.5*Math.abs(bfx),bhz=1.05*Math.abs(bfx)+3.5*Math.abs(bfz);
+  LANES.forEach(ln=>{ln.hold=!!rd&&VH.some(q=>q.ln===ln&&ahead(ln.x,ln.dir*(q.s-SPAN/2),0,ln.dir,rd,q.g.userData.L/2+5));
+   if(!ln.hold&&!bBlk&&Math.abs(bp.x-ln.x)<bhx+1)ln.hold=VH.some(q=>{if(q.ln!==ln)return false;const a=(bp.z-q.g.position.z)*ln.dir;return a>0&&a<q.g.userData.L/2+bhz+6})});
   VH.forEach(q=>{if(!q.ln.hold)q.s=(q.s+q.v*dt)%SPAN;q.g.position.set(q.ln.x,-.18,q.ln.dir*(q.s-SPAN/2));const a=q.v*dt/q.g.userData.r;q.g.userData.ws.forEach(w=>w.rotation.x+=a)});
   CY.forEach(c=>{c.s=(c.s+c.v*dt)%1200;c.g.position.z=c.dir*(c.s-600);c.upd(dt)});
-  if(bus){const bh=rd&&bus.visible&&ahead(bus.position.x,bus.position.z,Math.sin(bus.rotation.y),Math.cos(bus.rotation.y),rd,9);if(!bh)BT+=dt;const tt=((BT%BPER)+BPER)%BPER,d=tt*BSPD;if(d>BLEN){bus.visible=false;bi=1}else{bus.visible=true;if(d<CUM[bi-1])bi=1;while(bi<CUM.length-1&&CUM[bi]<d)bi++;const A=BR[bi-1],B=BR[bi],f=(d-CUM[bi-1])/Math.max(1e-6,CUM[bi]-CUM[bi-1]);
-   bus.position.lerpVectors(A,B,f);const dx=B.x-A.x,dz=B.z-A.z,dy=B.y-A.y;bus.rotation.y=Math.atan2(dx,dz);bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz));if(!bh)BW.forEach(w=>w.rotation.x+=dt*BSPD/.34)}}})(0)
+  if(bus){bus.visible=true;
+   if(BS.at>=0){BS.dw-=dt;BS.v=0;if(BS.dw<=0){BS.at=-1;BS.d=(BS.d+.02)%BLEN}}
+   else if(!bBlk){
+    // give way at the main road
+    let wait=false;for(let gi=0;gi<GW.length;gi++){const g=GW[gi],f=fwd(BS.d,g.d);if(f<1.5||(BS.gw===gi&&f<2)){
+      wait=VH.some(q=>g.ln.includes(LANES.indexOf(q.ln))&&(()=>{const u=(g.zj-q.g.position.z)*q.ln.dir;return u>-14&&u<45})());BS.gw=wait?gi:-1;if(wait){BS.d=g.d;break}}}
+    if(!wait){const i=idxAt(BS.d),f=(BS.d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]),vl=Math.max(.8,VL[i]+(VL[(i+1)%NB]-VL[i])*f);
+     BS.v+=Math.max(-3,Math.min(1.5,(vl-BS.v)/Math.max(dt,1e-3)))*dt;BS.v=Math.max(.8,Math.min(BS.v,vl+.3));
+     const nd=BS.d+BS.v*dt;let hit=-1;STOPS.forEach((t,k)=>{if(k===BS.lastAt&&fwd(BS.d,t.d)>BLEN-1)return;if(fwd(BS.d,t.d)<=BS.v*dt+1e-6)hit=k});
+     if(hit>=0){BS.d=STOPS[hit].d;BS.at=hit;BS.lastAt=hit;BS.dw=STOPS[hit].dw;BS.v=0}else BS.d=nd%BLEN;
+     BW.forEach(w=>w.rotation.x+=dt*BS.v/.34)}else BS.v=0}
+   else BS.v=0;
+   const i=idxAt(BS.d),A=BR[i],B=BR[(i+1)%NB],f=(BS.d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]);
+   bus.position.lerpVectors(A,B,f);const C=BR[(i+NB-2)%NB],D=BR[(i+3)%NB],dx=D.x-C.x,dz=D.z-C.z,dy=D.y-C.y;bus.rotation.y=Math.atan2(dx,dz);bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz))}})(0)
 }catch(e){console.error('roads',e)}},0);
 // ---- kids' 20-inch bike: parked in the garage; click it to ride as a 7-year-old girl. She can ride the street, over both bridges, along the main road and into the store car parks.
 function mkBikeF(BC){try{
@@ -3239,6 +3314,7 @@ const STN={'300':'Tarneit','-300':'West Tarneit'},_rtv=new THREE.Vector3(),_rtf=
 function stnNear(x,z){for(const zs of [300,-300])if(Math.abs(z-zs)<=45&&x>-60&&x<-30)return zs;return null}
 function trainUse(fromClick,onlyBoard){const T=window.TRN;if(!T||tour)return false;
  if(RT.on){if(!onlyBoard)trainOff();return true}
+ if(busUse(fromClick,onlyBoard))return true;
  const p=GM?{x:GM.x,z:GM.z}:{x:G.t.x,z:G.t.z},zs=stnNear(p.x,p.z);
  if(zs===null){if(fromClick){showCap('Go to Tarneit or West Tarneit station to catch a train',2600);return true}return false}
  if(GM&&GM===window.CARK){if(onlyBoard)return false;showCap("Cars can't go on the train: park it and walk up to the platform",2600);return true}
@@ -3257,6 +3333,7 @@ function trainUse(fromClick,onlyBoard){const T=window.TRN;if(!T||tour)return fal
 function trainClick(cx,cy){const T=window.TRN;if(!T)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
  for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true;for(let q=o;q;q=q.parent)if(!q.visible){vis=false;break}if(!vis)continue;
   const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false||m.blending===THREE.AdditiveBlending)continue;
+  {let b=o;while(b&&b!==busG)b=b.parent;if(b)return trainUse(true)}   /* the minibus */
   if(T.trainOf(o)<0)return false;return trainUse(true)}
  return false}
 function trainBoard(q,zs){let veh=null;
@@ -3265,7 +3342,7 @@ function trainBoard(q,zs){let veh=null;
  RT={on:true,q,from:zs,to:-zs,veh,arr:false,view:'out',thSet:0,ask:0};
  G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55);rtPos();V.t.copy(G.t);
  showCap('All aboard'+(veh?' with the '+(veh.k==='trike'?'trike':'bike'):'')+'! Next stop: '+STN[-zs]+'. View (V) switches to the driver\'s cab',4500)}
-function rtCancel(){const v=RT.veh;RT.on=false;if(v){if(v.k==='trike'&&KID)KID.visible=GAMES_ON;else if(v.b&&v.b.g)v.b.g.visible=GAMES_ON}}
+function rtCancel(){const v=RT.veh;RT.on=false;if(RT.bus)busGlass(false);if(v){if(v.k==='trike'&&KID)KID.visible=GAMES_ON;else if(v.b&&v.b.g)v.b.g.visible=GAMES_ON}}
 function trainAlight(zs){const veh=RT.veh,x=-41.85,z=zs>0?zs+31:zs;RT.on=false;RT.arr=false;   /* off on the house side, in front of the stairs, facing them */
  let rode=false;
  if(veh&&veh.k==='trike'){window.TKP={x,z,h:Math.PI};gmEnter();rode=GM===GMK}
@@ -3273,9 +3350,10 @@ function trainAlight(zs){const veh=RT.veh,x=-41.85,z=zs>0?zs+31:zs;RT.on=false;R
  if(veh&&!rode){if(veh.k==='trike'&&KID)KID.visible=GAMES_ON}
  if(!rode){G.t.set(x,1.12+_wbr(x,z),z);V.t.copy(G.t);G.th=V.th=Math.PI;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62)}
  showCap('Welcome to '+STN[zs]+' station',3000)}
-function trainOff(){if(!RT.on)return;const d=TRN.dwell(RT.q,0);if(d&&(d.z===RT.to||d.z===RT.from))trainAlight(d.z);else showCap('Wait until the train stops at '+STN[RT.to],2000)}
-function trainView(){if(!RT.on)return;RT.view=RT.view==='out'?'cab':'out';RT.thSet=0;if(RT.view==='out'){G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55)}else{fov(62)}showCap(RT.view==='cab'?"Driver's cab":'Outside view',900)}
+function trainOff(){if(!RT.on)return;if(RT.bus){busOff();return}const d=TRN.dwell(RT.q,0);if(d&&(d.z===RT.to||d.z===RT.from))trainAlight(d.z);else showCap('Wait until the train stops at '+STN[RT.to],2000)}
+function trainView(){if(!RT.on)return;if(RT.bus){busView();return}RT.view=RT.view==='out'?'cab':'out';RT.thSet=0;if(RT.view==='out'){G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55)}else{fov(62)}showCap(RT.view==='cab'?"Driver's cab":'Outside view',900)}
 function rtPos(){if(!RT.on)return;if(tour||!walk||GM){rtCancel();return}
+ if(RT.bus){busPos();return}
  const T=window.TRN,g=T&&T.g(RT.q);
  if(!g||!T.live(RT.q)||!g.visible){trainAlight(RT.arr?RT.to:RT.from);return}
  const d=T.dwell(RT.q,0);
@@ -3286,6 +3364,46 @@ function rtPos(){if(!RT.on)return;if(tour||!walk||GM){rtCancel();return}
   if(!RT.thSet){const f=_rtf.set(0,0,-1).applyQuaternion(g.quaternion);G.th=V.th=Math.atan2(-f.z,-f.x);V.ph=G.ph;RT.thSet=1}}
  else G.t.copy(g.localToWorld(_rtv.set(0,2.2,-(T.L+T.gap))));
  V.t.copy(G.t)}
+// ---- ride the minibus: wait at the bus stop opposite the house, or at the bus bay in the car park at Tarneit or West Tarneit station.
+//      While the bus is standing at the stop, walk up to it and press Use / E (or click it) to get on. It runs house -> Tarneit station ->
+//      West Tarneit station -> back to the house, so staying on takes you on to the next stop. Get off (E) at any stop; View (V) switches
+//      between following the bus and a seat inside. No bus there yet? Use tells you when it is due, and pressing it again skips the wait.
+let BASK=0,BASKK=-1;
+const busFmt=w=>w<60?Math.ceil(w/5)*5+' s':Math.round(w/60)+' min';
+function busStopNear(x,z){const B=window.BUS;if(!B)return -1;let bi=-1,bd=1e9;B.stops.forEach((t,i)=>{const d=Math.hypot(x-t.ax,z-t.az);if(d<bd){bd=d;bi=i}});return bd<6?bi:-1}
+function busUse(fromClick,onlyBoard){const B=window.BUS;if(!B||!B.g||tour||GM)return false;
+ B.g.updateMatrixWorld(true);const x=G.t.x,z=G.t.z,dp=B.g.localToWorld(_rtv.set(1.1,0,2.45)),dd=Math.hypot(x-dp.x,z-dp.z),k=B.at();
+ if(dd<(fromClick?12:6)){if(k>=0){busBoard(k);return true}if(onlyBoard)return false;showCap('The bus only picks up at its stops: wait for it at the bus stop',2600);return true}
+ const sk=busStopNear(x,z);
+ if(sk<0){if(fromClick&&!onlyBoard){showCap('Catch the bus at the bus stop opposite the house, or at the bus bay at Tarneit or West Tarneit station',3200);return true}return false}
+ if(onlyBoard)return false;
+ if(k===sk){showCap('The bus is here: walk up to its door and press Use',2500);return true}
+ const w=B.eta(sk),now=performance.now();
+ if(w>20&&BASK&&now-BASK<5000&&BASKK===sk){BASK=0;B.skipTo(sk);showCap('Skipping the wait… the bus is coming',3000);return true}
+ BASK=now;BASKK=sk;
+ if(w<=20){showCap('The bus is nearly here',2500);return true}
+ showCap('Next bus in about '+busFmt(w)+' (to '+B.stops[B.next(sk)].n+'). Press Use again to skip the wait',5000);return true}
+function busBoard(k){const B=window.BUS,ry=B.g.rotation.y;
+ RT={on:true,bus:true,last:k,view:'out',ry,ask:0};
+ G.r=V.r=16;G.ph=V.ph=1.2;G.th=V.th=-Math.PI/2-ry;fov(55);busPos();V.t.copy(G.t);
+ showCap('All aboard the bus! Next stop: '+B.stops[B.next(k)].n+'. View (V) switches to a seat inside',4500)}
+function busPos(){const B=window.BUS,g=B&&B.g;if(!g){RT.on=false;return}
+ const k=B.at();
+ if(k>=0&&k!==RT.last){RT.last=k;showCap(B.stops[k].w.replace(/^./,c=>c.toUpperCase())+'. Press Get off (E), or stay on for '+B.stops[B.next(k)].n,6000)}
+ else if(k<0&&RT.last>=0){RT.last=-1;const n=B.nextStop();if(n>=0)showCap('Next stop: '+B.stops[n].n,3000)}
+ const ry=g.rotation.y;let d=ry-RT.ry;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;RT.ry=ry;G.th-=d;V.th-=d;   /* turn with the bus */
+ g.updateMatrixWorld(true);
+ if(RT.view==='in')G.t.copy(g.localToWorld(_rtv.set(.55,1.86,.68)));else G.t.copy(g.localToWorld(_rtv.set(0,2.4,0)));
+ V.t.copy(G.t)}
+function busGlass(on){const m=typeof busG!=='undefined'&&busG.userData.glass;if(!m||m.transparent===on)return;m.transparent=on;m.opacity=on?.15:1;m.depthWrite=!on;m.needsUpdate=true}   /* clear windows when sitting inside */
+function busOff(){const B=window.BUS,k=B?B.at():-1;if(k>=0){busAlight(k);return}const n=B?B.nextStop():-1;showCap('Wait until the bus stops'+(n>=0?' at '+B.stops[n].n:''),2000)}
+function busAlight(k){const t=window.BUS.stops[k];RT={on:false};busGlass(false);
+ G.t.set(t.ax,1.12+_wbr(t.ax,t.az),t.az);V.t.copy(G.t);G.th=V.th=t.th;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62);
+ showCap('Welcome to '+t.w,3000)}
+function busView(){const ry=window.BUS.g.rotation.y;RT.view=RT.view==='out'?'in':'out';G.th=V.th=-Math.PI/2-ry;
+ busGlass(RT.view==='in');
+ if(RT.view==='in'){G.r=V.r=.05;G.ph=V.ph=Math.PI/2;fov(62)}else{G.r=V.r=16;G.ph=V.ph=1.2;fov(55)}
+ showCap(RT.view==='in'?'Seat inside the bus':'Outside view',900)}
 addEventListener('keydown',e=>{if(e.code==='KeyV'&&RT.on&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||''))trainView()});
 // how deep a circle of radius r at (x,z) sits inside walls, fences, closed doors and fixed obstacles (0 = clear)
 function gmDepth(x,z,r){let D=0;const q=(cx,cz,hx,hz)=>{const dx=Math.max(Math.abs(x-cx)-hx,0),dz=Math.max(Math.abs(z-cz)-hz,0),e=dx*dx+dz*dz;if(e<r*r)D+=r-Math.sqrt(e)};
