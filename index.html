@@ -806,32 +806,77 @@ const cycG=new THREE.Group();let cycGo=()=>{},cycTick=()=>{};
   cycG.position.set(X0,-.17,z);cycG.rotation.z=Math.sin(ph*.5)*.02;if(z<-26){on=false;cycG.visible=false}};
  cycG.userData.hide=()=>{on=false;cycG.visible=false}}
 
+// rounded box: a box whose edges and corners are rounded with radius r (m steps per rounded edge); used for the bus's seats, dash, bumpers and roof pod
+function rbox(w,h,d,r,m){m=m||3;const S=2*m+2,g=new THREE.BoxGeometry(w,h,d,S,S,S),p=g.attributes.position,nm=g.attributes.normal,H=[w/2,h/2,d/2],v=[0,0,0],c=[0,0,0];r=Math.min(r,w/2,h/2,d/2)*.999;
+ for(let i=0;i<p.count;i++){v[0]=p.getX(i);v[1]=p.getY(i);v[2]=p.getZ(i);
+  for(let a=0;a<3;a++){const hh=H[a],j=Math.round((v[a]+hh)/(2*hh)*S);let x;if(j<=m)x=-hh+r*j/m;else if(j>=S-m)x=hh-r*(S-j)/m;else x=-hh+r+(2*hh-2*r)*(j-m)/(S-2*m);v[a]=x;c[a]=Math.max(-(hh-r),Math.min(hh-r,x))}
+  let ox=v[0]-c[0],oy=v[1]-c[1],oz=v[2]-c[2];const l=Math.hypot(ox,oy,oz);if(l>1e-9){ox/=l;oy/=l;oz/=l;p.setXYZ(i,c[0]+ox*r,c[1]+oy*r,c[2]+oz*r);nm.setXYZ(i,ox,oy,oz)}}
+ p.needsUpdate=true;nm.needsUpdate=true;return g}
 // ---- small white-and-orange community minibus; it is driven along the street route (over both bridges) every minute by the road code further down
 const busG=new THREE.Group();
-{const mW=M({color:0xf4f4f2,roughness:.35}),mO=M({color:0xf2600f,roughness:.4}),mR=M({color:0xd8261c,roughness:.4}),mGl=M({color:0x1e252c,roughness:.1,metalness:.5}),mBk=M({color:0x1a1b1d,roughness:.6}),mTy=M({color:0x141414,roughness:.95}),mRim=M({color:0xb8bcc0,metalness:.6,roughness:.3}),mHL=new THREE.MeshBasicMaterial({color:0xfff6dd}),mTL=new THREE.MeshBasicMaterial({color:0xff2a1a}),mInd=new THREE.MeshBasicMaterial({color:0xffa31a});
+{const mW=M({color:0xf4f4f2,roughness:.35}),mO=M({color:0xf2600f,roughness:.4}),mR=M({color:0xd8261c,roughness:.4}),mGl=new THREE.MeshStandardMaterial({color:0x56707c,roughness:.05,metalness:.3,transparent:true,opacity:.42,depthWrite:false,side:THREE.DoubleSide}),mFr=M({color:0x24282c,roughness:.5}),mBk=M({color:0x1a1b1d,roughness:.6}),mTy=M({color:0x141414,roughness:.95}),mRim=M({color:0xb8bcc0,metalness:.6,roughness:.3}),mHL=new THREE.MeshBasicMaterial({color:0xfff6dd}),mTL=new THREE.MeshBasicMaterial({color:0xff2a1a}),mInd=new THREE.MeshBasicMaterial({color:0xffa31a});
  const mSg=new THREE.MeshBasicMaterial({map:cv(256,32,g=>{g.fillStyle='#0b0b0c';g.fillRect(0,0,256,32);g.fillStyle='#ffb020';g.font='bold 22px monospace';g.textAlign='center';g.fillText('TARNEIT',128,24)})});mSg.map.wrapS=mSg.map.wrapT=THREE.ClampToEdgeWrapping;
  const b=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;busG.add(o);return o};
- b(2.1,2.2,7,mW,0,1.5,0);                                   // white body
- [-1,1].forEach(s=>{b(.02,.62,4.3,mO,s*1.05,.8,-1.3);b(.02,.62,1.7,mR,s*1.05,.8,1.7);b(.02,.9,1.2,mO,s*1.05,1.95,-2.85)});   // orange and red lower band (red toward the front), orange rear quarter panels; thin side panels so the inside stays clear
- b(2.13,.85,4.0,mGl,0,1.95,.2);                             // side windows
- b(.02,1.75,.95,mGl,1.07,1.33,2.45);                        // front passenger door (left side, kerb side)
- b(1.9,1.05,.03,mGl,0,1.88,3.505);                          // windscreen
+ const rb=(w,h,d,r,m,x,y,z)=>{const o=new THREE.Mesh(rbox(w,h,d,r),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;busG.add(o);return o};
+ // body shell built from thin panels, so it looks right from outside and from a seat inside: solid lower sides, a band of tinted windows
+ // between black pillars, solid rear corners, windscreen and rear window, roof; the front door on the kerb (left) side opens in two glass leaves
+ [-1,1].forEach(s=>{const x=s*1.04,L=s>0;
+  if(L){b(.04,1.1,5.31,mW,x,.95,-.705);b(.04,1.1,.41,mW,x,.95,3.155)}else b(.04,1.1,6.72,mW,x,.95,0);   // lower side (door gap on the left)
+  b(.04,.16,6.72,mW,x,2.43,0);                                                  // strip above the windows
+  b(.04,.85,1.11,mW,x,1.925,-2.805);                                            // solid rear corner
+  if(L){b(.02,.85,4.2,mGl,x,1.925,-.15);b(.02,.85,.41,mGl,x,1.925,3.155)}else b(.02,.85,5.61,mGl,x,1.925,.555);   // window glass
+  (L?[-2.25,-1.2,-.15,.9,1.95,2.95]:[-2.25,-1.2,-.15,.9,1.95]).forEach(z=>rb(.07,.85,.07,.02,mFr,x,1.925,z));   // pillars
+  const gz0=-2.25,gz1=3.36;rb(.06,.05,gz1-gz0,.02,mFr,x,1.5,(gz0+gz1)/2);rb(.06,.05,gz1-gz0,.02,mFr,x,2.35,(gz0+gz1)/2);   // rubber rails under and over the glass
+  const xo=s*1.07;b(.02,.62,4.21,mO,xo,.8,-1.255);b(.02,.62,L?1.1:2.51,mR,xo,.8,L?1.4:2.105);b(.02,.85,1.06,mO,xo,1.925,-2.83)});   // orange and red bands, orange rear quarter
+ b(1.84,.06,6.72,mW,0,2.62,0);                                                  // roof
+ b(1.84,.96,.04,mW,0,.88,3.48);b(1.84,.13,.04,mW,0,2.445,3.48);b(1.84,1.02,.02,mGl,0,1.87,3.49);rb(1.84,.05,.06,.02,mFr,0,1.36,3.48);   // front: panel, header, windscreen
+ b(1.84,1.15,.04,mW,0,.975,-3.48);b(1.84,.16,.04,mW,0,2.43,-3.48);b(1.6,.8,.02,mGl,0,1.95,-3.49);[-1,1].forEach(s=>b(.12,.8,.04,mW,s*.86,1.95,-3.48));   // rear: panel, header, rear window
+ // rounded corners: the four upright corners (with the coloured bands carried round them), the roof edges all round, and the roof corners
+ {const R=.14,CX=1.06-R,CZ=3.5-R,mk=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;busG.add(o);return o};
+  [-1,1].forEach(sx=>[-1,1].forEach(sz=>{const th=sx>0?(sz>0?0:Math.PI/2):(sz>0?Math.PI*1.5:Math.PI),ph=sx>0?(sz>0?Math.PI/2:Math.PI):(sz>0?0:Math.PI*1.5);
+   (sz>0?[[.4,.49,mW],[.49,1.11,mR],[1.11,2.51,mW]]:[[.4,.49,mW],[.49,1.11,mO],[1.11,1.5,mW],[1.5,2.35,mO],[2.35,2.51,mW]]).forEach(([y0,y1,m])=>mk(new THREE.CylinderGeometry(R,R,y1-y0,12,1,true,th,Math.PI/2),m,sx*CX,(y0+y1)/2,sz*CZ));
+   mk(new THREE.SphereGeometry(R,12,8,ph,Math.PI/2,0,Math.PI/2),mW,sx*CX,2.51,sz*CZ)}));
+  [-1,1].forEach(s=>{mk(new THREE.CylinderGeometry(R,R,2*CZ,12,1,true,s>0?Math.PI/2:Math.PI,Math.PI/2),mW,s*CX,2.51,0).rotation.x=Math.PI/2;
+   mk(new THREE.CylinderGeometry(R,R,2*CX,12,1,true,s>0?0:Math.PI/2,Math.PI/2),mW,0,2.51,s*CZ).rotation.z=Math.PI/2})}
+ b(2.08,.05,6.96,mBk,0,.4,0);rb(.3,.06,1.0,.02,mBk,.9,.44,2.45);              // underside and the door step
+ const DL=[];[[1.95,1],[2.95,-1]].forEach(([hz,d])=>{const g=new THREE.Group();g.position.set(1.06,0,hz);busG.add(g);
+  const lf=(w,h,dd,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,dd),m);o.position.set(x,y,z);o.castShadow=m!==mGl;g.add(o)};
+  lf(.02,1.5,.46,mGl,0,1.6,d*.25);lf(.045,.42,.46,mW,0,.66,d*.25);lf(.03,.42,.46,mR,.012,.66,d*.25);
+  const lr=(w,h,dd,m,x,y,z)=>{const o=new THREE.Mesh(rbox(w,h,dd,.018,2),m);o.position.set(x,y,z);o.castShadow=true;g.add(o)};lr(.05,.05,.5,mFr,0,.87,d*.25);lr(.05,.05,.5,mFr,0,2.35,d*.25);lr(.05,1.9,.04,mFr,0,1.4,d*.49);lr(.05,1.9,.04,mFr,0,1.4,d*.02);lr(.06,.03,.3,mFr,.03,1.3,d*.3);   // frames and a handle
+  DL.push({g,d})});
+ busG.userData.door=p=>{const e=p*p*(3-2*p);DL.forEach(o=>o.g.rotation.y=o.d*e*1.45)};   // the two leaves swing out (0 shut, 1 open)
  b(1.3,.2,.02,mSg,0,2.5,3.512);                             // destination sign
  b(1.0,.16,.02,mBk,0,.62,3.512);[-.78,.78].forEach(x=>{b(.28,.13,.02,mHL,x,.78,3.512);b(.1,.06,.02,mInd,x*1.2,.9,3.512);b(.22,.32,.02,mTL,x,.95,-3.512)});
- b(1.7,.8,.02,mGl,0,1.95,-3.512);b(2.0,.2,.05,mBk,0,.5,-3.5);b(2.0,.2,.05,mBk,0,.5,3.5);
- b(1.6,.24,2.4,mW,0,2.72,-.4);                              // roof air-conditioning pod
- [-1.08,1.08].forEach(x=>b(.06,.12,.22,mBk,x,2.15,3.25));   // mirrors
+ rb(1.96,.2,.08,.035,mBk,0,.5,-3.53);rb(1.96,.2,.08,.035,mBk,0,.5,3.53);
+ rb(1.6,.26,2.4,.1,mW,0,2.72,-.4);                              // roof air-conditioning pod
+ [-1.1,1.1].forEach(x=>rb(.07,.14,.24,.03,mBk,x,2.15,3.25));   // mirrors
  const WH=[];[2.35,-2.1].forEach(z=>[-.93,.93].forEach(x=>{const w=new THREE.Group();w.position.set(x,.34,z);const ty=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.26,22),mTy);ty.rotation.z=Math.PI/2;ty.castShadow=true;w.add(ty);const rm=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.27,16),mRim);rm.rotation.z=Math.PI/2;w.add(rm);busG.add(w);WH.push(w)}));
  // interior, seen from a seat when riding: floor, lower side walls, roof lining, blue double seats, driver's seat and wheel (driver on the right)
  {const mFl=M({color:0x3a3f45}),mIn=M({color:0xd9dcd8,roughness:.8,side:THREE.DoubleSide}),mSe=M({color:0x1f4fa8,roughness:.85}),mRl=M({color:0xc0c4c8,metalness:.6,roughness:.35});
   const p=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);busG.add(o);return o};
+  const pr=(w,h,d,r,m,x,y,z)=>{const o=new THREE.Mesh(rbox(w,h,d,r),m);o.position.set(x,y,z);busG.add(o);return o};
+  [-1,1].forEach(s=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,6.8,10,1,true,s>0?Math.PI/2:Math.PI,Math.PI/2),mIn);c.rotation.x=Math.PI/2;c.position.set(s*.875,2.385,0);busG.add(c)});   // rounded coves where the ceiling meets the walls
   p(1.96,.04,6.8,mFl,0,.62,0);p(1.96,.03,6.8,mIn,0,2.5,0);
-  [-1,1].forEach(s=>{p(.03,.9,s>0?4.3:6.8,mIn,s*.99,1.07,s>0?-1.25:0);p(.03,.95,1.3,mIn,s*.99,1.95,-2.75);p(.03,.12,6.8,mIn,s*.99,2.44,0)});
-  p(1.96,.9,.03,mIn,0,1.07,-3.42);p(1.96,.5,.45,mBk,0,1.08,3.2);
-  [-2.8,-1.95,-1.1,-.25,.6].forEach(z=>[-1,1].forEach(s=>{p(.82,.12,.45,mSe,s*.55,1.08,z);p(.82,.62,.08,mSe,s*.55,1.42,z-.2);p(.04,.04,.6,mRl,s*.12,1.75,z-.05)}));
-  p(.5,.12,.5,mSe,-.55,1.08,2.3);p(.5,.65,.08,mSe,-.55,1.45,2.05);
-  const sw=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,24),mBk);sw.position.set(-.55,1.5,2.8);sw.rotation.x=-1.0;busG.add(sw);
-  [-1,1].forEach(s=>p(.03,.03,6,mRl,s*.35,2.2,-.3))}   // grab rails along the ceiling
+  [-1,1].forEach(s=>{p(.03,.9,s>0?5.3:6.8,mIn,s*.99,1.07,s>0?-.75:0);p(.03,.95,1.3,mIn,s*.99,1.95,-2.75);p(.03,.12,6.8,mIn,s*.99,2.44,0)});
+  p(1.96,.9,.03,mIn,0,1.07,-3.42);pr(1.96,.5,.45,.08,mBk,0,1.08,3.2);
+  [-2.8,-1.95,-1.1,-.25,.6].forEach(z=>[-1,1].forEach(s=>{pr(.82,.13,.46,.05,mSe,s*.55,1.08,z);pr(.82,.62,.09,.04,mSe,s*.55,1.42,z-.2)}));
+  pr(.5,.13,.5,.05,mSe,-.55,1.08,2.3);pr(.5,.42,.09,.04,mSe,-.55,1.33,2.02);
+  const wg=new THREE.Group();wg.position.set(-.55,1.5,2.8);wg.rotation.x=-1.0;busG.add(wg);const sw=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,24),mBk);wg.add(sw);
+  [0,2.1,4.2].forEach(a=>{const k=new THREE.Mesh(new THREE.BoxGeometry(.19,.03,.02),mBk);k.position.set(Math.cos(a)*.095,Math.sin(a)*.095,0);k.rotation.z=a;sw.add(k)});busG.userData.wheel=sw;   /* spokes, so you can see it turn */
+  // the driver: a grown-up in a light-blue uniform shirt and navy trousers, sitting on the right with both hands on the wheel
+  {const mSk=M({color:0xc99a78,roughness:.75}),mSt=M({color:0x8fb4d9,roughness:.8}),mTr=M({color:0x1f2a44,roughness:.85}),mHr=M({color:0x2b2420,roughness:.9}),mSo=M({color:0x111111,roughness:.6});
+   const V3=(x,y,z)=>new THREE.Vector3(x,y,z),lim=(a,b,r,m)=>{const d=b.clone().sub(a),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.9,d.length(),10),m);o.position.copy(a).add(b).multiplyScalar(.5);o.quaternion.setFromUnitVectors(V3(0,1,0),d.normalize());o.castShadow=true;busG.add(o);return o};
+   const ball=(r,m,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m);o.position.set(x,y,z);o.scale.set(sx||1,sy||1,sz||1);busG.add(o);return o};
+   const X=-.55;
+   ball(.17,mTr,X,1.26,2.24,1,.6,1);                                  // hips on the seat
+   lim(V3(X,1.24,2.2),V3(X,1.74,2.16),.17,mSt);ball(.18,mSt,X,1.73,2.16,1.15,.55,.9);   // torso and shoulders
+   lim(V3(X,1.8,2.17),V3(X,1.88,2.18),.05,mSk);ball(.115,mSk,X,1.99,2.2,.95,1.08,1);   // neck and head
+   ball(.118,mHr,X,2.03,2.17,1,.85,1.02);
+   [-1,1].forEach(s=>{const hx=X+s*.1;
+    lim(V3(hx,1.24,2.26),V3(hx,1.22,2.7),.07,mTr);lim(V3(hx,1.22,2.7),V3(hx,.7,2.78),.055,mTr);   // thighs forward, shins down to the floor
+    const sh=new THREE.Mesh(new THREE.BoxGeometry(.1,.08,.25),mSo);sh.position.set(hx,.68,2.86);busG.add(sh);
+    const sx=X+s*.21,hd=V3(X+s*.17,1.53,2.72);lim(V3(sx,1.7,2.17),V3(sx,1.46,2.42),.05,mSt);lim(V3(sx,1.46,2.42),hd,.04,mSk);ball(.045,mSk,hd.x,hd.y,hd.z)})}
+  [-1,1].forEach(s=>p(.03,.03,6,mRl,s*.8,2.32,-.3))}   // grab rails along the ceiling
  busG.userData.glass=mGl;busG.visible=false;scene.add(busG);
  busG.rotation.order='YXZ';window.BUSW=WH}
 // ---- street layout beyond the houses: the street turns toward the railway at both ends, climbs over the line on a bridge and crosses a main road at an intersection;
@@ -1142,7 +1187,7 @@ setTimeout(()=>{try{
  // give way before turning onto (or across) the main road: wait while traffic in these lanes is near the junction
  const GW=[[near(XM+3,ZC+LO),[0],ZC+LO],[near(XM+3,ZT+LO),[0,1,3,2],ZT+LO],[near(L2,ZW+5),[3,1,0],ZW-LO],[near(XM+3,ZW+LO),[0],ZW+LO]].map(([i,ln,zj])=>({d:CUM[i],ln,zj}));
  const bus=window.busG||(typeof busG!=='undefined'?busG:null),BW=window.BUSW||[];
- const BS={d:(STOPS[0].d-160+BLEN)%BLEN,v:0,dw:0,at:-1,lastAt:-1,gw:-1};
+ let BDP=0;const BS={d:(STOPS[0].d-160+BLEN)%BLEN,v:0,dw:0,at:-1,lastAt:-1,gw:-1};
  const idxAt=d=>{let lo=0,hi=NB;while(hi-lo>1){const m=(lo+hi)>>1;if(CUM[m]<=d)lo=m;else hi=m}return lo};
  const fwd=(a,b)=>((b-a)%BLEN+BLEN)%BLEN;
  const tAt=d=>{const i=idxAt(d),f=(d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]);return TT[i]+(TT[i+1]-TT[i])*f};
@@ -1178,7 +1223,8 @@ setTimeout(()=>{try{
   VH.forEach(q=>{if(!q.ln.hold)q.s=(q.s+q.v*dt)%SPAN;q.g.position.set(q.ln.x,-.18,q.ln.dir*(q.s-SPAN/2));const a=q.v*dt/q.g.userData.r;q.g.userData.ws.forEach(w=>w.rotation.x+=a)});
   CY.forEach(c=>{c.s=(c.s+c.v*dt)%1200;c.g.position.z=c.dir*(c.s-600);c.upd(dt)});
   if(bus){bus.visible=true;
-   if(BS.at>=0){BS.dw-=dt;BS.v=0;if(BS.dw<=0){BS.at=-1;BS.d=(BS.d+.02)%BLEN}}
+   {const want=BS.at>=0&&(BS.dw>1.3||(window.BUSHOLD&&BUSHOLD()));BDP=Math.max(0,Math.min(1,BDP+(want?1:-1)*dt*1.4));if(bus.userData.door)bus.userData.door(BDP)}   // doors open once stopped, shut before pulling away
+   if(BS.at>=0){if(window.BUSHOLD&&BUSHOLD())BS.dw=Math.max(BS.dw,1.5);else BS.dw-=dt;BS.v=0;if(BS.dw<=0&&BDP<=0){BS.at=-1;BS.d=(BS.d+.02)%BLEN}}
    else if(!bBlk){
     // give way at the main road
     let wait=false;for(let gi=0;gi<GW.length;gi++){const g=GW[gi],f=fwd(BS.d,g.d);if(f<1.5||(BS.gw===gi&&f<2)){
@@ -1190,7 +1236,7 @@ setTimeout(()=>{try{
      BW.forEach(w=>w.rotation.x+=dt*BS.v/.34)}else BS.v=0}
    else BS.v=0;
    const i=idxAt(BS.d),A=BR[i],B=BR[(i+1)%NB],f=(BS.d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]);
-   bus.position.lerpVectors(A,B,f);const C=BR[(i+NB-2)%NB],D=BR[(i+3)%NB],dx=D.x-C.x,dz=D.z-C.z,dy=D.y-C.y;bus.rotation.y=Math.atan2(dx,dz);bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz))}})(0)
+   bus.position.lerpVectors(A,B,f);const C=BR[(i+NB-2)%NB],D=BR[(i+3)%NB],dx=D.x-C.x,dz=D.z-C.z,dy=D.y-C.y;{const ny=Math.atan2(dx,dz);let dyw=ny-bus.rotation.y;while(dyw>Math.PI)dyw-=2*Math.PI;while(dyw<-Math.PI)dyw+=2*Math.PI;const wl=bus.userData.wheel;if(wl&&dt>0){const tg=Math.max(-2.6,Math.min(2.6,dyw/dt*-3));wl.rotation.z+=(tg-wl.rotation.z)*Math.min(1,dt*4)}bus.rotation.y=ny}bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz))}})(0)
 }catch(e){console.error('roads',e)}},0);
 // ---- kids' 20-inch bike: parked in the garage; click it to ride as a 7-year-old girl. She can ride the street, over both bridges, along the main road and into the store car parks.
 function mkBikeF(BC){try{
@@ -3330,7 +3376,8 @@ function trainUse(fromClick,onlyBoard){const T=window.TRN;if(!T||tour)return fal
  RT.ask=now;RT.askZ=zs;
  if(n.w<=15){showCap('The train to '+STN[other]+' is just pulling in',2500);return true}
  showCap((at?"This train isn't going to "+STN[other]+'. ':'')+'Next train to '+STN[other]+' in '+Math.ceil(n.w/60)+' min. Press Use again to skip the wait',5000);return true}
-function trainClick(cx,cy){const T=window.TRN;if(!T)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
+function trainClick(cx,cy){if(RT.on&&RT.bus){if(RT.ph==='ride'&&window.BUS&&BUS.at()>=0)busOff();else if(RT.ph==='ride'){const n=BUS.nextStop();showCap('Wait until the bus stops'+(n>=0?' at '+BUS.stops[n].n:''),1600)}return true}
+ const T=window.TRN;if(!T)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
  for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true;for(let q=o;q;q=q.parent)if(!q.visible){vis=false;break}if(!vis)continue;
   const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false||m.blending===THREE.AdditiveBlending)continue;
   {let b=o;while(b&&b!==busG)b=b.parent;if(b)return trainUse(true)}   /* the minibus */
@@ -3342,7 +3389,7 @@ function trainBoard(q,zs){let veh=null;
  RT={on:true,q,from:zs,to:-zs,veh,arr:false,view:'out',thSet:0,ask:0};
  G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55);rtPos();V.t.copy(G.t);
  showCap('All aboard'+(veh?' with the '+(veh.k==='trike'?'trike':'bike'):'')+'! Next stop: '+STN[-zs]+'. View (V) switches to the driver\'s cab',4500)}
-function rtCancel(){const v=RT.veh;RT.on=false;if(RT.bus)busGlass(false);if(v){if(v.k==='trike'&&KID)KID.visible=GAMES_ON;else if(v.b&&v.b.g)v.b.g.visible=GAMES_ON}}
+function rtCancel(){const v=RT.veh;RT.on=false;if(RT.bus)busAvFree();if(v){if(v.k==='trike'&&KID)KID.visible=GAMES_ON;else if(v.b&&v.b.g)v.b.g.visible=GAMES_ON}}
 function trainAlight(zs){const veh=RT.veh,x=-41.85,z=zs>0?zs+31:zs;RT.on=false;RT.arr=false;   /* off on the house side, in front of the stairs, facing them */
  let rode=false;
  if(veh&&veh.k==='trike'){window.TKP={x,z,h:Math.PI};gmEnter();rode=GM===GMK}
@@ -3383,27 +3430,58 @@ function busUse(fromClick,onlyBoard){const B=window.BUS;if(!B||!B.g||tour||GM)re
  BASK=now;BASKK=sk;
  if(w<=20){showCap('The bus is nearly here',2500);return true}
  showCap('Next bus in about '+busFmt(w)+' (to '+B.stops[B.next(sk)].n+'). Press Use again to skip the wait',5000);return true}
-function busBoard(k){const B=window.BUS,ry=B.g.rotation.y;
- RT={on:true,bus:true,last:k,view:'out',ry,ask:0};
- G.r=V.r=16;G.ph=V.ph=1.2;G.th=V.th=-Math.PI/2-ry;fov(55);busPos();V.t.copy(G.t);
- showCap('All aboard the bus! Next stop: '+B.stops[B.next(k)].n+'. View (V) switches to a seat inside',4500)}
-function busPos(){const B=window.BUS,g=B&&B.g;if(!g){RT.on=false;return}
+// you are seen walking to the door, stepping up and along the aisle, and sitting down in the front passenger seat on the kerb side;
+// riding, the camera sits just behind and above you (look around by dragging), so you see out of the side and front windows and the driver at the wheel.
+// When the bus is standing at a stop, click anywhere (or Get off / E) and you stand up and walk back out of the door to the footpath.
+const BSEAT=new THREE.Vector3(.55,.6,.6),_bv=new THREE.Vector3(),_bq=new THREE.Quaternion();
+window.BUSHOLD=()=>RT.on&&RT.bus&&RT.ph!=='ride';   /* the bus waits while you are getting on or off */
+function busAvPath(pts){const P=[];pts.forEach(p=>P.push(new THREE.Vector3(p[0],p[1],p[2])));return P}
+function busBoard(k){const B=window.BUS,g=B.g,av=SELF.av;if(!av){showCap('Just a moment…',1200);return}
+ g.updateMatrixWorld(true);const lp=g.worldToLocal(_bv.set(G.t.x,g.position.y,G.t.z)).clone();lp.y=0;
+ RT={on:true,bus:true,last:k,view:'in',ry:g.rotation.y,ask:0,ph:'enter',P:busAvPath([[lp.x,0,lp.z],[1.8,0,2.45],[.75,.62,2.45],[.1,.62,1.7],[.1,.62,1.05],[.55,.62,1.05]]),seg:0,f:0,sit:0,lt:performance.now(),yaw:0};
+ g.add(av.g);av.g.position.copy(RT.P[0]);av.g.rotation.set(0,0,0);av.g.visible=true;busGlass(true);
+ G.ph=1.3;G.r=SELF.d;fov(62);busPos();V.t.copy(G.t);
+ showCap('All aboard the bus! Next stop: '+B.stops[B.next(k)].n,4000)}
+function busAvPose(av,walk,sit,dt){   /* walking swing, or sitting: legs forward, hands in the lap */
+ if(walk){av.ph+=dt*7;const sw=Math.sin(av.ph)*.5;av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;avBend(av,av.ph,.5,false)}
+ else{const a=-1.5*sit;av.L[0].rotation.x=a;av.L[1].rotation.x=a;av.A[0].rotation.x=-.35*sit;av.A[1].rotation.x=-.35*sit;if(av.K){av.K[0].rotation.x=av.K[1].rotation.x=.06+1.35*sit;av.E[0].rotation.x=av.E[1].rotation.x=-.2-.85*sit}}   /* sitting: thighs on the seat, knees bent, hands in the lap */
+ av.A[0].rotation.z=0;av.A[1].rotation.z=0;if(av.pony)av.pony.rotation.set(-.15,0,0)}
+function busPos(){const B=window.BUS,g=B&&B.g,av=SELF.av;if(!g||!av){rtCancel();return}
+ const now=performance.now(),dt=Math.min(.1,(now-RT.lt)/1000);RT.lt=now;
  const k=B.at();
- if(k>=0&&k!==RT.last){RT.last=k;showCap(B.stops[k].w.replace(/^./,c=>c.toUpperCase())+'. Press Get off (E), or stay on for '+B.stops[B.next(k)].n,6000)}
- else if(k<0&&RT.last>=0){RT.last=-1;const n=B.nextStop();if(n>=0)showCap('Next stop: '+B.stops[n].n,3000)}
+ if(RT.ph==='ride'){
+  if(k>=0&&k!==RT.last){RT.last=k;showCap(B.stops[k].w.replace(/^./,c=>c.toUpperCase())+'. Click anywhere to get off, or stay on for '+B.stops[B.next(k)].n,6000)}
+  else if(k<0&&RT.last>=0){RT.last=-1;const n=B.nextStop();if(n>=0)showCap('Next stop: '+B.stops[n].n,3000)}}
  const ry=g.rotation.y;let d=ry-RT.ry;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;RT.ry=ry;G.th-=d;V.th-=d;   /* turn with the bus */
  g.updateMatrixWorld(true);
- if(RT.view==='in')G.t.copy(g.localToWorld(_rtv.set(.55,1.86,.68)));else G.t.copy(g.localToWorld(_rtv.set(0,2.4,0)));
+ // walk the avatar along its path in the bus's own frame (getting on or off), then sit or step off
+ if(RT.ph!=='ride'){const P=RT.P;
+  if(RT.ph==='exit'&&RT.sit>0){RT.sit=Math.max(0,RT.sit-dt*2);av.g.position.lerpVectors(P[0],BSEAT,RT.sit);busAvPose(av,false,RT.sit,dt)}
+  else if(RT.seg<P.length-1){const a=P[RT.seg],b=P[RT.seg+1],L=Math.max(.01,a.distanceTo(b));RT.f+=dt*1.25/L;
+   if(RT.f>=1){RT.f=0;RT.seg++}const f=Math.min(1,RT.f);av.g.position.lerpVectors(a,b,f);const yw=Math.atan2(b.x-a.x,b.z-a.z);let dy=yw-RT.yaw;while(dy>Math.PI)dy-=2*Math.PI;while(dy<-Math.PI)dy+=2*Math.PI;RT.yaw+=dy*Math.min(1,dt*10);av.g.rotation.y=RT.yaw;busAvPose(av,true,0,dt)}
+  else if(RT.ph==='enter'){RT.sit=Math.min(1,RT.sit+dt*1.8);const e=P[P.length-1];av.g.position.lerpVectors(e,BSEAT,RT.sit);let dy=0-RT.yaw;while(dy>Math.PI)dy-=2*Math.PI;while(dy<-Math.PI)dy+=2*Math.PI;RT.yaw+=dy*Math.min(1,dt*8);av.g.rotation.y=RT.yaw;busAvPose(av,false,RT.sit,dt);
+   if(RT.sit>=1){RT.ph='ride';av.g.rotation.y=RT.yaw=0;const n=B.nextStop();showCap('Sitting down. Next stop: '+(n>=0?B.stops[n].n:'')+'. View (V) follows the bus from outside',4000)}}
+  else{busAlight(RT.k);return}}
+ else{av.g.position.copy(BSEAT);av.g.rotation.set(0,0,0);busAvPose(av,false,1,dt)}
+ // camera: follow the avatar while walking; just behind and above the seat while riding; or the whole bus from outside
+ if(RT.view==='out'){G.t.copy(g.localToWorld(_rtv.set(0,2.4,0)));G.r=16;G.ph=1.2}
+ else{const p=av.g.position,inside=Math.abs(p.x)<1.05||RT.ph==='ride';
+  if(RT.ph==='ride')G.t.copy(g.localToWorld(_rtv.set(.3,1.74,1.0)));else G.t.copy(g.localToWorld(_rtv.set(p.x,p.y+1.05,p.z)));
+  G.r=inside?1.3:SELF.d;G.ph=inside?1.22:1.3;
+  if(RT.ph!=='ride'){let w=-Math.PI/2-(ry+RT.yaw)-G.th;while(w>Math.PI)w-=2*Math.PI;while(w<-Math.PI)w+=2*Math.PI;G.th+=w*Math.min(1,dt*3)}}
  V.t.copy(G.t)}
-function busGlass(on){const m=typeof busG!=='undefined'&&busG.userData.glass;if(!m||m.transparent===on)return;m.transparent=on;m.opacity=on?.15:1;m.depthWrite=!on;m.needsUpdate=true}   /* clear windows when sitting inside */
-function busOff(){const B=window.BUS,k=B?B.at():-1;if(k>=0){busAlight(k);return}const n=B?B.nextStop():-1;showCap('Wait until the bus stops'+(n>=0?' at '+B.stops[n].n:''),2000)}
-function busAlight(k){const t=window.BUS.stops[k];RT={on:false};busGlass(false);
+function busGlass(on){const m=typeof busG!=='undefined'&&busG.userData.glass;if(m)m.opacity=on?.2:.42}   /* clear windows while you are on the bus */
+function busOff(){const B=window.BUS,k=B?B.at():-1;if(RT.ph!=='ride')return;
+ if(k>=0){const g=B.g,t=B.stops[k];g.updateMatrixWorld(true);const sp=g.worldToLocal(_bv.set(t.ax,g.position.y,t.az)).clone();sp.y=0;
+  RT.ph='exit';RT.k=k;RT.sit=1;RT.seg=0;RT.f=0;RT.P=busAvPath([[.55,.62,1.05],[.1,.62,1.05],[.1,.62,1.7],[.75,.62,2.45],[1.8,0,2.45],[sp.x,0,sp.z]]);RT.yaw=0;
+  showCap('Getting off at '+t.w,2000);return}
+ const n=B?B.nextStop():-1;showCap('Wait until the bus stops'+(n>=0?' at '+B.stops[n].n:''),2000)}
+function busAvFree(){const av=SELF.av;if(av&&av.g.parent!==scene){scene.add(av.g);av.g.rotation.set(0,0,0)}busGlass(false)}
+function busAlight(k){const t=window.BUS.stops[k];RT={on:false};busAvFree();
  G.t.set(t.ax,1.12+_wbr(t.ax,t.az),t.az);V.t.copy(G.t);G.th=V.th=t.th;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62);
  showCap('Welcome to '+t.w,3000)}
-function busView(){const ry=window.BUS.g.rotation.y;RT.view=RT.view==='out'?'in':'out';G.th=V.th=-Math.PI/2-ry;
- busGlass(RT.view==='in');
- if(RT.view==='in'){G.r=V.r=.05;G.ph=V.ph=Math.PI/2;fov(62)}else{G.r=V.r=16;G.ph=V.ph=1.2;fov(55)}
- showCap(RT.view==='in'?'Seat inside the bus':'Outside view',900)}
+function busView(){RT.view=RT.view==='out'?'in':'out';if(RT.view==='in'){G.th=V.th=-Math.PI/2-window.BUS.g.rotation.y;fov(62)}else fov(55);
+ showCap(RT.view==='in'?'Inside the bus':'Outside view',900)}
 addEventListener('keydown',e=>{if(e.code==='KeyV'&&RT.on&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||''))trainView()});
 // how deep a circle of radius r at (x,z) sits inside walls, fences, closed doors and fixed obstacles (0 = clear)
 function gmDepth(x,z,r){let D=0;const q=(cx,cz,hx,hz)=>{const dx=Math.max(Math.abs(x-cx)-hx,0),dz=Math.max(Math.abs(z-cz)-hz,0),e=dx*dx+dz*dz;if(e<r*r)D+=r-Math.sqrt(e)};
@@ -3493,6 +3571,8 @@ function actSet(m){SELF.mode=m;if(!m){actR.classList.remove('show');return}for(l
 addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.repeat||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||'')||!walk||tour)return;
  if(GM){if(e.code==='KeyE'){e.preventDefault();if(!trainUse(false,true))rideOff()}else if(e.code==='KeyH'){e.preventDefault();rideBell()}return}
  if(e.code==='Space'){e.preventDefault();walkJump()}else if(e.code==='KeyE'){e.preventDefault();useNear()}else if(e.code==='KeyQ'){e.preventDefault();walkWave()}});
+// knees and elbows follow the stride: a knee bends as its leg swings forward (more when running), elbows stay a little bent and bend more as the arm swings forward
+function avBend(av,ph,amp,run){if(!av.K)return;for(let i=0;i<2;i++){const a=ph+i*Math.PI;av.K[i].rotation.x=.06+Math.max(0,-Math.cos(a))*amp*(run?2.0:1.5);av.E[i].rotation.x=-(.18+(run?.95:.12)+Math.max(0,Math.sin(a))*amp*.7)}}
 // every frame, after the camera target has moved: place, turn and animate my avatar, and keep the buttons in step
 function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&&!(typeof SS!=='undefined'&&SS.view));
  const m=walk&&!tour&&!window.SKYV?(GM?'ride':RT.on?'train':'walk'):'';if(m!==S.mode)actSet(m);
@@ -3503,13 +3583,14 @@ function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&
  if(S.wv>0)S.wv=Math.max(0,S.wv-dt);
  if(!S.av&&window.MP&&MP.mkAv){const P=MP.mkAv({name:'',col:MP.col()});S.av=P.av;S.col=MP.col();try{scene.remove(P.tag)}catch(e){}}
  const av=S.av;if(!av)return;
+ if(RT.on&&RT.bus){av.g.visible=true;return}   /* on the bus: placed and posed by busPos */
  av.g.visible=on&&(WCAM.on?WCAM.d>.35:V.r>.75);if(!av.g.visible)return;
  {const sc=window.MP&&MP.on?MP.col():0xffc93c;if(sc!==S.col){S.col=sc;av.mSh.color.setHex(sc)}}
  const x=V.t.x,z=V.t.z,b=_wbr(x,z,V.t.y-1.12);av.g.position.set(x,(b>0?V.t.y-1.12:terr(x,z)+V.t.y-1.12)+S.jy,z);av.g.rotation.y=Math.atan2(-Math.cos(V.th),-Math.sin(V.th));
  const sp=Math.abs(S.mv||0),run=sp>3.5;av.ph+=(S.mv||0)*dt*(run?3.6:5.2);const amp=Math.min(1,sp/1.2)*(run?.95:.55),sw=Math.sin(av.ph)*amp;
- av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;av.A[0].rotation.z=0;av.A[1].rotation.z=0;
- if(S.jy>0){av.L[0].rotation.x=-.55;av.L[1].rotation.x=.35;av.A[0].rotation.z=-.5;av.A[1].rotation.z=.5}
- if(S.wv>0){av.A[1].rotation.x=0;av.A[1].rotation.z=2.6+Math.sin(S.wv*12)*.35}
+ av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;av.A[0].rotation.z=0;av.A[1].rotation.z=0;avBend(av,av.ph,amp,run);
+ if(S.jy>0){av.L[0].rotation.x=-.55;av.L[1].rotation.x=.35;av.A[0].rotation.z=-.5;av.A[1].rotation.z=.5;if(av.K){av.K[0].rotation.x=1.0;av.K[1].rotation.x=.6;av.E[0].rotation.x=av.E[1].rotation.x=-.5}}
+ if(S.wv>0){av.A[1].rotation.x=0;av.A[1].rotation.z=2.6+Math.sin(S.wv*12)*.35;if(av.E)av.E[1].rotation.x=-.35}
  av.g.rotation.x=run?.08:0;if(av.pony){av.pony.rotation.x=-.15-Math.abs(Math.sin(av.ph))*amp*.35-(run?.35:0);av.pony.rotation.z=Math.sin(av.ph)*amp*.25}}
 
 (function envLoop(){requestAnimationFrame(envLoop);try{if(carG.visible&&carG.userData.envTick)carG.userData.envTick()}catch(e){}})();
@@ -3564,13 +3645,18 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   const add=(geo,m,x,y,z,p)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;(p||g).add(o);return o};
   const sph=(r,m,x,y,z,sx,sy,sz,p)=>{const o=add(new THREE.SphereGeometry(r,16,12),m,x,y,z,p);o.scale.set(sx||1,sy||1,sz||1);return o};
   // legs swing from the hips: leggings with a knee, white sneakers with pink soles (as on the bike)
-  const leg=s=>{const p=new THREE.Group();p.position.set(s*.072,.6,0);g.add(p);
-   add(new THREE.CylinderGeometry(.05,.04,.54,10),mLg,0,-.27,0,p);sph(.042,mLg,0,-.28,.004,1,.8,1,p);
-   add(new THREE.BoxGeometry(.075,.055,.15),mWs,0,-.55,.03,p);add(new THREE.BoxGeometry(.077,.02,.152),mSo,0,-.585,.03,p);return p};
+  const leg=s=>{const p=new THREE.Group();p.position.set(s*.072,.6,0);g.add(p);sph(.05,mLg,0,0,0,1,1,1,p);
+   add(new THREE.CylinderGeometry(.05,.044,.28,12),mLg,0,-.14,0,p);
+   const kn=new THREE.Group();kn.position.set(0,-.28,0);p.add(kn);sph(.044,mLg,0,0,.002,1,1,1,kn);   // knee joint
+   add(new THREE.CylinderGeometry(.043,.036,.25,12),mLg,0,-.125,0,kn);sph(.036,mSk,0,-.25,0,1,.7,1,kn);
+   // rounded sneaker: white upper with a pink sole, toe a little rounder than the heel
+   sph(.047,mWs,0,-.272,.035,.86,.62,1.75,kn);sph(.049,mSo,0,-.3,.035,.9,.26,1.8,kn);sph(.03,mWs,0,-.262,.085,1.25,.8,1,kn);
+   p.kn=kn;return p};
   // arms swing from the shoulders: t-shirt sleeve, bare forearm, hand
   const arm=s=>{const p=new THREE.Group();p.position.set(s*.13,.95,0);g.add(p);
-   sph(.045,mSh,0,0,0,1,1,1,p);add(new THREE.CylinderGeometry(.036,.031,.17,10),mSh,0,-.08,0,p);sph(.03,mSk,0,-.18,0,1,1,1,p);
-   add(new THREE.CylinderGeometry(.03,.026,.17,10),mSk,0,-.265,0,p);sph(.03,mSk,0,-.36,.005,1,.85,1.1,p);return p};
+   sph(.045,mSh,0,0,0,1,1,1,p);add(new THREE.CylinderGeometry(.036,.031,.17,12),mSh,0,-.08,0,p);
+   const el=new THREE.Group();el.position.set(0,-.18,0);p.add(el);sph(.03,mSk,0,0,0,1,1,1,el);   // elbow joint
+   add(new THREE.CylinderGeometry(.03,.026,.17,12),mSk,0,-.085,0,el);sph(.03,mSk,0,-.18,.005,1,.85,1.1,el);p.el=el;return p};
   const L=[leg(-1),leg(1)],A=[arm(-1),arm(1)];
   // hips in leggings, t-shirt torso with rounded shoulders, neck
   sph(.115,mLg,0,.63,0,1.05,.62,.85);
@@ -3586,7 +3672,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   sph(.096,mHr,0,.0,-.04,1.0,.98,.92,hd);sph(.06,mHr,0,-.02,-.07,1.25,1.1,.9,hd);
   {const fr=sph(.05,mHr,-.02,.068,.06,1.35,.38,.55,hd);fr.rotation.z=.25}
   const pony=new THREE.Group();pony.position.set(0,.03,-.1);hd.add(pony);sph(.04,mHr,0,-.06,-.04,.8,1.6,.9,pony);sph(.018,mSo,0,.0,-.0,1.4,1,1.2,pony);
-  g.traverse(o=>{o.raycast=()=>{}});g.visible=false;scene.add(g);P.av={g,L,A,mSh,ph:0,wv:0,jy:0,pony};
+  g.traverse(o=>{o.raycast=()=>{}});g.visible=false;scene.add(g);P.av={g,L,A,K:L.map(l=>l.kn),E:A.map(a=>a.el),mSh,ph:0,wv:0,jy:0,pony};
 
   const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(P.name,P.col),transparent:true,depthTest:false,depthWrite:false,fog:false}));tag.scale.set(1.25,.27,1);tag.renderOrder=20;tag.visible=false;scene.add(tag);P.tag=tag;P.tagKey=P.name+'|'+P.col}
  function freshen(P){if(!P.av)mkAvatar(P);const k=P.name+'|'+P.col;if(k!==P.tagKey){P.tagKey=k;P.tag.material.map.dispose();P.tag.material.map=tagTex(P.name,P.col);P.av.mSh.color.setHex(P.col);const b=bike(P.mode);if(b&&MP.own[P.mode]&&MP.own[P.mode].id===P.id)b.tint(P.col)}}
@@ -3675,7 +3761,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   VEH.forEach(v=>{const o=MP.own[v];if(!o||o.id===MP.self)return;const P=MP.peers.get(o.id);if(!P||t-P.last>6000)release(v);else if(P.mode!==v&&t-P.modeT>2500){const s=P.vs;release(v,s?s[0]:undefined,s?s[2]:undefined,s?s[3]:undefined)}});
   MP.peers.forEach(P=>{if(!P.av)return;const av=P.av;let tagAt=null;
    if(P.mode==='w'&&P.tp){const [x,y,z,th]=P.tp,gy=gnd(x,z);if(!P.init){P.ax=x;P.az=z;P.ath=th;P.init=true}const k=Math.min(1,dt*9),ox=P.ax,oz=P.az;P.ax+=(x-P.ax)*k;P.az+=(z-P.az)*k;P.ath+=AD(th,P.ath)*k;
-    const sp=Math.hypot(P.ax-ox,P.az-oz)/Math.max(dt,1e-3);av.ph+=Math.hypot(P.ax-ox,P.az-oz)*5.2;const sw=Math.sin(av.ph)*Math.min(1,sp/1.2)*(sp>3.5?.9:.55);av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;av.jy+=((P.jy||0)-av.jy)*Math.min(1,dt*14);if(av.jy>.03){av.L[0].rotation.x=-.5;av.L[1].rotation.x=.3}av.wv=P.em?av.wv+dt:0;av.A[1].rotation.z=P.em?2.6+Math.sin(av.wv*12)*.35:0;if(P.em)av.A[1].rotation.x=0;
+    const sp=Math.hypot(P.ax-ox,P.az-oz)/Math.max(dt,1e-3);av.ph+=Math.hypot(P.ax-ox,P.az-oz)*5.2;const amp_=Math.min(1,sp/1.2)*(sp>3.5?.9:.55),sw=Math.sin(av.ph)*amp_;av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;avBend(av,av.ph,amp_,sp>3.5);av.jy+=((P.jy||0)-av.jy)*Math.min(1,dt*14);if(av.jy>.03){av.L[0].rotation.x=-.5;av.L[1].rotation.x=.3;if(av.K){av.K[0].rotation.x=1.0;av.K[1].rotation.x=.6}}av.wv=P.em?av.wv+dt:0;av.A[1].rotation.z=P.em?2.6+Math.sin(av.wv*12)*.35:0;if(P.em)av.A[1].rotation.x=0;
     av.g.visible=true;av.g.position.set(P.ax,Math.min(gy,y-.6)+av.jy,P.az);av.g.rotation.y=Math.atan2(-Math.cos(P.ath),-Math.sin(P.ath));tagAt=[P.ax,av.g.position.y+1.5,P.az]}
    else{av.g.visible=false;P.init=false;const o=MP.own[P.mode];if(o&&o.id===P.id&&P.vs){if(P.mode==='trike'){tkNet(P.vs,dt);tagAt=[TR.x,TR.y+1.1,TR.z]}else{const b=bike(P.mode);if(b){b.net(P.vs,dt);tagAt=[b.x,b.y+1.6,b.z]}}}}
    if(tagAt){P.tag.visible=true;P.tag.position.set(tagAt[0],tagAt[1],tagAt[2]);const d=cam.position.distanceTo(P.tag.position),s=Math.max(1,d/9);P.tag.scale.set(1.25*s,.27*s,1)}else P.tag.visible=false})})();
