@@ -691,7 +691,7 @@ function euc(par,sc,seed,cg,lf){sc=sc||1;let q=(seed||1)*9301+49297;const rnd=()
 // ---- small street tree on the nature strip (sways with the wind)
 const treeG=new THREE.Group(),crown=new THREE.Group(),leafs=[];
 {const mT=M({color:0x6a4a30,roughness:.9}),mSt=M({color:0x2b2d2f,roughness:.6}),mMu=M({color:0x5a3f2a,roughness:1});
- treeG.position.set(17.25,0,-2.7);scene.add(treeG);
+ treeG.position.set(17.25,0,-2.7);(window.SOB=window.SOB||[]).push([17.25,-2.7,.12]);scene.add(treeG);
  crown.position.y=5.4*.45;treeG.add(crown);euc(treeG,1,7,crown,leafs)}   /* a young gum like the others along the street */
 function treeTick(tm){const g=Math.max(.45,.95+.45*Math.sin(tm*.31)+.25*Math.sin(tm*.83+1));
  const sw=Math.sin(tm*1.15)*.6+Math.sin(tm*2.7+1.3)*.3+Math.sin(tm*.43)*.5;
@@ -1300,7 +1300,7 @@ setTimeout(()=>{try{
   const box=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o};
   const sign=(x,z,ry)=>{box(.08,2.7,.08,mPo,x,-.18+1.35,z);const s=new THREE.Mesh(new THREE.PlaneGeometry(.48,.64),sgM);s.position.set(x,-.18+2.3,z);s.rotation.y=ry;scene.add(s)};
   // shelter on the nature strip beside no. 28 (between no. 28's and no. 30's driveways): glass back toward the footpath, open toward the road
-  const sx=17.25,sz0=ZH-2.2,sz1=ZH+1.4;[sz0,sz1].forEach(z=>[sx-.65,sx+.7].forEach(x=>box(.07,2.4,.07,mPo,x,-.18+1.2,z)));
+  const sx=17.25,sz0=ZH-2.2,sz1=ZH+1.4;{const O=(window.SOB=window.SOB||[]);[sz0,sz1].forEach(z=>[sx-.65,sx+.7].forEach(x=>O.push([x,z,.07])));for(let z=sz0;z<=sz1;z+=.35)O.push([sx-.65,z,.05]);[sz0,sz1].forEach(z=>{for(let x=sx-.65;x<=sx+.6;x+=.35)O.push([x,z,.05])})}   /* shelter posts and glass panels are solid */[sz0,sz1].forEach(z=>[sx-.65,sx+.7].forEach(x=>box(.07,2.4,.07,mPo,x,-.18+1.2,z)));
   box(1.6,.06,sz1-sz0+.4,mGs,sx+.05,-.18+2.42,(sz0+sz1)/2);box(.03,1.9,sz1-sz0,mGs,sx-.65,-.18+1.3,(sz0+sz1)/2);
   [sz0,sz1].forEach(z=>box(1.2,1.9,.03,mGs,sx,-.18+1.3,z));box(.4,.06,sz1-sz0-.4,mBn,sx-.35,-.18+.48,(sz0+sz1)/2);
   // painted bus zone on the road in front of it: yellow border, criss-cross hatching and BUS STOP, in the kerb lane where the bus pulls in
@@ -1325,7 +1325,7 @@ setTimeout(()=>{try{
   const ttT=cv(128,192,c=>{c.fillStyle='#fdfdfb';c.fillRect(0,0,128,192);c.fillStyle='#ff8200';c.fillRect(0,0,128,26);c.fillStyle='#fff';c.font='bold 14px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('TIMETABLE',64,18);
      c.fillStyle='#888';for(let r=0;r<11;r++){c.fillRect(8,36+r*13,112,1);c.fillStyle='#333';c.font='9px Arial';c.fillText((6+r)+':05   '+(6+r)+':25   '+(6+r)+':45',64,46+r*13);c.fillStyle='#888'}});
   const mGal=M({color:0xa9afb4,metalness:.75,roughness:.35}),mEdge=M({color:0xcfd3d6,metalness:.6,roughness:.4}),ttM=new THREE.MeshStandardMaterial({map:ttT,roughness:.4}),ttF=M({color:0x2b2f33,metalness:.5,roughness:.5});
-  const stopFlag=(x,z,ry,no)=>{const g=new THREE.Group();g.position.set(x,-.18,z);g.rotation.y=ry;scene.add(g);
+  const stopFlag=(x,z,ry,no)=>{(window.SOB=window.SOB||[]).push([x,z,.07]);const g=new THREE.Group();g.position.set(x,-.18,z);g.rotation.y=ry;scene.add(g);
    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.038,.042,3.05,12),mGal);pole.position.y=1.525;pole.castShadow=true;g.add(pole);
    const cap=new THREE.Mesh(new THREE.SphereGeometry(.042,10,6,0,6.283,0,Math.PI/2),mGal);cap.position.y=3.05;g.add(cap);
    const fT=flagT(no),fM=new THREE.MeshStandardMaterial({map:fT,roughness:.45,metalness:.1});
@@ -1492,7 +1492,7 @@ function mkBikeF(BC){try{
   if(az<=R.ZE&&((x>=12&&x<14.8)||(x>30.1&&x<=33)))return true;
   return false};
  const local=(x,z)=>x>-39.9&&x<48&&z>-48&&z<48;
- const carHit=(x,z,r)=>{const R=R_();if(!R||!R.VH)return false;for(const q of R.VH){const p=q.g.position;if(Math.abs(x-p.x)<1.15+r&&Math.abs(z-p.z)<q.g.userData.L/2+r)return true}return false};
+ const carHit=(x,z,r)=>{const R=R_();if(typeof vobHit==='function'&&vobHit(x,z,r))return true;if(!R||!R.VH)return false;for(const q of R.VH){const p=q.g.position;if(Math.abs(x-p.x)<1.15+r&&Math.abs(z-p.z)<q.g.userData.L/2+r)return true}return false};
  const bkHit=(x,z,r)=>local(x,z)?gmHit(x,z,r):(!onNet(x,z)||carHit(x,z,r));
  const bkTerr=(x,z,ry)=>{const R=R_();
   if(R&&!local(x,z)){const L=[],sb=SUBH(x,z);if(sb!==null)L.push(sb);if(window.STH){const h=STH(x,z);if(h!==null)L.push(h)}if(window.FPN&&FPN(x,z))L.push(-.135);
@@ -1528,7 +1528,8 @@ function mkBikeF(BC){try{
   const yr=K.sp*Math.tan(K.st)/.84;K.th+=yr*dt;
   const fx=Math.sin(K.th),fz=Math.cos(K.th),Rr=Q?.5:.32,stk=bkHit(K.x,K.z,Rr);let nx=K.x+fx*K.sp*dt,nz=K.z+fz*K.sp*dt,moved=0;
   const bx_=!stk&&bkHit(nx,K.z,Rr);if(!bx_||stk){moved+=Math.abs(nx-K.x);K.x=nx}const bz_=!stk&&bkHit(K.x,nz,Rr);if(!bz_||stk){moved+=Math.abs(nz-K.z);K.z=nz}
-  if((bx_||bz_)&&Math.abs(K.sp)>.6){const now=performance.now();if(now-(K.ht||0)>400){K.ht=now;try{KX_=K.x;KZ_=K.z;SV=Math.min(1,.3+Math.abs(K.sp)*.15);sfx(gmKind(nx,nz,Rr));SV=1}catch(e){}}}
+  if((bx_||bz_)&&Math.abs(K.sp)>.6){const now=performance.now();if(now-(K.ht||0)>400){K.ht=now;try{KX_=K.x;KZ_=K.z;SV=Math.min(1,.3+Math.abs(K.sp)*.15);sfx(gmKind(nx,nz,Rr));SV=1}catch(e){}}
+   try{vobPush(nx,nz,Rr,fx*Math.sign(K.sp),fz*Math.sign(K.sp),K.sp)}catch(e){}if(Math.abs(K.sp)>1.5)K.sp=-K.sp*.3}   /* bounce back off whatever you hit */
   if(Math.abs(K.sp)>.15&&moved<Math.abs(K.sp)*dt*.35)K.sp*=.7;
   const ds=Math.sign(K.sp)*moved;
   // height, slope and lean
@@ -1606,7 +1607,7 @@ setTimeout(()=>{try{const g=carG,W=g.userData.W||[],HM={x:7.4,z:2.3,th:0},BKT=(x
   if(stk||!hitAt(nx,nz,nth)){moved=Math.hypot(nx-K.x,nz-K.z);K.x=nx;K.z=nz;K.th=nth}
   else{bump=true;if(!hitAt(nx,K.z,K.th)){moved=Math.abs(nx-K.x);K.x=nx}else if(!hitAt(K.x,nz,K.th)){moved=Math.abs(nz-K.z);K.z=nz}}
   if(bump&&Math.abs(K.sp)>1){const now=performance.now();if(now-(K.ht||0)>450){K.ht=now;try{KX_=K.x;KZ_=K.z;SV=Math.min(1,.4+Math.abs(K.sp)*.06);sfx(gmKind(nx,nz,1));SV=1}catch(er){}}}
-  if(bump)K.sp*=moved>Math.abs(K.sp)*dt*.5?.92:.25;
+  if(bump){const hard=moved<=Math.abs(K.sp)*dt*.5;if(hard){try{const e=2.3*Math.sign(K.sp);vobPush(K.x+Math.cos(K.th)*e,K.z+Math.sin(K.th)*e,1.1,Math.cos(K.th)*Math.sign(K.sp),Math.sin(K.th)*Math.sign(K.sp),K.sp*1.5)}catch(er){}}K.sp=hard&&Math.abs(K.sp)>2.5?-K.sp*.22:K.sp*(hard?.25:.92)}   /* a hard hit knocks you back */
   const ds=Math.sign(K.sp)*moved,c=Math.cos(K.th),s=Math.sin(K.th);
   const yf=BKT(K.x+c*1.34,K.z+s*1.34),yb=BKT(K.x-c*1.34,K.z-s*1.34);K.y+=((yf+yb)/2-K.y)*Math.min(1,dt*10);K.pt+=(Math.atan2(yf-yb,L)-K.pt)*Math.min(1,dt*8);
   const rlT=Math.max(-.05,Math.min(.05,K.sp*K.sp*Math.tan(K.st)/L*.004));K.rl+=(rlT-K.rl)*Math.min(1,dt*4);
@@ -1632,7 +1633,7 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;
  const pool=(x,y,z,r)=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(r*2,r*2),mPool);p.rotation.x=-Math.PI/2;p.position.set(x,y+.02,z);p.renderOrder=2;scene.add(p)};
  const halo=(x,y,z,s)=>{const sp=new THREE.Sprite(glowS);sp.center.set(.5,1);sp.position.set(x,y,z);sp.scale.set(s,s*.5,1);scene.add(sp)};   // light only spills downward from the lens
  // pole with one arm (dx,dz = direction of the arm over the road); y0 = ground level at the pole, yr = road level under the lamp
- const pole=(x,z,y0,dx,dz,yr,two)=>{const H=7.4,g=new THREE.Group();g.position.set(x,y0,z);scene.add(g);
+ const pole=(x,z,y0,dx,dz,yr,two)=>{if(y0<.5)(window.SOB=window.SOB||[]).push([x,z,.12]);const H=7.4,g=new THREE.Group();g.position.set(x,y0,z);scene.add(g);
   const p=new THREE.Mesh(new THREE.CylinderGeometry(.06,.1,H,10),mPole);p.position.y=H/2;p.castShadow=true;g.add(p);
   (two?[1,-1]:[1]).forEach(s=>{const ax=dx*s,az=dz*s,L=1.9;const a=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,L,8),mPole);a.rotation.z=Math.PI/2;a.rotation.y=-Math.atan2(az,ax);a.position.set(ax*L/2,H-.1,az*L/2);g.add(a);
    const hx=ax*(L+.2),hz=az*(L+.2),h=new THREE.Mesh(new THREE.BoxGeometry(.7,.14,.32),mHd);h.rotation.y=-Math.atan2(az,ax);h.position.set(hx,H-.12,hz);g.add(h);
@@ -3072,7 +3073,21 @@ function gmByWall(x,z,hw,hd){for(let i=0;i<COL.length;i++){const c=COL[i];if(Mat
 function gmSeen(o){const u=o.userData;if(u.gf===GMFR)return u.gv;let v=true,q=o;while(q){if(!q.visible){v=false;break}q=q.parent}const m=Array.isArray(o.material)?o.material[0]:o.material;if(m&&(m.visible===false||m.colorWrite===false||(m.transparent&&m.opacity<.08)))v=false;u.gf=GMFR;u.gv=v;return v}
 function gmAutoHit(x,z,r){if(!GMA)return false;for(let i=Math.floor(x-r);i<=Math.floor(x+r);i++)for(let j=Math.floor(z-r);j<=Math.floor(z+r);j++){const a=GMA.get(i*4096+j);if(!a)continue;for(let n=0;n<a.length;n++){const c=a[n];if(!gmSeen(c[4]))continue;const dx=Math.max(Math.abs(x-c[0])-c[2],0),dz=Math.max(Math.abs(z-c[1])-c[3],0);if(dx*dx+dz*dz<r*r)return true}}return false}
 var KX_=0,KZ_=0;
-function gmHit(x,z,r){{const cb=window.CARB;if(cb&&GAMES_ON&&CAR_ON&&GM!==window.CARK){const dx=Math.max(Math.abs(x-cb.x)-2.38,0),dz=Math.max(Math.abs(z-cb.z)-.92,0);if(dx*dx+dz*dz<r*r)return true}}for(let i=0;i<COL.length;i++){const c=COL[i],dx=Math.max(Math.abs(x-c[0])-c[2],0),dz=Math.max(Math.abs(z-c[1])-c[3],0);if(dx*dx+dz*dz<r*r)return true}
+// ---- vehicles and street things are solid: parked (or other people's) bikes, the quad and the trike, all five buses, other players,
+//      tree trunks, light poles, bus stop poles and the shelter. Used by every ride (and by walkers), on top of walls and fences.
+function obbD(x,z,cx,cz,th,hl,hw){const s=Math.sin(th),c=Math.cos(th),dx=x-cx,dz=z-cz,a=dx*s+dz*c,b=dx*c-dz*s,ea=Math.max(Math.abs(a)-hl,0),eb=Math.max(Math.abs(b)-hw,0);return Math.hypot(ea,eb)}   /* distance from a point to a box lying along heading th (+z forward) */
+function vobHit(x,z,r){
+ const O=window.SOB;if(O)for(let i=0;i<O.length;i++){const o=O[i],dx=x-o[0],dz=z-o[1],m=r+o[2];if(dx*dx+dz*dz<m*m)return true}
+ if(GAMES_ON&&window.BKS)for(const b of BKS){if(b===GM||!b.g||!b.g.visible)continue;if(Math.abs(x-b.x)>2||Math.abs(z-b.z)>2)continue;if(obbD(x,z,b.x,b.z,b.th,b.quad?.78:.55,b.quad?.5:.18)<r)return true}
+ if(GAMES_ON&&typeof KID!=='undefined'&&KID&&KID.visible&&!(typeof GMK!=='undefined'&&GM===GMK)){const p=KID.position;if(Math.hypot(x-p.x,z-p.z)<r+.38)return true}
+ if(window.BUS&&BUS.list)for(const u of BUS.list){const g=u.g;if(!g.visible||(RT.on&&RT.bus&&u.k===BUS.active()))continue;if(Math.abs(x-g.position.x)>5||Math.abs(z-g.position.z)>5)continue;if(obbD(x,z,g.position.x,g.position.z,g.rotation.y,3.52,1.07)<r)return true}
+ if(GM&&window.MP&&MP.on&&MP.bodies){for(const q of MP.bodies()){if(Math.hypot(x-q[0],z-q[1])<r+q[2])return true}}
+ return false}
+// a bump: a parked bike, quad or trike you run into is shoved a little and twisted (it stays upright), so it reads as a real knock
+function vobPush(x,z,r,fx,fz,sp){if(!GAMES_ON||!window.BKS)return;const k=Math.min(.45,Math.abs(sp)*.08);if(k<.04)return;
+ for(const b of BKS){if(b===GM||!b.parked||!b.g||!b.g.visible||!b.setPark)continue;if(obbD(x,z,b.x,b.z,b.th,b.quad?.78:.55,b.quad?.5:.18)<r+.08){const nx=b.x+fx*k,nz=b.z+fz*k;
+  if(!(window.BKH&&BKH(nx,nz,.15)&&!BKH(b.x,b.z,.15)))b.setPark(nx,nz,b.th+(Math.random()-.5)*k*1.2)}}}
+function gmHit(x,z,r){if(vobHit(x,z,r))return true;{const cb=window.CARB;if(cb&&GAMES_ON&&CAR_ON&&GM!==window.CARK){const dx=Math.max(Math.abs(x-cb.x)-2.38,0),dz=Math.max(Math.abs(z-cb.z)-.92,0);if(dx*dx+dz*dz<r*r)return true}}for(let i=0;i<COL.length;i++){const c=COL[i],dx=Math.max(Math.abs(x-c[0])-c[2],0),dz=Math.max(Math.abs(z-c[1])-c[3],0);if(dx*dx+dz*dz<r*r)return true}
  for(let i=0;i<GMF.length;i++){const c=GMF[i],dx=Math.max(c[0]-x,0,x-c[1]),dz=Math.max(c[2]-z,0,z-c[3]);if(dx*dx+dz*dz<r*r)return true}
  for(let i=0;i<SDR.length;i++){const d=SDR[i],sl=SLD[d.k];if(sl&&sl.p>.85)continue;const c=d.r,dx=Math.max(Math.abs(x-c[0])-c[2],0),dz=Math.max(Math.abs(z-c[1])-c[3],0);if(dx*dx+dz*dz<r*r)return true}
  for(let i=0;i<GMD.length;i++){const c=GMD[i];if(!c[4]())continue;const dx=Math.max(Math.abs(x-c[0])-c[2],0),dz=Math.max(Math.abs(z-c[1])-c[3],0);if(dx*dx+dz*dz<r*r)return true}
@@ -3131,7 +3146,7 @@ function gmHit(x,z,r){{const cb=window.CARB;if(cb&&GAMES_ON&&CAR_ON&&GM!==window
   side(0,[6.25,18.75,31.25,43.75,-6.25,-18.75,-31.25,-43.75],6.25,9.0,4.0,-17.1,5.55,1);seg(-17.1,6.35,-17.1,43.75);seg(-17.1,-6.35,-17.1,-43.75);   // our side of the street (our own lot's fences already exist)
   side(1,[-47.75,-33.25,-18.75,-4.25,10.25,24.75,39.25,53.75],7.25,37.2,42.0,55,5.55,-1);seg(55,-47.75,55,53.75)}                                // far side
  // trees on both green belts
- const tree=(x,z,sc)=>{const g=new THREE.Group();euc(g,sc,Math.round(x*7+z*13)+500);g.position.set(x,0,z);g.rotation.y=(x*3.1+z)%6.28;scene.add(g);if(x<20)GMO.push([x,z,.12,.12])};   /* young gums, like the real ones on the nature strips */
+ const tree=(x,z,sc)=>{(window.SOB=window.SOB||[]).push([x,z,.12]);const g=new THREE.Group();euc(g,sc,Math.round(x*7+z*13)+500);g.position.set(x,0,z);g.rotation.y=(x*3.1+z)%6.28;scene.add(g);if(x<20)GMO.push([x,z,.12,.12])};   /* young gums, like the real ones on the nature strips */
  [-24,-15,-8,12.3,16,24,32].forEach(z=>tree(17.6,z,.9));[-30,-19,-6,6,18,28].forEach(z=>tree(27.1,z,.95))}
 function cm(rx,ry){const m=mConc.clone();m.map=mConc.map.clone();m.map.wrapS=m.map.wrapT=THREE.RepeatWrapping;m.map.repeat.set(rx,ry);m.map.needsUpdate=true;return m}
 {const g0=NM.slg;NM.slh=[];NM.sls=[];if(g0){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),gr=x.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,235,190,1)');gr.addColorStop(.35,'rgba(255,215,150,.5)');gr.addColorStop(1,'rgba(255,200,120,0)');x.fillStyle=gr;x.fillRect(0,0,64,64);const tx=new THREE.CanvasTexture(c);
@@ -3515,6 +3530,7 @@ function gmTick(dt){GMFR++;const K=GMK;gmDoors(K);const f=((AK.KeyW||AK.ArrowUp)
  const bx=!st&&gmHit(nx,K.z,R),bz=!st&&gmHit(K.x,nz,R);if(!bx||st){moved+=Math.abs(nx-K.x);K.x=nx}if(!gmHit(K.x,nz,R)||st){moved+=Math.abs(nz-K.z);K.z=nz}
  if((bx||bz)&&Math.abs(K.sp)>.45){const now=performance.now();if(now-(K.ht||0)>380){K.ht=now;KX_=K.x;KZ_=K.z;SV=Math.min(1,.35+Math.abs(K.sp)*.4);sfx(bx?gmKind(nx,K.z,R):gmKind(K.x,nz,R));SV=1}}
  if(Math.abs(K.sp)>.2&&moved<Math.abs(K.sp)*dt*.35)K.sp*=.8;
+ if((bx||bz)&&!st&&Math.abs(K.sp)>.8){try{vobPush(nx,nz,R,fx*Math.sign(K.sp),fz*Math.sign(K.sp),K.sp*2)}catch(e){}K.sp=-K.sp*.3}   /* bounce off */
  const ds=Math.sign(K.sp)*moved;K.wp+=ds;
  if(BALL.m&&Math.abs(K.sp)>.25){const bp=BALL.m.position,dx=bp.x-K.x,dz=bp.z-K.z,d=Math.hypot(dx,dz);if(d<.3+BALL.R+.12&&d>.001){const hx=Math.sign(K.sp)*fx,hz=Math.sign(K.sp)*fz;if((dx*hx+dz*hz)/d>.2){let kx=dx/d*.6+hx*.4,kz=dz/d*.6+hz*.4;const kl=Math.hypot(kx,kz)||1;BALL.dx=kx/kl;BALL.dz=kz/kl;BALL.sp=Math.max(BALL.sp,2.2+Math.abs(K.sp)*1.6);SV=Math.min(1,.35+Math.abs(K.sp)*.35);sfx('bk');SV=1;const q=.3+BALL.R+.13;bp.x=K.x+dx/d*q;bp.z=K.z+dz/d*q}}}
  const ty=(window.BKNET?window.BKNET.terr:terr)(K.x,K.z,K.ty);if(K.ty===undefined){K.ty=ty;K.y=ty;K.kp=0;K.kv=0}
