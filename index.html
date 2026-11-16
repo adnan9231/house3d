@@ -120,6 +120,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
 <div hidden><div class="row"><button id="bRoof" class="tg on">Roof: on</button><button id="bMM" class="tg">Floor plan: off</button><button id="bFurn" class="tg" title="Show or hide loose furniture (beds in Bed 3)">Furniture: off</button><button id="bSky" class="tg" title="See where the sun and moon are right now, relative to the house">Sky view: off</button><button id="bLab" class="tg" style="display:none">Labels</button><button id="bGMo" class="tg" style="display:none">Game mode: off</button></div></div>
 <div class="grp"><span class="gl">Light</span><div class="seg" role="radiogroup" aria-label="Lighting"><button id="bNight" role="radio" aria-checked="true" class="on">Night</button><button id="bDay" role="radio" aria-checked="false">Day</button><button id="bLive" role="radio" aria-checked="false">Current time</button></div>
 <div id="sunClk" style="display:none"><div id="scT"></div><div id="scS"></div><div id="scB"><i></i></div><div id="scL" style="display:none"></div></div><div hidden><button id="bSun">Sun path: off</button><button id="bSV">Sun view: off</button><button id="bSM">Sun map: off</button><input type="date" id="sunDate"></div></div>
+<div class="grp"><span class="gl">Avatar</span><div class="seg" role="radiogroup" aria-label="Avatar"><button id="bGirl" role="radio" aria-checked="true" class="on">Girl</button><button id="bBoy" role="radio" aria-checked="false">Boy</button></div></div>
 <div class="grp"><span class="gl">Display</span><div class="row"><button id="bSpd" class="tg" title="Show or hide a speedometer for walking, running, the bike, the trike, the car, the bus and the train">Speedometer: off</button></div></div>
 <div class="grp"><span class="gl">Next trains</span><div id="nxtT" style="display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.35"><div>Loading timetable…</div></div></div></div><div id="tAng"><span>UP</span><input type="range" id="tAngR" min="-60" max="40" value="0" aria-label="Camera angle"><span>FLOOR</span></div><canvas id="mm" width="246" height="128"></canvas><div id="cap"></div><input type="range" id="tSeek" min="0" max="1000" value="0" aria-label="Tour position"><div id="tSpd" role="radiogroup" aria-label="Tour speed"><button data-v=".25" role="radio" aria-checked="false">0.5×</button><button data-v=".5" class="on" role="radio" aria-checked="true">1×</button><button data-v="1" role="radio" aria-checked="false">2×</button></div><div id="tSeekV"><i></i></div><div id="topR"><button id="bWalk" title="Walk" aria-label="Walk"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 7.5v6.5M12 9.5l-4 3M12 9.5l4 2.5M12 14l-3 7M12 14l3.2 7"/></svg></button><button id="bSnd" title="Sound off" aria-label="Sound off"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button><button id="bGame" title="Game mode" aria-label="Game mode"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h5l3-7h-3M14 10l1-3h3M11 10l-2 7"/></svg></button><button id="bView" title="Inside / outside view (V)" aria-label="Inside or outside view" style="display:none"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button><button id="bFS" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="bTour">▶ Take tour</button><button id="bPanel">Options</button></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1318,7 +1319,7 @@ setTimeout(()=>{try{
    [2.25,2.85].forEach(y=>{const br=new THREE.Mesh(new THREE.BoxGeometry(.08,.05,.03),mGal);br.position.set(.06,y,0);g.add(br)});   /* clamps to the pole */
    const tc=new THREE.Mesh(new THREE.BoxGeometry(.3,.44,.06),[ttF,ttF,ttF,ttF,ttM,ttF]);tc.position.set(-.07,1.45,0);tc.rotation.y=-Math.PI/2;tc.castShadow=true;g.add(tc);   /* timetable case on the footpath side */
    const tg=new THREE.Mesh(new THREE.PlaneGeometry(.27,.4),new THREE.MeshStandardMaterial({color:0xddeeff,transparent:true,opacity:.18,roughness:.05}));tg.position.set(-.101,1.45,0);tg.rotation.y=-Math.PI/2;g.add(tg)};
-  stopFlag(17.7,ZH-3.3,0,'28018')
+  stopFlag(17.7,ZH-3.3,0,'28018');
   [ZT,ZW].forEach((zs,k)=>stopFlag(-70.8,zs+7.6,-Math.PI/2,k?'45210':'45202'))}
  // traffic waits for the girl on her bike: a lane holds still while she is just ahead of one of its vehicles, and the minibus pauses the same way
  const rider=()=>{const b=GM;return b&&(b===window.BKM||b===window.CARK)?b:null},ahead=(px,pz,fx,fz,b,len)=>{const dx=b.x-px,dz=b.z-pz,a=dx*fx+dz*fz,l=Math.abs(-dx*fz+dz*fx);return a>0&&a<len&&l<1.7};
@@ -1360,32 +1361,59 @@ function mkBikeF(BC){try{
  const tube=(p,q,r,m,par)=>{const v=new THREE.Vector3(q[0]-p[0],q[1]-p[1],q[2]-p[2]),L=v.length(),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,10),m);o.position.set((p[0]+q[0])/2,(p[1]+q[1])/2,(p[2]+q[2])/2);o.quaternion.setFromUnitVectors(U,v.normalize());o.castShadow=true;par.add(o);return o};
  const bxm=(w,h,d,m,x,y,z,par)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;par.add(o);return o};
  // bike, local axes: +z forward, +x to the bike's left, +y up; origin on the ground under the bottom bracket
- const WR=.26,RA=[0,WR,-.42],FA=[0,WR,.42],BB=[0,.27,-.04],HB=[0,.5,.3],HT=[0,.66,.27],SP=[0,.72,-.21];
+ const Q=!!BC.quad,WR=Q?.2:.26,RA=[0,WR,-.42],FA=[0,WR,.42],BB=[0,.27,-.04],HB=Q?[0,.6,.18]:[0,.5,.3],VM=Q?8.5:4.6,HT=[0,.66,.27],SP=[0,.72,-.21];
  const g=new THREE.Group(),body=new THREE.Group();g.add(body);g.rotation.order='YXZ';
  const wheel=()=>{const w=new THREE.Group(),tg=new THREE.TorusGeometry(.245,.026,10,36);tg.rotateY(Math.PI/2);const t=new THREE.Mesh(tg,mTy);t.castShadow=true;w.add(t);const rg=new THREE.TorusGeometry(.215,.012,8,36);rg.rotateY(Math.PI/2);w.add(new THREE.Mesh(rg,mRm));
   for(let i=0;i<10;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(.004,.42,.004),mRm);s.rotation.x=i*Math.PI/10;w.add(s)}const hb=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.1,12),mDk);hb.rotation.z=Math.PI/2;w.add(hb);return w};
- const rw=wheel();rw.position.set(...RA);body.add(rw);
+ let rw,fw,crank,steer,kick,fst=null;const PD=[],GRIP=[];
+ if(!Q){rw=wheel();rw.position.set(...RA);body.add(rw);
  // frame: low step-through frame, chain stays, seat stays, seat post and saddle
  tube(BB,[0,.62,-.17],.02,mFr,body);tube(BB,HB,.024,mFr,body);tube([0,.47,-.13],[0,.6,.26],.018,mFr,body);tube(HB,HT,.024,mFr,body);
  [-1,1].forEach(s=>{tube([s*.03,BB[1],BB[2]],[s*.05,RA[1],RA[2]],.011,mFr,body);tube([s*.03,.6,-.165],[s*.05,RA[1],RA[2]],.01,mFr,body)});
  tube([0,.6,-.165],SP,.013,mRm,body);{const sd=new THREE.Mesh(new THREE.SphereGeometry(.07,14,10),mAc);sd.scale.set(.85,.32,1.45);sd.position.set(SP[0],SP[1]+.015,SP[2]+.01);sd.castShadow=true;body.add(sd)}
  {const mg=new THREE.Mesh(new THREE.TorusGeometry(.27,.012,6,18,Math.PI*.55),mWt);mg.rotation.y=Math.PI/2;mg.rotation.x=Math.PI*.12;mg.position.set(...RA);body.add(mg);bxm(.05,.03,.01,mRf,0,.47,-.68,body)}
  // drivetrain: chainring, chain, cranks and pedals (the crank group turns about the bottom bracket)
- const crank=new THREE.Group();crank.position.set(...BB);body.add(crank);
+ crank=new THREE.Group();crank.position.set(...BB);body.add(crank);
  {const cr=new THREE.TorusGeometry(.075,.01,6,24);cr.rotateY(Math.PI/2);const c=new THREE.Mesh(cr,mDk);c.position.x=-.05;crank.add(c);
   tube([-.05,BB[1]+.08,BB[2]],[-.05,RA[1]+.04,RA[2]],.005,mDk,body);tube([-.05,BB[1]-.075,BB[2]],[-.05,RA[1]-.04,RA[2]],.005,mDk,body);
   const cg=new THREE.Mesh(new THREE.CircleGeometry(.1,20),Mt(0x1d1f22,.5));cg.rotation.y=-Math.PI/2;cg.position.set(-.075,BB[1],BB[2]-.02);body.add(cg)}
- const PD=[];[-1,1].forEach(s=>{bxm(.015,.13,.025,mRm,s*.08,s*.065,0,crank);const p=new THREE.Group();p.position.set(s*.12,s*.127,0);crank.add(p);bxm(.08,.02,.06,mDk,0,0,0,p);bxm(.07,.006,.012,mRf,0,-.012,.03,p);PD.push(p)});
+ [-1,1].forEach(s=>{bxm(.015,.13,.025,mRm,s*.08,s*.065,0,crank);const p=new THREE.Group();p.position.set(s*.12,s*.127,0);crank.add(p);bxm(.08,.02,.06,mDk,0,0,0,p);bxm(.07,.006,.012,mRf,0,-.012,.03,p);PD.push(p)});
  // steering: fork, front wheel, stem, bars, grips and a little front basket
- const steer=new THREE.Group();steer.position.set(...HB);body.add(steer);
+ steer=new THREE.Group();steer.position.set(...HB);body.add(steer);
  const rel=p=>[p[0]-HB[0],p[1]-HB[1],p[2]-HB[2]];
  [-1,1].forEach(s=>tube([s*.04,0,0],rel([s*.05,FA[1],FA[2]]),.012,mFr,steer));
- const fw=wheel();fw.position.set(...rel(FA));steer.add(fw);
+ fw=wheel();fw.position.set(...rel(FA));steer.add(fw);
  {const mg=new THREE.Mesh(new THREE.TorusGeometry(.27,.012,6,18,Math.PI*.45),mWt);mg.rotation.y=Math.PI/2;mg.rotation.x=-Math.PI*.6;mg.position.set(...rel(FA));steer.add(mg)}
  tube(rel(HT),rel([0,.8,.25]),.014,mRm,steer);tube(rel([0,.8,.25]),rel([0,.82,.31]),.013,mRm,steer);
- const GRIP=[];[-1,1].forEach(s=>{tube(rel([0,.82,.31]),rel([s*.2,.84,.3]),.011,mRm,steer);tube(rel([s*.19,.84,.3]),rel([s*.27,.85,.29]),.017,mAc,steer);const o=new THREE.Object3D();o.position.set(...rel([s*.235,.845,.295]));steer.add(o);GRIP.push(o)});
+ [-1,1].forEach(s=>{tube(rel([0,.82,.31]),rel([s*.2,.84,.3]),.011,mRm,steer);tube(rel([s*.19,.84,.3]),rel([s*.27,.85,.29]),.017,mAc,steer);const o=new THREE.Object3D();o.position.set(...rel([s*.235,.845,.295]));steer.add(o);GRIP.push(o)});
  {const bk=new THREE.Group();bk.position.set(...rel([0,.72,.47]));steer.add(bk);const mB=Mt(0xf7f7f5,.5);bxm(.3,.012,.2,mB,0,-.09,0,bk);[-.1,.1].forEach(z=>bxm(.3,.15,.012,mB,0,-.02,z,bk));[-1,1].forEach(s=>bxm(.012,.15,.2,mB,s*.15,-.02,0,bk));const fl=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),mAc);fl.position.set(.08,.05,.11);bk.add(fl);bxm(.04,.04,.01,new THREE.MeshBasicMaterial({color:0xfff4c8}),0,.01,.1,bk)}
- const kick=new THREE.Group();kick.position.set(.05,.3,-.12);body.add(kick);tube([0,0,0],[0,-.3,-.06],.009,mDk,kick);
+ kick=new THREE.Group();kick.position.set(.05,.3,-.12);body.add(kick);tube([0,0,0],[0,-.3,-.06],.009,mDk,kick);
+ }else{   /* ---- quad bike (ATV): four fat knobbly tyres, plastic body panels, black seat, handlebar on a steering column, front and rear racks, footrests */
+  const mBl=Mt(0x1b1c1e,.75),mLt=new THREE.MeshBasicMaterial({color:0xfff4c8});
+  const rel=p=>[p[0]-HB[0],p[1]-HB[1],p[2]-HB[2]];
+  const qw=x=>{const w=new THREE.Group();w.position.x=x;const ty=new THREE.Mesh(new THREE.CylinderGeometry(WR,WR,.17,20),mTy);ty.rotation.z=Math.PI/2;ty.castShadow=true;w.add(ty);
+   const rm=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.176,14),mRm);rm.rotation.z=Math.PI/2;w.add(rm);
+   for(let i=0;i<10;i++){const a=i*Math.PI/5,t=new THREE.Mesh(new THREE.BoxGeometry(.175,.025,.05),mTy);t.position.set(0,Math.cos(a)*WR,Math.sin(a)*WR);t.rotation.x=a;w.add(t)}   /* tread lugs, so you can see them turn */
+   const hb=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.18,10),mDk);hb.rotation.z=Math.PI/2;w.add(hb);return w};
+  rw=new THREE.Group();rw.position.set(...RA);body.add(rw);[-.36,.36].forEach(x=>rw.add(qw(x)));tube([-.36,RA[1],RA[2]],[.36,RA[1],RA[2]],.022,mDk,body);
+  fst=new THREE.Group();fst.position.set(...FA);body.add(fst);fw=new THREE.Group();fst.add(fw);[-.36,.36].forEach(x=>fw.add(qw(x)));
+  // chassis, engine, body panels
+  bxm(.36,.1,1.0,mDk,0,.27,0,body);bxm(.3,.22,.36,mDk,0,.36,-.04,body);
+  {const rf=new THREE.Mesh(rbox(1.0,.07,.52,.03),mFr);rf.position.set(0,.47,-.44);rf.castShadow=true;body.add(rf);const ff=new THREE.Mesh(rbox(.98,.07,.46,.03),mFr);ff.position.set(0,.47,.44);ff.castShadow=true;body.add(ff)}
+  [-1,1].forEach(s=>{const sk=bxm(.04,.14,.42,mFr,s*.48,.41,-.44,body);sk.rotation.x=0;bxm(.04,.12,.38,mFr,s*.47,.41,.44,body)});   /* fender skirts over each wheel */
+  {const n=new THREE.Mesh(rbox(.44,.2,.34,.06),mFr);n.position.set(0,.55,.5);n.rotation.x=-.25;n.castShadow=true;body.add(n)}   /* nose */
+  {const tk=new THREE.Mesh(rbox(.32,.16,.3,.07),mFr);tk.position.set(0,.6,.12);tk.castShadow=true;body.add(tk);bxm(.1,.012,.2,mAc,0,.685,.12,body)}   /* tank with a stripe */
+  {const st=new THREE.Mesh(rbox(.28,.1,.56,.045),mBl);st.position.set(0,.66,-.24);st.castShadow=true;body.add(st)}   /* seat */
+  [-1,1].forEach(s=>{bxm(.16,.02,.3,mDk,s*.3,.3,-.02,body);const ft=new THREE.Object3D();ft.position.set(s*.24,.33,.0);body.add(ft);PD.push(ft)});   /* footrests */
+  // racks front and back
+  [[.6,.66,.04],[-.66,.68,.04]].forEach(([z,y])=>{[-1,1].forEach(s=>tube([s*.3,y,z-.13],[s*.3,y,z+.13],.012,mDk,body));[-.12,0,.12].forEach(dz=>tube([-.3,y,z+dz],[.3,y,z+dz],.01,mDk,body))});
+  [-1,1].forEach(s=>{bxm(.09,.05,.02,mLt,s*.12,.56,.68,body)});bxm(.2,.04,.012,mRf,0,.52,-.71,body);   /* headlights, tail light */
+  // handlebar on a steering column (turns with the front wheels)
+  steer=new THREE.Group();steer.position.set(...HB);body.add(steer);
+  tube([0,-.08,.03],rel([0,.84,.2]),.02,mDk,steer);tube(rel([-.3,.86,.2]),rel([.3,.86,.2]),.014,mRm,steer);
+  [-1,1].forEach(s=>{tube(rel([s*.24,.86,.2]),rel([s*.33,.86,.2]),.02,mAc,steer);const o=new THREE.Object3D();o.position.set(...rel([s*.27,.86,.2]));steer.add(o);GRIP.push(o)});
+  crank=new THREE.Group();crank.position.set(...BB);body.add(crank);kick=new THREE.Group();body.add(kick)}
+
  // ---- the girl (about 7 years old, ~1.2 m): helmet, ponytail, t-shirt, leggings and sneakers; legs and arms follow the pedals and the handlebar
  const girl=new THREE.Group();body.add(girl);girl.visible=false;
  const mSk=Mt(0xe9bd98,.75),mHr=Mt(0x5b3a24,.85),mTs=Mt(0xffc93c,.8),mLg=Mt(0x4b3f8f,.85),mSh=Mt(0xf3f3f3,.6),mSo=Mt(0xff7aa8,.55),mHm=Mt(0xa77be3,.4),mEy=Mt(0x1d1a18,.4),mCh=Mt(0xf2a0a0,.9);
@@ -1400,7 +1428,7 @@ function mkBikeF(BC){try{
  sph(.095,mSk,0,0,0,.95,1.05,1,head);
  [-1,1].forEach(s=>{sph(.012,mEy,s*.033,.012,.086,1,1.2,.6,head);sph(.018,mCh,s*.05,-.022,.078,1,.7,.5,head);sph(.016,mSk,s*.094,0,0,.6,1,1,head)});
  {const m=new THREE.Mesh(new THREE.TorusGeometry(.02,.004,6,12,Math.PI),Mt(0xb5524e,.6));m.rotation.z=Math.PI;m.position.set(0,-.04,.088);head.add(m)}
- sph(.096,mHr,0,.025,-.04,1.0,.98,.92,head);sph(.06,mHr,0,-.02,-.07,1.25,1.1,.9,head);   // hair under the helmet
+ sph(.096,mHr,0,.025,-.04,1.0,.98,.92,head);const hBk=sph(.06,mHr,0,-.02,-.07,1.25,1.1,.9,head);   // hair under the helmet
  const pony=new THREE.Group();pony.position.set(0,.0,-.1);head.add(pony);sph(.04,mHr,0,-.06,-.04,.8,1.6,.9,pony);sph(.018,mSo,0,.0,-.0,1.4,1,1.2,pony);
  {const hm=new THREE.Mesh(new THREE.SphereGeometry(.118,18,12,0,Math.PI*2,0,Math.PI*.55),mHm);hm.position.set(0,.025,.0);hm.scale.set(1,.95,1.12);hm.castShadow=true;head.add(hm);
   const vs=new THREE.Mesh(new THREE.BoxGeometry(.13,.012,.05),mHm);vs.position.set(0,.055,.11);vs.rotation.x=.25;head.add(vs);[-1,1].forEach(s=>sph(.006,mWt,s*.03,.115,.02,1,1,4,head));
@@ -1416,7 +1444,7 @@ function mkBikeF(BC){try{
   LG.forEach((l,i)=>{tmp.set(0,0,0);PD[i].localToWorld(tmp);body.worldToLocal(tmp);const T=tmp.clone().add(new THREE.Vector3(0,.04,-.015));const[E,T2]=ik(l.S,T,l.L1,l.L2,new THREE.Vector3(l.s*.12,.35,1));place(l.th,l.S,E);place(l.sh,E,T2);l.kn.position.copy(E);l.ft.position.copy(T2).add(new THREE.Vector3(0,-.03,0))})};
  g.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(g);
  // ---- ride state; the parked bike starts in the garage against the side wall, pointing at the garage door
- const BK={id:BC.id,x:BC.px,z:BC.pz,th:BC.th,sp:0,st:0,ln:0,wa:0,ca:0,y:-.09,cth:0,pt:0,fw:0,parked:true};if(!window.BKM)window.BKM=BK;window.BKS.push(BK);
+ const BK={quad:Q,id:BC.id,x:BC.px,z:BC.pz,th:BC.th,sp:0,st:0,ln:0,wa:0,ca:0,y:-.09,cth:0,pt:0,fw:0,parked:true};if(!window.BKM)window.BKM=BK;window.BKS.push(BK);
  const R_=()=>window.RDN;
  /* station subways under the tracks (centre lines z = -345 West Tarneit, +345 Tarneit): ramps down from ground level to the tunnel floor (-2.9) and back up,
     plus the footpaths from each ground-level forecourt to the subway ramps; returns the ground height there, or null */
@@ -1455,15 +1483,15 @@ function mkBikeF(BC){try{
   if(!inGap&&x>=R.XM-11&&x<=R.XM-7)return -.11;
   return -.18};
  window.BKNET={local,onNet,carHit,terr:bkTerr};   /* shared with the kid's trike so it can ride the same roads, up to the station */
- const parkPose=()=>{girl.visible=false;   /* nobody sits on the parked bike; she appears when you tap it to ride */kick.rotation.x=0;kick.visible=true;body.rotation.set(0,0,-.1);steer.rotation.y=.35;g.position.set(BK.x,bkTerr(BK.x,BK.z),BK.z);g.rotation.y=BK.th;pose()};
+ const parkPose=()=>{girl.visible=false;   /* nobody sits on the parked bike; she appears when you tap it to ride */kick.rotation.x=0;kick.visible=true;body.rotation.set(0,0,Q?0:-.1);steer.rotation.y=.35;if(fst)fst.rotation.y=.35;g.position.set(BK.x,bkTerr(BK.x,BK.z),BK.z);g.rotation.y=BK.th;pose()};
  parkPose();g.visible=GAMES_ON;if(!window.BKG)window.BKG=g;BK.g=g;
  // click the parked bike to start riding
  const parts=[];g.traverse(o=>{if(o.isMesh)parts.push(o)});
- dRun(()=>iaReg(parts.filter(o=>!girl.children.includes(o)),'Kids bike',()=>{if(GM===BK){setTimeout(rideOff,0);return 'Hopping off'}setTimeout(GM?()=>gmTake(BK):bkEnter,0);return 'Hop on!'}));
+ dRun(()=>iaReg(parts.filter(o=>!girl.children.includes(o)),Q?'Quad bike':'Kids bike',()=>{if(GM===BK){setTimeout(rideOff,0);return 'Hopping off'}setTimeout(GM?()=>gmTake(BK):bkEnter,0);return 'Hop on!'}));
  function bkEnter(){if(tour||GM||!GAMES_ON)return;if(window.MP&&!MP.take(BK.id))return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;BK.fw=!ww;gtg=1;$('bWalk').classList.remove('on');   /* hopping on opens the garage door */
-  window.CPV&&CPV.snap();act();BK.tint(window.MP&&MP.on?MP.col():0xffc93c);BK.rem=null;GM=BK;BK.parked=false;BK.sp=0;BK.st=0;BK.ln=0;BK.y=bkTerr(BK.x,BK.z);girl.visible=true;kick.visible=false;body.rotation.set(0,0,0);steer.rotation.y=0;
+  window.CPV&&CPV.snap();act();BK.tint(window.MP&&MP.shirt?MP.shirt():0xffc93c);BK.setG(window.AVBOY&&AVBOY());BK.rem=null;GM=BK;BK.parked=false;BK.sp=0;BK.st=0;BK.ln=0;BK.y=bkTerr(BK.x,BK.z);girl.visible=true;kick.visible=false;body.rotation.set(0,0,0);steer.rotation.y=0;if(fst)fst.rotation.y=0;
   BK.cth=Math.atan2(-Math.cos(BK.th),-Math.sin(BK.th));G.th=V.th=BK.cth;G.ph=V.ph=1.2;G.r=V.r=2.6;G.t.set(BK.x,BK.y+.95,BK.z);V.t.copy(G.t);fov(62);$('bGame').classList.add('on');
-  showCap(matchMedia('(pointer:fine)').matches?'Bike ride: W / S pedal and brake · A / D steer · ride out the garage, along the street and over the bridges to Kmart or Woolworths':'Bike ride: left stick pedals, brakes and steers',6500)}
+  showCap(Q?(matchMedia('(pointer:fine)').matches?'Quad bike: W / S throttle and brake · A / D steer · ride out the garage and around the neighbourhood':'Quad bike: left stick for throttle, brake and steering'):matchMedia('(pointer:fine)').matches?'Bike ride: W / S pedal and brake · A / D steer · ride out the garage, along the street and over the bridges to Kmart or Woolworths':'Bike ride: left stick pedals, brakes and steers',6500)}
  BK.enter=bkEnter;window.BKH=bkHit;window.BKT=bkTerr;window.BKL=local;
  /* the bike you are on (or the last one ridden) is the one the rest of the game talks to */
  const act=()=>{window.BKM=BK;window.BKG=g;window.bkEnter=bkEnter;window.bkExit=BK.exit;window.bkTick=BK.tick;window.BKEYE=o=>head.getWorldPosition(o);window.BKHIDE=on=>{head.visible=!on}};
@@ -1473,10 +1501,10 @@ function mkBikeF(BC){try{
  BK.tick=dt=>{const K=BK;try{gmDoors(K)}catch(e){}
   const f=((AK.KeyW||AK.ArrowUp)?1:0)-((AK.KeyS||AK.ArrowDown)?1:0),t=((AK.KeyD||AK.ArrowRight)?1:0)-((AK.KeyA||AK.ArrowLeft)?1:0);
   // pedalling, coasting, braking and slow walking-back
-  if(f>0)K.sp+=Math.min(1.7,Math.max(0,4.6-K.sp)*.9)*dt;else if(f<0)K.sp=K.sp>.05?Math.max(0,K.sp-3.2*dt):Math.max(-.7,K.sp-1.2*dt);else{K.sp-=Math.sign(K.sp)*Math.min(Math.abs(K.sp),(K.sp<0?2:.35)*dt)}
-  const mxS=.42*(1-.45*Math.min(1,Math.abs(K.sp)/4.6));K.st+=(-t*mxS-K.st)*Math.min(1,dt*6);
+  if(f>0)K.sp+=Math.min(Q?3:1.7,Math.max(0,VM-K.sp)*.9)*dt;else if(f<0)K.sp=K.sp>.05?Math.max(0,K.sp-3.2*dt):Math.max(-.7,K.sp-1.2*dt);else{K.sp-=Math.sign(K.sp)*Math.min(Math.abs(K.sp),(K.sp<0?2:.35)*dt)}
+  const mxS=.42*(1-.45*Math.min(1,Math.abs(K.sp)/VM));K.st+=(-t*mxS-K.st)*Math.min(1,dt*6);
   const yr=K.sp*Math.tan(K.st)/.84;K.th+=yr*dt;
-  const fx=Math.sin(K.th),fz=Math.cos(K.th),Rr=.32,stk=bkHit(K.x,K.z,Rr);let nx=K.x+fx*K.sp*dt,nz=K.z+fz*K.sp*dt,moved=0;
+  const fx=Math.sin(K.th),fz=Math.cos(K.th),Rr=Q?.5:.32,stk=bkHit(K.x,K.z,Rr);let nx=K.x+fx*K.sp*dt,nz=K.z+fz*K.sp*dt,moved=0;
   const bx_=!stk&&bkHit(nx,K.z,Rr);if(!bx_||stk){moved+=Math.abs(nx-K.x);K.x=nx}const bz_=!stk&&bkHit(K.x,nz,Rr);if(!bz_||stk){moved+=Math.abs(nz-K.z);K.z=nz}
   if((bx_||bz_)&&Math.abs(K.sp)>.6){const now=performance.now();if(now-(K.ht||0)>400){K.ht=now;try{KX_=K.x;KZ_=K.z;SV=Math.min(1,.3+Math.abs(K.sp)*.15);sfx(gmKind(nx,nz,Rr));SV=1}catch(e){}}}
   if(Math.abs(K.sp)>.15&&moved<Math.abs(K.sp)*dt*.35)K.sp*=.7;
@@ -1484,12 +1512,12 @@ function mkBikeF(BC){try{
   // height, slope and lean
   const ty=bkTerr(K.x,K.z,K.y);K.y+=(ty-K.y)*Math.min(1,dt*12);
   const yf=bkTerr(K.x+fx*.42,K.z+fz*.42,K.y),yb=bkTerr(K.x-fx*.42,K.z-fz*.42,K.y);K.pt+=(Math.atan2(yf-yb,.84)-K.pt)*Math.min(1,dt*8);
-  const lnT=Math.max(-.32,Math.min(.32,-Math.atan(K.sp*yr/9.8)*.9));K.ln+=(lnT-K.ln)*Math.min(1,dt*5);
-  g.position.set(K.x,K.y,K.z);g.rotation.y=K.th;body.rotation.set(-K.pt,0,K.ln);steer.rotation.y=K.st;
+  const lnT=Math.max(-.32,Math.min(.32,-Math.atan(K.sp*yr/9.8)*.9));K.ln+=(lnT*(Q?.2:1)-K.ln)*Math.min(1,dt*5);
+  g.position.set(K.x,K.y,K.z);g.rotation.y=K.th;body.rotation.set(-K.pt,0,K.ln);steer.rotation.y=K.st;if(fst)fst.rotation.y=K.st;
   K.wa+=ds/WR;rw.rotation.x=K.wa;fw.rotation.x=K.wa;
   if(f>0&&K.sp>0)K.ca+=Math.max(ds,K.sp*dt*.3)/WR/1.9;crank.rotation.x=K.ca;PD.forEach(p=>p.rotation.x=-K.ca);
   pony.rotation.x=-.25-Math.min(.6,Math.abs(K.sp)*.12)+Math.sin(performance.now()*.008)*.05*Math.min(1,Math.abs(K.sp));pony.rotation.z=-K.ln*.8;
-  head.rotation.y=K.st*.6;girl.position.y=f>0&&K.sp<1.5?Math.abs(Math.sin(K.ca))*.012:0;
+  head.rotation.y=K.st*.6;girl.position.y=!Q&&f>0&&K.sp<1.5?Math.abs(Math.sin(K.ca))*.012:0;
   pose();
   try{gmRoll(K,moved>0?Math.min(1,Math.abs(K.sp)/3):0)}catch(e){}
   // chase camera, pulled in when something is in the way
@@ -1500,17 +1528,18 @@ function mkBikeF(BC){try{
  // ---- shared-ride hooks (Play together): where it lives, the rider's shirt, its state for the network, and showing another player riding it
  BK.home=()=>({x:BC.px,z:BC.pz,h:BC.th});
  BK.tint=c=>mTs.color.setHex(c);
+ BK.setG=boy=>{pony.visible=!boy;hBk.visible=!boy;mLg.color.setHex(boy?0x2f4a7d:0x4b3f8f);mSo.color.setHex(boy?0x3d6fd6:0xff7aa8);mHm.color.setHex(boy?0x2f7fd0:0xa77be3)};   /* boy: short hair, jeans, blue soles and helmet */
  BK.setPark=(x,z,th)=>{BK.x=x;BK.z=z;BK.th=th;BK.y=bkTerr(x,z);BK.parked=true;BK.rem=null;BK.sp=0;BK.st=0;BK.ln=0;BK.pt=0;parkPose();g.visible=GAMES_ON};
  BK.ser=()=>[+BK.x.toFixed(3),+BK.y.toFixed(3),+BK.z.toFixed(3),+BK.th.toFixed(3),+BK.st.toFixed(3),+BK.ln.toFixed(3),+(BK.pt||0).toFixed(3),+BK.sp.toFixed(2)];
  BK.net=(s,dt)=>{const K=BK;if(!K.rem){K.rem=1;K.parked=false;girl.visible=true;head.visible=true;kick.visible=false;g.visible=true;K.x=s[0];K.y=s[1];K.z=s[2];K.th=s[3]}
   const k=Math.min(1,dt*10),ox=K.x,oz=K.z;K.x+=(s[0]-K.x)*k;K.y+=(s[1]-K.y)*k;K.z+=(s[2]-K.z)*k;K.th+=AD(s[3],K.th)*k;K.st+=(s[4]-K.st)*k;K.ln+=(s[5]-K.ln)*k;K.pt+=(s[6]-K.pt)*k;K.sp=s[7];
-  const ds=Math.hypot(K.x-ox,K.z-oz)*(K.sp<0?-1:1);g.position.set(K.x,K.y,K.z);g.rotation.y=K.th;body.rotation.set(-K.pt,0,K.ln);steer.rotation.y=K.st;
+  const ds=Math.hypot(K.x-ox,K.z-oz)*(K.sp<0?-1:1);g.position.set(K.x,K.y,K.z);g.rotation.y=K.th;body.rotation.set(-K.pt,0,K.ln);steer.rotation.y=K.st;if(fst)fst.rotation.y=K.st;
   K.wa+=ds/WR;rw.rotation.x=K.wa;fw.rotation.x=K.wa;if(K.sp>.05)K.ca+=Math.max(ds,0)/WR/1.9;crank.rotation.x=K.ca;PD.forEach(p=>p.rotation.x=-K.ca);
   pony.rotation.x=-.25-Math.min(.6,Math.abs(K.sp)*.12);pony.rotation.z=-K.ln*.8;head.rotation.y=K.st*.6;pose()};
  if(window.BKM===BK)act();
 }catch(e){console.error('bike',e)}}
 // three kids' bikes share the garage: the original teal one against the side wall, a blue one beside it and a red one further along
-setTimeout(()=>{window.BKS=[];mkBikeF({id:'bike1',fr:0x2bb3a3,ac:0xf06aa8,px:5.3,pz:5.75,th:Math.PI/2});mkBikeF({id:'bike2',fr:0x2457c9,ac:0xf4f4f2,px:6.15,pz:5.12,th:Math.PI/2});mkBikeF({id:'bike3',fr:0xd32f2f,ac:0xffd54f,px:7.7,pz:5.5,th:Math.PI/2})},0);   /* and a red one with yellow trim further along the wall */
+setTimeout(()=>{window.BKS=[];mkBikeF({id:'bike1',fr:0x2bb3a3,ac:0xf06aa8,px:5.3,pz:5.75,th:Math.PI/2});mkBikeF({id:'bike2',fr:0x2457c9,ac:0xf4f4f2,px:6.15,pz:5.12,th:Math.PI/2});mkBikeF({id:'bike3',fr:0xd32f2f,ac:0xffd54f,px:7.7,pz:5.5,th:Math.PI/2});mkBikeF({id:'quad',quad:true,fr:0x2e7d32,ac:0xff6f00,px:8.9,pz:4.2,th:Math.PI/2})},0);   /* and a green quad bike, nose to the garage door, between the car and the bikes */   /* and a red one with yellow trim further along the wall */
 // ---- the kid's tricycle parks in the garage beside the bike; click it to start the tricycle game from wherever it is parked
 setTimeout(()=>{try{if(!KID)gmBuild();window.TKP={x:5.0,z:4.85,h:Math.PI};
  window.tkPark=()=>{const p=window.TKP;KK.visible=false;KID.visible=GAMES_ON;   /* nobody sits on the parked trike; the kid appears when you tap it to ride */KID.position.set(p.x,terr(p.x,p.z),p.z);KID.rotation.y=Math.PI-p.h;KB.rotation.set(0,0,0);KF.rotation.y=0};
@@ -2078,6 +2107,12 @@ const sndBtn=()=>{const bt=$('bSnd');bt.classList.toggle('on',sndOn);bt.innerHTM
 $('bSnd').onclick=e=>{e.stopPropagation();sndOn=!sndOn;try{localStorage.setItem('sndOn',sndOn?'1':'0')}catch(_){}if(sndOn)phoneAudio();actx();if(AC&&AC.m)AC.m.gain.setTargetAtTime(sndOn?AC.mg:0,AC.currentTime,.05);sndBtn()};
 setTimeout(()=>{try{sndOn=localStorage.getItem('sndOn')!=='0'}catch(_){sndOn=true}sndBtn()},0);   /* sound is on unless you turned it off last time; it starts with your first tap or key press */
 ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,function first(){if(sndOn){phoneAudio();actx()}document.removeEventListener(ev,first,true)},true));
+// Options > Avatar: play as a girl or a boy (remembered); the walking avatar and whoever rides the bikes and quad change straight away
+let AVB=false;try{AVB=localStorage.getItem('avBoy')==='1'}catch(_){}window.AVBOY=()=>AVB;
+function setAvB(b,quietly){AVB=!!b;try{localStorage.setItem('avBoy',AVB?'1':'0')}catch(_){}
+ [['bGirl',!AVB],['bBoy',AVB]].forEach(([id,on])=>{const e=$(id);if(e){e.classList.toggle('on',on);e.setAttribute('aria-checked',on?'true':'false')}});
+ try{if(SELF.av&&SELF.av.setG)SELF.av.setG(AVB);if(GM&&GM.setG)GM.setG(AVB)}catch(_){}if(!quietly)showCap(AVB?'Playing as a boy':'Playing as a girl',1400)}
+$('bGirl').onclick=()=>setAvB(false);$('bBoy').onclick=()=>setAvB(true);setTimeout(()=>setAvB(AVB,true),0);
 $('bLab').onclick=e=>{labels.visible=!labels.visible;e.target.classList.toggle('on',labels.visible)};
 $('bPanel').onclick=e=>{const u=$('ui'),h=u.style.display==='none';u.style.display=h?'':'none';e.target.textContent=h?'Close options':'Options'};$('bFront').onclick=()=>go('Front');$('bAer').onclick=()=>go('Aer');$('bTop').onclick=()=>go('Top');
 
@@ -2277,10 +2312,11 @@ function ambTick(dt){if(!AC||!sndOn&&!AMB.on)return;ambStart();if(!AMB.on)return
  // how fast am I going, and on what
  let kind='',sp=0;
  if(RT.on){kind=RT.bus?'bus':'train';const p=RT.bus&&window.BUS?null:V.t;if(RT.bus&&window.BUS)sp=Math.abs(BUS.v());else{if(AMB.px!==null)sp=Math.hypot(p.x-AMB.px,p.z-AMB.pz)/Math.max(dt,1e-3);AMB.px=p.x;AMB.pz=p.z}}
- else if(GM&&typeof GM.sp==='number'){sp=Math.abs(GM.sp);kind=GM===window.CARK?'car':'bike';AMB.px=null}else AMB.px=null;
+ else if(GM&&typeof GM.sp==='number'){sp=Math.abs(GM.sp);kind=GM===window.CARK?'car':GM.quad?'quad':'bike';AMB.px=null}else AMB.px=null;
  if(sp>60)sp=AMB.sp;AMB.sp+=(sp-AMB.sp)*Math.min(1,dt*3);const v=AMB.sp;
  let rg=0,rf=300,eg=0,ef=48;
  if(kind==='bike'){rg=Math.min(1,v/6)*.035;rf=500+v*120}
+ else if(kind==='quad'){rg=Math.min(1,v/8)*.03;rf=320+v*40;eg=.011+Math.min(1,v/8)*.01;ef=62+v*9}
  else if(kind==='car'){rg=Math.min(1,v/15)*.03;rf=260+v*25;eg=.012+Math.min(1,v/18)*.012;ef=42+v*3.2}
  else if(kind==='bus'){rg=Math.min(1,v/12)*.03;rf=240+v*20;eg=.016+Math.min(1,v/12)*.01;ef=38+v*2.4;
   const at=BUS.at();if(at>=0&&AMB.lastAt<0&&RT.ph==='ride')chime();AMB.lastAt=at}
@@ -3800,11 +3836,11 @@ function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&
  S.was=on;
  if(S.jy>0||S.jv){S.jv-=15*dt;S.jy+=S.jv*dt;if(S.jy<=0){S.jy=0;S.jv=0;sfx('fc')}}
  if(S.wv>0)S.wv=Math.max(0,S.wv-dt);
- if(!S.av&&window.MP&&MP.mkAv){const P=MP.mkAv({name:'',col:MP.col()});S.av=P.av;S.col=MP.col();try{scene.remove(P.tag)}catch(e){}}
+ if(!S.av&&window.MP&&MP.mkAv){const P=MP.mkAv({name:'',col:MP.shirt(),boy:window.AVBOY&&AVBOY()});S.av=P.av;S.col=MP.shirt();try{scene.remove(P.tag)}catch(e){}}
  const av=S.av;if(!av)return;
  if(RT.on&&RT.bus){av.g.visible=true;return}   /* on the bus: placed and posed by busPos */
  av.g.visible=on&&(WCAM.on?WCAM.d>.35:V.r>.75);if(!av.g.visible)return;
- {const sc=window.MP&&MP.on?MP.col():0xffc93c;if(sc!==S.col){S.col=sc;av.mSh.color.setHex(sc)}}
+ {const sc=window.MP&&MP.shirt?MP.shirt():0xffc93c;if(sc!==S.col){S.col=sc;av.mSh.color.setHex(sc)}}
  const x=V.t.x,z=V.t.z,b=_wbr(x,z,V.t.y-1.12);av.g.position.set(x,(b>0?V.t.y-1.12:terr(x,z)+V.t.y-1.12)+S.jy,z);av.g.rotation.y=Math.atan2(-Math.cos(V.th),-Math.sin(V.th));
  const sp=Math.abs(S.mv||0),run=sp>3.5;av.ph+=(S.mv||0)*dt*(run?3.6:5.2);const amp=Math.min(1,sp/1.2)*(run?.95:.55),sw=Math.sin(av.ph)*amp;
  av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;av.A[0].rotation.z=0;av.A[1].rotation.z=0;avBend(av,av.ph,amp,run);
@@ -3828,18 +3864,18 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
 //      Each player has a name and a shirt colour. The trike and the three bikes are shared: whoever gets on first rides it, everyone else sees them riding it,
 //      and when they get off it stays where they left it. Doors, the garage, the gate, cupboards, taps, lights and Day / Night / Current time are shared too.
 (function(){try{
- const VEH=['trike','bike1','bike2','bike3'],VNAME={trike:'the trike',bike1:'the teal bike',bike2:'the blue bike',bike3:'the red bike'},HOME={trike:{x:5.0,z:4.85,h:Math.PI}};
+ const VEH=['trike','bike1','bike2','bike3','quad'],VNAME={trike:'the trike',bike1:'the teal bike',bike2:'the blue bike',bike3:'the red bike',quad:'the quad bike'},HOME={trike:{x:5.0,z:4.85,h:Math.PI}};
  const COLS=[0xe53935,0xfb8c00,0xfdd835,0x43a047,0x00acc1,0x1e88e5,0x5e35b1,0xec407a,0x6d4c41,0x263238];
  const hex=c=>'#'+(c>>>0).toString(16).padStart(6,'0');
  const LS={get(k,d){try{const v=localStorage.getItem('mp_'+k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem('mp_'+k,v)}catch(e){}}};
  const ME={name:LS.get('name',''),col:+LS.get('col',COLS[(Math.random()*COLS.length)|0])};
  const MP={on:false,room:'',self:'',jt:0,peers:new Map(),own:{},ct:{},iac:{},rx:false,mode:'live',snapGot:false,T:null};window.MP=MP;
- const EXC=new Set(['Kids bike','Tricycle','Car']);   // riding is handled by the claim logic, not as a shared click
+ const EXC=new Set(['Kids bike','Quad bike','Tricycle','Car']);   // riding is handled by the claim logic, not as a shared click
  const now=()=>performance.now();
  const AD=(a,b)=>{const T=Math.PI*2;return((a-b+Math.PI)%T+T)%T-Math.PI};
  const bike=v=>(window.BKS||[]).find(b=>b.id===v);
  const pname=id=>{const p=MP.peers.get(id);return p&&p.name?p.name:'Someone'};
- MP.col=()=>ME.col;MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.mode==='b')return;if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
+ MP.col=()=>ME.col;MP.shirt=()=>MP.on||LS.get('col',null)!=null?ME.col:0xffc93c;   /* your shirt: the colour you picked (even before joining a room), otherwise the default yellow */MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.mode==='b')return;if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
 
  // ---------- transport: Trystero (nostr relays) on the web; a BroadcastChannel stand-in for local testing (?mptest=1)
  async function connect(code){
@@ -3888,10 +3924,12 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   {const m=add(new THREE.TorusGeometry(.02,.004,6,12,Math.PI),Mt(0xb5524e,.6),0,-.04,.088,hd);m.rotation.z=Math.PI}
   // hair: the rider's hair (crown and back) plus a little fringe, since there is no helmet now; ponytail with a pink tie
   {const cap=add(new THREE.SphereGeometry(.1,18,12,0,Math.PI*2,0,Math.PI*.5),mHr,0,.012,-.006,hd);cap.scale.set(1,1.02,1.04)}
-  sph(.096,mHr,0,.0,-.04,1.0,.98,.92,hd);sph(.06,mHr,0,-.02,-.07,1.25,1.1,.9,hd);
+  sph(.096,mHr,0,.0,-.04,1.0,.98,.92,hd);const hBk=sph(.06,mHr,0,-.02,-.07,1.25,1.1,.9,hd);
   {const fr=sph(.05,mHr,-.02,.068,.06,1.35,.38,.55,hd);fr.rotation.z=.25}
   const pony=new THREE.Group();pony.position.set(0,.03,-.1);hd.add(pony);sph(.04,mHr,0,-.06,-.04,.8,1.6,.9,pony);sph(.018,mSo,0,.0,-.0,1.4,1,1.2,pony);
-  g.traverse(o=>{o.raycast=()=>{}});g.visible=false;scene.add(g);P.av={g,L,A,K:L.map(l=>l.kn),E:A.map(a=>a.el),mSh,ph:0,wv:0,jy:0,pony};
+  g.traverse(o=>{o.raycast=()=>{}});g.visible=false;scene.add(g);P.av={g,L,A,K:L.map(l=>l.kn),E:A.map(a=>a.el),mSh,ph:0,wv:0,jy:0,pony,boy:false};
+  P.av.setG=boy=>{P.av.boy=!!boy;pony.visible=!boy;hBk.visible=!boy;mLg.color.setHex(boy?0x2f4a7d:0x4b3f8f);mSo.color.setHex(boy?0x3d6fd6:0xff7aa8);mHr.color.setHex(boy?0x3b2618:0x5b3a24)};   /* boy: short hair (no ponytail), jeans, blue-soled sneakers */
+  P.av.setG(!!P.boy);
 
   const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(P.name,P.col),transparent:true,depthTest:false,depthWrite:false,fog:false}));tag.scale.set(1.25,.27,1);tag.renderOrder=20;tag.visible=false;scene.add(tag);P.tag=tag;P.tagKey=P.name+'|'+P.col}
  function freshen(P){if(!P.av)mkAvatar(P);const k=P.name+'|'+P.col;if(k!==P.tagKey){P.tagKey=k;P.tag.material.map.dispose();P.tag.material.map=tagTex(P.name,P.col);P.av.mSh.color.setHex(P.col);const b=bike(P.mode);if(b&&MP.own[P.mode]&&MP.own[P.mode].id===P.id)b.tint(P.col)}}
@@ -3915,7 +3953,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  function claim(v,id,ts){const o=MP.own[v];if(o&&o.id===id){o.ts=ts;return}
   if(o&&o.id===MP.self){if(ts<o.ts||(ts===o.ts&&id<MP.self)){MP.own[v]={id,ts};if(riding()===v){GM.fw=0;gmExit();showCap(pname(id)+' got on '+VNAME[v]+' first',3000)}}else{ev({t:'claim',v,ts:o.ts});return}}
   else MP.own[v]={id,ts};
-  const b=bike(v),P=MP.peers.get(id);if(b&&P)b.tint(P.col)}
+  const b=bike(v),P=MP.peers.get(id);if(b&&P){b.tint(P.col);if(b.setG)b.setG(!!P.boy)}}
  function release(v,x,z,h){delete MP.own[v];if(x===undefined){const q=homeOf(v);x=q.x;z=q.z;h=q.h}park(v,x,z,h)}
  MP.take=v=>{if(!MP.on)return true;const o=MP.own[v];if(o&&o.id!==MP.self&&MP.peers.has(o.id)){showCap(pname(o.id)+' is riding '+VNAME[v],2600);return false}const ts=Date.now();MP.own[v]={id:MP.self,ts};MP.ct[v]=ts;ev({t:'claim',v,ts});return true};
  MP.free=v=>{if(!MP.on)return true;const o=MP.own[v];if(o&&o.id!==MP.self&&MP.peers.has(o.id)){showCap(pname(o.id)+' is riding '+VNAME[v],2600);return false}return true};
@@ -3964,7 +4002,8 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  function onSt(d,from){const P=peer(from);P.last=now();const nm=String(d.n||'Guest').slice(0,20);if(P.name!==nm||P.col!==d.c){const first=!P.name;P.name=nm;P.col=d.c|0;freshen(P);if(first)showCap(P.name+' joined',2500);ui()}
   if(P.mode!==d.m){const old=P.mode;P.mode=d.m;P.modeT=now();ui();if(VEH.includes(old)&&MP.own[old]&&MP.own[old].id===from&&!d.m.startsWith('bike')&&d.m!=='trike'){/* the drop message normally follows; if it was lost the watchdog parks it */}}
   if(VEH.includes(d.m)){P.vs=d.v;claim(d.m,from,d.ct||0)}
-  if((d.m==='w'||d.m==='b')&&d.p)P.tp=d.p;P.jy=+d.j||0;P.em=d.e|0;P.run=d.r|0}
+  if((d.m==='w'||d.m==='b')&&d.p)P.tp=d.p;
+  {const gb=!!d.g;if(P.boy!==gb){P.boy=gb;if(P.av&&P.av.setG)P.av.setG(gb);const b=bike(P.mode);if(b&&b.setG&&MP.own[P.mode]&&MP.own[P.mode].id===P.id)b.setG(gb)}}P.jy=+d.j||0;P.em=d.e|0;P.run=d.r|0}
  function onJoin(id){peer(id);ev(snap(false),id);ev({t:'hey',jt:MP.jt},id)}
  function onLeave(id){const P=MP.peers.get(id);if(!P)return;VEH.forEach(v=>{if(MP.own[v]&&MP.own[v].id===id)release(v)});dropAvatar(P);MP.peers.delete(id);if(P.name)showCap(P.name+' left',2500);ui()}
 
@@ -3972,7 +4011,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  setInterval(()=>{if(!MP.on||!MP.T)return;let m='x',p=null,v=null;
   if(RT.on&&RT.bus&&SELF.av&&SELF.av.g.parent!==scene){const q=SELF.av.g.position;m='b';p=[+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+(RT.yaw||0).toFixed(3),RT.ph==='ride'?1:+(RT.sit||0).toFixed(2),RT.seat|0]}
   else if(walk&&!tour){const r=riding();if(r==='trike'){m=r;v=tkSer()}else if(r&&bike(r)){m=r;v=bike(r).ser()}else if(!GM){m='w';p=[+V.t.x.toFixed(3),+V.t.y.toFixed(3),+V.t.z.toFixed(3),+V.th.toFixed(3)]}}
-  try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
+  try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,g:window.AVBOY&&AVBOY()?1:0,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
   doorWatch()},100);
 
  // ---------- every frame: move the other players, their rides and their name tags
