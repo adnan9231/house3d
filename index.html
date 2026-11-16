@@ -2110,6 +2110,7 @@ setTimeout(()=>{try{sndOn=localStorage.getItem('sndOn')!=='0'}catch(_){sndOn=tru
 // Options > Avatar: play as a girl or a boy (remembered); the walking avatar and whoever rides the bikes and quad change straight away
 let AVB=false;try{AVB=localStorage.getItem('avBoy')==='1'}catch(_){}window.AVBOY=()=>AVB;
 function setAvB(b,quietly){AVB=!!b;try{localStorage.setItem('avBoy',AVB?'1':'0')}catch(_){}
+ document.querySelectorAll('#mpGB button').forEach(b=>{const on=(b.dataset.b==='1')===AVB;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false')});
  [['bGirl',!AVB],['bBoy',AVB]].forEach(([id,on])=>{const e=$(id);if(e){e.classList.toggle('on',on);e.setAttribute('aria-checked',on?'true':'false')}});
  try{if(SELF.av&&SELF.av.setG)SELF.av.setG(AVB);if(GM&&GM.setG)GM.setG(AVB)}catch(_){}if(!quietly)showCap(AVB?'Playing as a boy':'Playing as a girl',1400)}
 $('bGirl').onclick=()=>setAvB(false);$('bBoy').onclick=()=>setAvB(true);setTimeout(()=>setAvB(AVB,true),0);
@@ -4043,14 +4044,15 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  const ico='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3.2 2.7-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.6 14.2c2.6-.5 4.5 1.1 5 4.3"/></svg>';
  const btn=document.createElement('button');btn.id='bMP';btn.title='Play together';btn.setAttribute('aria-label','Play together');btn.innerHTML=ico+'<i></i>';
  {const tr=$('topR'),gb=$('bGame');if(tr){if(gb&&gb.parentNode===tr)tr.insertBefore(btn,gb);else tr.appendChild(btn)}else document.body.appendChild(btn)}
- {const st=document.createElement('style');st.textContent='#topR #bMP{width:42px;padding:0;justify-content:center;border-radius:50%}';document.head.appendChild(st)}
+ {const st=document.createElement('style');st.textContent='#topR #bMP{width:42px;padding:0;justify-content:center;border-radius:50%}#mpGB{display:flex;gap:8px}#mpGB button{flex:1;padding:9px 0;text-align:center;justify-content:center;display:flex;align-items:center;border-radius:12px;border:1px solid rgba(0,0,0,.14);background:rgba(255,255,255,.7);font:inherit;font-weight:600;cursor:pointer;color:inherit}#mpGB button.on{background:#c8462b;border-color:#c8462b;color:#fff}';document.head.appendChild(st)}
  const pn=document.createElement('div');pn.id='mpP';pn.setAttribute('role','dialog');pn.setAttribute('aria-label','Play together');
  pn.innerHTML='<button id="mpX" aria-label="Close">✕</button><h2>Play together</h2><p>Everyone who types the same room code walks and rides in this house together. Share the invite link or the code.</p>'+
-  '<label for="mpN">Your name</label><input id="mpN" maxlength="20" autocomplete="nickname" placeholder="e.g. Adnan"><label>Shirt colour</label><div id="mpSw"></div>'+
+  '<label for="mpN">Your name</label><input id="mpN" maxlength="20" autocomplete="nickname" placeholder="e.g. Adnan"><label>Avatar</label><div id="mpGB" role="radiogroup" aria-label="Avatar"><button data-b="0" role="radio">Girl</button><button data-b="1" role="radio">Boy</button></div><label>Shirt colour</label><div id="mpSw"></div>'+
   '<label for="mpR">Room code</label><input id="mpR" maxlength="24" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g. family28">'+
   '<div class="row2"><button id="mpGo">Join room</button><button id="mpCp">Copy invite link</button></div><div id="mpSt"></div><ul id="mpL"></ul>';
  document.body.appendChild(pn);['keydown','keyup','pointerdown','wheel'].forEach(n=>pn.addEventListener(n,e=>e.stopPropagation()));
  const iN=$('mpN'),iR=$('mpR'),bGo=$('mpGo'),bCp=$('mpCp'),sSt=$('mpSt'),lL=$('mpL'),sw=$('mpSw');
+ document.querySelectorAll('#mpGB button').forEach(b=>b.onclick=()=>{if(window.setAvB)setAvB(b.dataset.b==='1')});if(window.setAvB&&window.AVBOY)setAvB(AVBOY(),true);   /* girl / boy, same as Options > Avatar */
  iN.value=ME.name;iR.value=(new URLSearchParams(location.search).get('room')||LS.get('room','')).toLowerCase();
  COLS.forEach(c=>{const b=document.createElement('button');b.style.background=hex(c);b.setAttribute('aria-label','Shirt colour '+hex(c));b.onclick=()=>{ME.col=c;LS.set('col',c);[...sw.children].forEach(x=>x.classList.toggle('on',x===b));const bk=bike(riding());if(bk)bk.tint(c)};if(c===ME.col)b.classList.add('on');sw.appendChild(b)});
  iN.oninput=()=>{ME.name=iN.value.trim().slice(0,20);LS.set('name',ME.name)};
