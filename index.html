@@ -52,7 +52,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
 #topR button{height:42px;background:var(--panel);border:1px solid var(--bd);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);box-shadow:var(--shadow);padding:0 16px}
 #topR button:hover{background:var(--panel-s)}
 #topR #bWalk,#topR #bSnd,#topR #bGame,#topR #bView,#topR #bFS{width:42px;padding:0;justify-content:center;border-radius:50%}
-#topR svg{display:block;pointer-events:none} #topR #bGame,#topR #bTour{display:none!important} #actR,#topR>button:not(#bMP):not(#bFS):not(#bPanel){display:none!important}   /* only Play together, full screen and Options stay in the top bar; the action buttons are replaced by the two move circles */   /* game-mode button removed: walk up to a bike or the trike and tap it (or press Use) to ride */
+#topR svg{display:block;pointer-events:none} #topR #bGame,#topR #bTour{display:none!important} #actR,#topR>button:not(#bMP):not(#bFS):not(#bPanel):not(#bSnd){display:none!important}   /* only Play together, full screen and Options stay in the top bar; the action buttons are replaced by the two move circles */   /* game-mode button removed: walk up to a bike or the trike and tap it (or press Use) to ride */
 #topR button.on{background:var(--ac);color:var(--ac-fg);border-color:transparent}
 #topR #bTour{background:linear-gradient(135deg,var(--ac-2),var(--ac));color:var(--ac-fg);border-color:transparent}
 #topR #bTour.on{background:#c62828;color:#fff}
@@ -662,20 +662,35 @@ const carG=new THREE.Group();scene.add(carG);carG.visible=false;const CARMATS=[]
 }
 
 
+// ---- young gum (eucalyptus) street tree, like the ones planted along the nature strips: slim red-brown trunk, mulch ring,
+//      a narrow upright crown of hanging grey-green leaf clusters that is widest low down and tapers to a soft point.
+//      euc(parent,scale,seed,crownGroup,leafList): trunk and mulch go in parent; leaves go in crownGroup (if given, so they can sway) and leafList
+const EUC={};
+function euc(par,sc,seed,cg,lf){sc=sc||1;let q=(seed||1)*9301+49297;const rnd=()=>{q=(q*9301+49297)%233280;return q/233280};
+ if(!EUC.mT){EUC.mT=M({color:0x7b4330,roughness:.85});EUC.mB=M({color:0x6b4a36,roughness:.9});EUC.mMu=M({color:0x33251a,roughness:1});
+  EUC.mL=[[.30,.20,.33],[.31,.17,.38],[.28,.22,.30],[.33,.15,.42],[.29,.19,.35]].map(c=>M({color:new THREE.Color().setHSL(c[0],c[1],c[2]),roughness:.8,flatShading:true}));
+  EUC.gL=new THREE.IcosahedronGeometry(1,0);EUC.gT=new THREE.CylinderGeometry(1,1,1,7);EUC.gM=new THREE.CylinderGeometry(.55,.6,.04,14)}
+ const up=new THREE.Vector3(0,1,0),H=5.4*sc,C0=1.15*sc,RM=1.05*sc,cg_=cg||par,cy=cg?cg.position.y:0;
+ const mu=new THREE.Mesh(EUC.gM,EUC.mMu);mu.position.y=-.17;mu.scale.set(sc,1,sc);mu.receiveShadow=true;par.add(mu);
+ const stick=(a,b,r0,r1,g)=>{const d=b.clone().sub(a),l=d.length(),m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r0,l,6),EUC.mT);m.position.copy(a).addScaledVector(d,.5);m.quaternion.setFromUnitVectors(up,d.normalize());m.castShadow=true;g.add(m);return m};
+ // trunk: two slightly offset sections so it is not ruler straight
+ const lean=new THREE.Vector3((rnd()-.5)*.12*sc,0,(rnd()-.5)*.12*sc),p0=new THREE.Vector3(0,-.19,0),p1=new THREE.Vector3(lean.x*.4,H*.45,lean.z*.4),p2=new THREE.Vector3(lean.x,H*.97,lean.z);
+ stick(p0,p1,.075*sc,.055*sc,par);stick(p1.clone().setY(p1.y-cy),p2.clone().setY(p2.y-cy),.055*sc,.012*sc,cg_);
+ const R=h=>{const t=Math.min(1,Math.max(0,(h-C0)/(H-C0)));return RM*Math.pow(1-t,.7)*Math.min(1,.35+t*3.2)};
+ // branches: thin twigs angling up and out from the trunk, shorter toward the top, each carrying a few hanging leaf clusters
+ const nb=11;for(let i=0;i<nb;i++){const h=C0+(H*.86-C0)*(i+rnd()*.6)/nb,a=i*2.39996+rnd()*.6,rr=R(h+.3*sc)*(.75+rnd()*.3),
+   b0=new THREE.Vector3(lean.x*h/H,h-cy,lean.z*h/H),b1=b0.clone().add(new THREE.Vector3(Math.cos(a)*rr,rr*(.7+rnd()*.5),Math.sin(a)*rr));
+  stick(b0,b1,.02*sc,.008*sc,cg_);
+  const nc=2+Math.floor(rnd()*3);for(let k=0;k<nc;k++){const f=.45+k/nc*.6,pp=b0.clone().lerp(b1,f).add(new THREE.Vector3((rnd()-.5)*.25*sc,-(.05+rnd()*.15)*sc,(rnd()-.5)*.25*sc));leaf(pp,.16+rnd()*.11)}}
+ // extra clusters filling the crown envelope (and the leader at the top)
+ for(let i=0;i<52;i++){const h=C0+.15*sc+(H-C0)*Math.pow(rnd(),.85)*.98,a=rnd()*6.283,rr=R(h)*(.25+.75*Math.sqrt(rnd()));leaf(new THREE.Vector3(lean.x*h/H+Math.cos(a)*rr,h-cy,lean.z*h/H+Math.sin(a)*rr),.14+rnd()*.11*(1-(h-C0)/(H-C0)*.5))}
+ function leaf(pp,r){r*=sc;const m=new THREE.Mesh(EUC.gL,EUC.mL[Math.floor(rnd()*EUC.mL.length)]);m.position.copy(pp);m.scale.set(r*(.75+rnd()*.3),r*(1.4+rnd()*.6),r*(.75+rnd()*.3));
+  m.rotation.set((rnd()-.5)*.5,rnd()*6.28,(rnd()-.5)*.5);m.castShadow=true;cg_.add(m);if(lf)lf.push({m,p:rnd()*6.28,x:pp.x,y:pp.y,z:pp.z})}}
 // ---- small street tree on the nature strip (sways with the wind)
 const treeG=new THREE.Group(),crown=new THREE.Group(),leafs=[];
 {const mT=M({color:0x6a4a30,roughness:.9}),mSt=M({color:0x2b2d2f,roughness:.6}),mMu=M({color:0x5a3f2a,roughness:1});
- treeG.position.set(17.25,-.19,-2.7);scene.add(treeG);
- const m0=new THREE.Mesh(new THREE.CylinderGeometry(.9*.12,.9*.17,.3,10),mMu);m0.position.y=.02;m0.scale.set(2.6,.12,2.6);treeG.add(m0);
- const tr=new THREE.Mesh(new THREE.CylinderGeometry(.035,.06,1.45,8),mT);tr.position.y=.72;tr.castShadow=true;treeG.add(tr);
- crown.position.y=1.25;treeG.add(crown);
- const tr2=new THREE.Mesh(new THREE.CylinderGeometry(.022,.035,1.0,7),mT);tr2.position.y=.5;tr2.castShadow=true;crown.add(tr2);
- const br=[[.5,.35,.1,.9],[-.45,.55,.2,.8],[.15,.8,-.5,.85],[-.2,.7,.45,.8],[.1,1.0,.05,.7]];
- br.forEach(([bx_,by,bz,len],i)=>{const g=new THREE.Mesh(new THREE.CylinderGeometry(.012,.022,len,6),mT);const dir=new THREE.Vector3(bx_,by,bz).normalize();g.position.set(bx_*.25,.55+by*.15,bz*.25);g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);g.castShadow=true;crown.add(g);
-  const tip=new THREE.Vector3(bx_*.25,.55+by*.15,bz*.25).add(dir.clone().multiplyScalar(len*.5));
-  for(let k=0;k<3;k++){const r=.2+Math.random()*.1,l=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),M({color:new THREE.Color().setHSL(.27+Math.random()*.04,.5,.28+Math.random()*.1),roughness:.85,flatShading:true}));l.position.copy(tip).add(new THREE.Vector3((Math.random()-.5)*.3,(Math.random()-.3)*.25,(Math.random()-.5)*.3));l.scale.y=.8;l.castShadow=true;crown.add(l);leafs.push({m:l,p:Math.random()*6.28,x:l.position.x,y:l.position.y,z:l.position.z})}});
- [[.28,.22],[-.28,-.22]].forEach(([dx,dz])=>{const st=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,1.9,6),mSt);st.position.set(dx,.95,dz);st.castShadow=true;treeG.add(st)});
- const tie=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.03,8),M({color:0xe8e0c8}));tie.position.y=1.15;treeG.add(tie)}
+ treeG.position.set(17.25,0,-2.7);scene.add(treeG);
+ crown.position.y=5.4*.45;treeG.add(crown);euc(treeG,1,7,crown,leafs)}   /* a young gum like the others along the street */
 function treeTick(tm){const g=Math.max(.45,.95+.45*Math.sin(tm*.31)+.25*Math.sin(tm*.83+1));
  const sw=Math.sin(tm*1.15)*.6+Math.sin(tm*2.7+1.3)*.3+Math.sin(tm*.43)*.5;
  crown.rotation.z=g*.1*sw;crown.rotation.x=g*.06*Math.sin(tm*.9+.7)+g*.025*Math.sin(tm*3.1);
@@ -1241,6 +1256,27 @@ setTimeout(()=>{try{
  window.BUS={g:bus,stops:STOPS,at:()=>BS.at,v:()=>BS.v,eta,next:k=>(k+1)%STOPS.length,
   nextStop:()=>{let b=-1,bd=1e9;STOPS.forEach((o,j)=>{if(j===BS.at)return;const f=fwd(BS.d,o.d);if(f<bd){bd=f;b=j}});return b},
   skipTo:k=>{BS.d=(STOPS[k].d-70+BLEN)%BLEN;BS.at=-1;BS.dw=0;BS.v=VL[idxAt(BS.d)]||5}};
+ // passenger information boards inside the bus: amber LED screens hanging from the ceiling (one over the front seats, one over the middle of the bus),
+ // facing the seats. They show the next stop and how long until the bus gets there; while the bus is standing at a stop they show that stop.
+ if(bus){const SN=['No. 28 – House Stop','West Tarneit Station','Tarneit Station'],sn=k=>SN[k]||String(STOPS[k].n).replace(/^the /,'');
+  const c=document.createElement('canvas');c.width=512;c.height=112;const x=c.getContext('2d'),tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;tx.anisotropy=4;
+  const mScr=new THREE.MeshBasicMaterial({map:tx,toneMapped:false}),mHs=M({color:0x16181b,roughness:.5}),mRod=M({color:0xb8bcc0,metalness:.6,roughness:.35});
+  [1.75,-1.5].forEach(z=>{const g=new THREE.Group();g.position.set(0,2.36,z);bus.add(g);
+   const h=new THREE.Mesh(rbox(.96,.22,.06,.02),mHs);g.add(h);
+   const sc=new THREE.Mesh(new THREE.PlaneGeometry(.9,.18),mScr);sc.position.z=-.031;sc.rotation.y=Math.PI;g.add(sc);   /* the screen faces the back of the bus, toward the seated passengers */
+   const bk=new THREE.Mesh(new THREE.PlaneGeometry(.9,.18),mScr);bk.position.z=.031;g.add(bk);                            /* and the same on the other side */
+   [-.38,.38].forEach(rx=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(.01,.01,.14,6),mRod);r.position.set(rx,.18,0);g.add(r)})});
+  let last='';const draw=()=>{let k=BS.at,top='THIS STOP',sub='';
+   if(k<0){k=window.BUS.nextStop();top='NEXT STOP';const e=k>=0?Math.round(eta(k)):0;sub=e<=5?'arriving':e<60?'in '+e+' s':'in '+Math.round(e/60)+' min'}
+   else sub=BDP>.05?'doors open':'';
+   const name=k>=0?sn(k):'',t=new Date(),clk=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0'),key=top+name+sub+clk;if(key===last)return;last=key;
+   x.fillStyle='#050505';x.fillRect(0,0,512,112);
+   x.fillStyle='rgba(255,170,40,.06)';for(let i=2;i<512;i+=4)x.fillRect(i,0,1,112);   /* faint LED pitch */
+   x.fillStyle='#ffb020';x.textBaseline='alphabetic';x.font='bold 22px monospace';x.textAlign='left';x.fillText(top,14,30);
+   x.textAlign='right';x.fillText(clk,498,30);if(sub){x.fillStyle='#ffcf70';x.font='20px monospace';x.fillText(sub,498,98)}
+   x.fillStyle='#ffb020';x.textAlign='left';let fs=40;x.font='bold '+fs+'px monospace';while(x.measureText(name).width>(sub?330:484)&&fs>22){fs-=2;x.font='bold '+fs+'px monospace'}x.fillText(name,14,84);
+   tx.needsUpdate=true};
+  draw();setInterval(()=>{try{if(bus.visible)draw()}catch(e){}},300)}
  // bus stop beside no. 28: shelter (glass back and roof, bench) and a pole sign; plain pole signs at the two station bus bays
  {const mPo=M({color:0x4a4f55,metalness:.5,roughness:.4}),mGs=new THREE.MeshStandardMaterial({color:0x9fc4d4,transparent:true,opacity:.35,roughness:.1,side:THREE.DoubleSide}),mBn=M({color:0x8a6a4a});
   const sgT=cv(192,256,c=>{c.fillStyle='#f5f5f2';c.fillRect(0,0,192,256);c.fillStyle='#e8701a';c.fillRect(0,0,192,96);c.fillStyle='#ffffff';c.font='bold 64px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('BUS',96,72);
@@ -1259,16 +1295,31 @@ setTimeout(()=>{try{
    zT.wrapS=zT.wrapT=THREE.ClampToEdgeWrapping;
    const zm=new THREE.Mesh(new THREE.PlaneGeometry(2.7,7.8),new THREE.MeshBasicMaterial({map:zT,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4}));
    zm.rotation.x=-Math.PI/2;zm.position.set(18.75+1.45,-.176,ZH);zm.renderOrder=1;scene.add(zm)}
-  {const tT=cv(256,384,c=>{c.fillStyle='#f7f7f4';c.fillRect(0,0,256,384);c.fillStyle='#e8701a';c.fillRect(0,0,256,150);
-    c.fillStyle='#fff';c.fillRect(48,28,160,82);c.fillStyle='#e8701a';c.fillRect(58,38,140,36);[[74,92],[182,92]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,13,0,7);c.fillStyle='#1d2a3a';c.fill()});   /* bus pictogram */
-    c.fillStyle='#fff';c.fillRect(64,44,26,24);c.fillRect(98,44,26,24);c.fillRect(132,44,26,24);c.fillRect(166,44,26,24);
-    c.fillStyle='#1d2a3a';c.font='bold 74px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('BUS',128,222);c.fillText('STOP',128,300);
-    c.font='bold 21px Arial,Helvetica,sans-serif';c.fillStyle='#e8701a';c.fillText('West Tarneit · Tarneit',128,354)});tT.wrapS=tT.wrapT=THREE.ClampToEdgeWrapping;
-   const fM=new THREE.MeshBasicMaterial({map:tT}),eM=M({color:0x3a3f45,metalness:.4,roughness:.5}),TX=17.7,TZ=ZH-3.3;
-   box(.14,3.6,.14,mPo,TX,-.18+1.8,TZ);
-   const tb=new THREE.Mesh(rbox(.9,1.35,.9,.06,2),[fM,fM,eM,eM,fM,fM]);tb.position.set(TX,-.18+3.0,TZ);tb.castShadow=true;scene.add(tb);
-   box(1.0,.08,1.0,eM,TX,-.18+3.72,TZ);box(1.0,.06,1.0,eM,TX,-.18+2.29,TZ)}   // cap and base trim
-  [ZT,ZW].forEach(zs=>sign(-70.8,zs+7.6,-Math.PI/2))}
+  // Victorian-style bus stop flag: a slim galvanised pole with a thin metal flag plate sticking out toward the road (printed both sides:
+  // orange band with a white bus symbol, "Bus Stop", the route and where it goes, and the stop number), plus a small timetable case lower down
+  const flagT=(no)=>{const t=cv(256,448,c=>{const R=(x,y,w,h,r)=>{c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()};
+     c.fillStyle='#ffffff';c.fillRect(0,0,256,448);c.fillStyle='#ff8200';c.fillRect(0,0,256,190);
+     c.fillStyle='#fff';R(40,34,176,92,18);c.fill();c.fillStyle='#ff8200';[52,92,132,172].forEach(x=>{R(x,48,32,34,5);c.fill()});R(52,96,152,8,3);c.fill();   /* bus: body, windows, trim */
+     c.fillStyle='#fff';[[78,128],[178,128]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,17,0,7);c.fill()});c.fillStyle='#ff8200';[[78,128],[178,128]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,7,0,7);c.fill()});
+     c.fillStyle='#fff';c.font='bold 40px Arial,Helvetica,sans-serif';c.textAlign='center';c.textBaseline='alphabetic';c.fillText('Bus Stop',128,180);
+     c.fillStyle='#1d1d1f';R(18,206,96,58,8);c.fill();c.fillStyle='#fff';c.font='bold 40px Arial,Helvetica,sans-serif';c.fillText('28',66,250);
+     c.fillStyle='#1d1d1f';c.textAlign='left';c.font='bold 20px Arial,Helvetica,sans-serif';c.fillText('Community',126,228);c.fillText('Loop',126,252);
+     c.font='19px Arial,Helvetica,sans-serif';c.fillStyle='#333';c.fillText('to West Tarneit Stn',18,298);c.fillText('to Tarneit Stn',18,324);
+     c.fillStyle='#e6e6e6';c.fillRect(0,350,256,98);c.fillStyle='#1d1d1f';c.font='bold 22px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('Stop ID '+no,128,388);
+     c.font='16px Arial,Helvetica,sans-serif';c.fillStyle='#444';c.fillText('Timetable on pole below',128,418)});t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.anisotropy=4;return t};
+  const ttT=cv(128,192,c=>{c.fillStyle='#fdfdfb';c.fillRect(0,0,128,192);c.fillStyle='#ff8200';c.fillRect(0,0,128,26);c.fillStyle='#fff';c.font='bold 14px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('TIMETABLE',64,18);
+     c.fillStyle='#888';for(let r=0;r<11;r++){c.fillRect(8,36+r*13,112,1);c.fillStyle='#333';c.font='9px Arial';c.fillText((6+r)+':05   '+(6+r)+':25   '+(6+r)+':45',64,46+r*13);c.fillStyle='#888'}});
+  const mGal=M({color:0xa9afb4,metalness:.75,roughness:.35}),mEdge=M({color:0xcfd3d6,metalness:.6,roughness:.4}),ttM=new THREE.MeshStandardMaterial({map:ttT,roughness:.4}),ttF=M({color:0x2b2f33,metalness:.5,roughness:.5});
+  const stopFlag=(x,z,ry,no)=>{const g=new THREE.Group();g.position.set(x,-.18,z);g.rotation.y=ry;scene.add(g);
+   const pole=new THREE.Mesh(new THREE.CylinderGeometry(.038,.042,3.05,12),mGal);pole.position.y=1.525;pole.castShadow=true;g.add(pole);
+   const cap=new THREE.Mesh(new THREE.SphereGeometry(.042,10,6,0,6.283,0,Math.PI/2),mGal);cap.position.y=3.05;g.add(cap);
+   const fT=flagT(no),fM=new THREE.MeshStandardMaterial({map:fT,roughness:.45,metalness:.1});
+   const pl=new THREE.Mesh(new THREE.BoxGeometry(.46,.8,.012),[mEdge,mEdge,mEdge,mEdge,fM,fM]);pl.position.set(.27,2.55,0);pl.castShadow=true;g.add(pl);   /* flag, printed on both faces */
+   [2.25,2.85].forEach(y=>{const br=new THREE.Mesh(new THREE.BoxGeometry(.08,.05,.03),mGal);br.position.set(.06,y,0);g.add(br)});   /* clamps to the pole */
+   const tc=new THREE.Mesh(new THREE.BoxGeometry(.3,.44,.06),[ttF,ttF,ttF,ttF,ttM,ttF]);tc.position.set(-.07,1.45,0);tc.rotation.y=-Math.PI/2;tc.castShadow=true;g.add(tc);   /* timetable case on the footpath side */
+   const tg=new THREE.Mesh(new THREE.PlaneGeometry(.27,.4),new THREE.MeshStandardMaterial({color:0xddeeff,transparent:true,opacity:.18,roughness:.05}));tg.position.set(-.101,1.45,0);tg.rotation.y=-Math.PI/2;g.add(tg)};
+  stopFlag(17.7,ZH-3.3,0,'28018')
+  [ZT,ZW].forEach((zs,k)=>stopFlag(-70.8,zs+7.6,-Math.PI/2,k?'45210':'45202'))}
  // traffic waits for the girl on her bike: a lane holds still while she is just ahead of one of its vehicles, and the minibus pauses the same way
  const rider=()=>{const b=GM;return b&&(b===window.BKM||b===window.CARK)?b:null},ahead=(px,pz,fx,fz,b,len)=>{const dx=b.x-px,dz=b.z-pz,a=dx*fx+dz*fz,l=Math.abs(-dx*fz+dz*fx);return a>0&&a<len&&l<1.7};
  let lt=0;(function roadLoop(now){requestAnimationFrame(roadLoop);const dt=Math.min(.1,Math.max(0,(now-lt)/1000));lt=now;
@@ -2023,7 +2074,10 @@ function ballTick(dt){const b=BALL,m=b.m;if(!m||b.sp<.01)return;const p=m.positi
 const SI_ON='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg>',SI_OFF='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
 let silentA=null;function phoneAudio(){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}try{if(!silentA){const n=2400,b=new Uint8Array(44+n),v=new DataView(b.buffer),w=(o,t)=>{for(let i=0;i<t.length;i++)b[o+i]=t.charCodeAt(i)};w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,8000,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,'data');v.setUint32(40,n,true);for(let i=0;i<n;i++)b[44+i]=128;let bin='';for(let i=0;i<b.length;i++)bin+=String.fromCharCode(b[i]);silentA=new Audio('data:audio/wav;base64,'+btoa(bin));silentA.loop=true;silentA.volume=.01}silentA.play().catch(()=>{})}catch(e){}}
 ['pointerdown','touchend'].forEach(ev=>document.addEventListener(ev,()=>{if(sndOn){actx();if(silentA&&silentA.paused)silentA.play().catch(()=>{})}},{passive:true}));
-$('bSnd').onclick=e=>{sndOn=!sndOn;if(sndOn)phoneAudio();actx();const bt=e.currentTarget;bt.classList.toggle('on',sndOn);bt.innerHTML=sndOn?SI_ON:SI_OFF;bt.title=bt.ariaLabel=sndOn?'Sound on':'Sound off'};
+const sndBtn=()=>{const bt=$('bSnd');bt.classList.toggle('on',sndOn);bt.innerHTML=sndOn?SI_ON:SI_OFF;bt.title=bt.ariaLabel=sndOn?'Sound on (tap to mute)':'Sound off (tap to turn on)'};
+$('bSnd').onclick=e=>{e.stopPropagation();sndOn=!sndOn;try{localStorage.setItem('sndOn',sndOn?'1':'0')}catch(_){}if(sndOn)phoneAudio();actx();if(AC&&AC.m)AC.m.gain.setTargetAtTime(sndOn?AC.mg:0,AC.currentTime,.05);sndBtn()};
+setTimeout(()=>{try{sndOn=localStorage.getItem('sndOn')!=='0'}catch(_){sndOn=true}sndBtn()},0);   /* sound is on unless you turned it off last time; it starts with your first tap or key press */
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,function first(){if(sndOn){phoneAudio();actx()}document.removeEventListener(ev,first,true)},true));
 $('bLab').onclick=e=>{labels.visible=!labels.visible;e.target.classList.toggle('on',labels.visible)};
 $('bPanel').onclick=e=>{const u=$('ui'),h=u.style.display==='none';u.style.display=h?'':'none';e.target.textContent=h?'Close options':'Options'};$('bFront').onclick=()=>go('Front');$('bAer').onclick=()=>go('Aer');$('bTop').onclick=()=>go('Top');
 
@@ -2042,7 +2096,7 @@ el.addEventListener('pointerup',e=>{clearInterval(hi);if(dn&&!dn.moved&&!dn.mult
 el.addEventListener('pointercancel',()=>{clearInterval(hi);dn=null});
 let sw=null;function walkOff(){if(GM)gmExit();walk=false;$('bWalk').classList.remove('on');if(sw){roof.visible=sw.r;labels.visible=sw.l;fences.visible=true;sync();sw=null}fov(45)}
 $('bWalk').onclick=e=>{if(RT.on)rtCancel();if(GM){GM.fw=0;gmExit();return}   /* in a game, the walk button parks the trike, bike or car back in the garage and carries on walking */if(tour)stopTour(false);if(walk){G.t.set(22.6,1.12,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph;fov(72);showCap('Back at the house',1200);return}   /* walk mode stays on whenever no game or tour is running */walk=true;sw={r:roof.visible,l:labels.visible,f:fences.visible};roof.visible=true;fences.visible=true;labels.visible=false;sync();e.target.classList.toggle('on',walk);
- fov(72);{G.t.set(22.6,1.12,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;showCap(matchMedia('(pointer:fine)').matches?'W/S walk · A/D turn · drag to look · wheel to zoom · Space jump · Shift run · E use · Q wave':'Left stick walks and turns · drag the screen to look · pinch to zoom · buttons on the right: jump, run, use, wave',6500)}};
+ fov(72);{G.t.set(22.6,1.12,-.9);G.r=.05;G.th=0;G.ph=Math.PI/2;showCap(matchMedia('(pointer:fine)').matches?'W/S walk · A/D side-step · arrow keys turn and tilt the view · drag to look · wheel to zoom · Space jump · Shift run · E use · Q wave':'Left stick walks and side-steps · right stick turns and tilts the view · drag the screen to look · pinch to zoom · buttons on the right: jump, run, use, wave',6500)}};
 $('ui').addEventListener('click',e=>{if(e.target.closest('button')){$('ui').style.display='none';$('bPanel').textContent='Options'}});
 const TP=Math.PI*2,TW=[[1800,415,1,null,null,'eo'],[1560,415],[1400,422],[1425,350],[1395,122,2,1650,345],[1425,350],[1400,422],[1172,428,2,1162,640],[1165,445],[1162,480],[1162,520],[1240,590],[1300,640,2,1555,670,'go'],[1230,740],[1175,800,2,1125,820],[1125,820],[1010,826],[900,826,3],[1010,826],[1125,822],[1190,770],[1300,640,2,1555,670,'gc'],[1240,590],[1162,520],[1162,480],[1172,430],[1176,340],[1200,310,2,1330,215,'wn',1.3,-.1],[1330,120,2,1200,330,'rb3',1.3,-.1],[1176,340],[1172,422],[1060,428],[900,432],[780,432],[650,340,1],[520,240,2,325,244,'sL'],[440,330],[520,430],[700,434],[780,434],[770,330],[846,272,2,null,null,'isl',1.35,-.25],[918,300],[950,346],[1000,346,2,1075,349,'fr',1.25,-.05],[1045,300,2,1094,214,'pan',1.4,-.1],[1040,125,2,962,346,'pd',1.5,-.12],[1045,300],[1000,346],[962,346],[940,332,2,868,332,'mw',.52,-.02],[915,345,2,912,140,null,.52,-.06],[912,192,2,895,140,null,.52,-.02],[785,192,2,785,90,null,.52,-.02],[772,330],[805,440],[812,505],
 [908,518],[1010,522],[1013,625],[1110,690,2,960,720,'wn',1.3,-.1],[950,745,2,1080,600,'rb1',1.3,-.1],[1010,625],[1010,580],[908,518],[729,518],
@@ -2162,7 +2216,7 @@ function nightTick(t){const dt=Math.min(.1,Math.max(0,t-NM.t));NM.t=t;
  mGlass.emissive.setHex(0xffd9a0);mGlass.emissiveIntensity=.55*la*v}
 
 let AC=null,sndOn=false,quiet=0,stAcc=0,sE=0,sG=0,sT=0;
-function actx(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();const ph=matchMedia('(pointer:coarse)').matches,m=AC.createGain();m.gain.value=ph?2.4:1.0;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=ph?4200:1500;lp.Q.value=.4;const cp=AC.createDynamicsCompressor();m.connect(lp);lp.connect(cp);cp.connect(AC.destination);const iL=AC.sampleRate*.7,ib=AC.createBuffer(2,iL,AC.sampleRate);for(let c=0;c<2;c++){const d=ib.getChannelData(c);for(let i=0;i<iL;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/iL,2.5)}const cv_=AC.createConvolver();cv_.buffer=ib;const wg=AC.createGain();wg.gain.value=.22;lp.connect(cv_);cv_.connect(wg);wg.connect(cp);AC.m=m;const n=AC.sampleRate*2,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;AC.nb=b}catch(e){AC=null}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function actx(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();const ph=matchMedia('(pointer:coarse)').matches,m=AC.createGain();m.gain.value=ph?2.4:1.0;AC.mg=m.gain.value;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=ph?4200:1500;lp.Q.value=.4;const cp=AC.createDynamicsCompressor();m.connect(lp);lp.connect(cp);cp.connect(AC.destination);const iL=AC.sampleRate*.7,ib=AC.createBuffer(2,iL,AC.sampleRate);for(let c=0;c<2;c++){const d=ib.getChannelData(c);for(let i=0;i<iL;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/iL,2.5)}const cv_=AC.createConvolver();cv_.buffer=ib;const wg=AC.createGain();wg.gain.value=.22;lp.connect(cv_);cv_.connect(wg);wg.connect(cp);AC.m=m;const n=AC.sampleRate*2,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;AC.nb=b}catch(e){AC=null}}if(AC&&AC.state==='suspended')AC.resume();return AC}
 function nz(t0,dur,type,f,q,g,fend,att){const c=AC,s=c.createBufferSource();s.buffer=c.nb;s.loop=true;const fl=c.createBiquadFilter();fl.type=type;fl.frequency.setValueAtTime(f,t0);if(fend)fl.frequency.linearRampToValueAtTime(fend,t0+dur);fl.Q.value=q;const gn=c.createGain();att=att||Math.min(.015,dur/3);gn.gain.setValueAtTime(0,t0);gn.gain.linearRampToValueAtTime(g,t0+att);gn.gain.exponentialRampToValueAtTime(.0005,t0+dur);s.connect(fl);fl.connect(gn);gn.connect(c.m);s.start(t0,Math.random()*1.5);s.stop(t0+dur+.05);return gn}
 function sus(t0,dur,type,f,q,g,lfoHz,lfoD){const c=AC,s=c.createBufferSource();s.buffer=c.nb;s.loop=true;const fl=c.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;const gn=c.createGain(),r=Math.min(.5,dur/4);gn.gain.setValueAtTime(0,t0);gn.gain.linearRampToValueAtTime(g,t0+r);gn.gain.setValueAtTime(g,t0+dur-r);gn.gain.linearRampToValueAtTime(0,t0+dur);if(lfoHz){const o=c.createOscillator(),og=c.createGain();o.frequency.value=lfoHz;og.gain.value=g*lfoD;o.connect(og);og.connect(gn.gain);o.start(t0);o.stop(t0+dur+.05)}s.connect(fl);fl.connect(gn);gn.connect(c.m);s.start(t0,Math.random()*1.5);s.stop(t0+dur+.05)}
 function tn(t0,dur,type,f0,f1,g,filt){const c=AC,o=c.createOscillator();o.type=type;o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t0+dur);const gn=c.createGain();gn.gain.setValueAtTime(0,t0);gn.gain.linearRampToValueAtTime(g,t0+Math.min(.012,dur/4));gn.gain.exponentialRampToValueAtTime(.0005,t0+dur);let n=o;if(filt){const fl=c.createBiquadFilter();fl.type='lowpass';fl.frequency.value=filt;o.connect(fl);n=fl}n.connect(gn);gn.connect(c.m);o.start(t0);o.stop(t0+dur+.05)}
@@ -2197,8 +2251,48 @@ function startWind(){if(WG||!AC)return;const c=AC,s=c.createBufferSource();s.buf
  const fm=c.createOscillator(),fg=c.createGain();fm.frequency.value=.17;fg.gain.value=110;fm.connect(fg);fg.connect(f1.frequency);fm.start();
  WG=c.createGain();WG.gain.value=0;s.connect(f1);f1.connect(f2);f2.connect(gust);gust.connect(WG);WG.connect(c.m);s.start()}
 function insideHouse(x,z){const px=x/S+850,pz=MZI(z/SZ+Z0);if(px>=40&&px<=1555&&pz>=90&&pz<=865&&!(px<325&&pz<292))return true;return px>1555&&px<=1650&&pz>=90&&pz<=345}
-function windTick(){if(!AC)return;startWind();if(!WG)return;const out=!insideHouse(cam.position.x,cam.position.z);WG.gain.setTargetAtTime(sndOn?(out?.009:.0006):0,AC.currentTime,.7)}
-function foot(x,z){}
+function windTick(){try{ambTick(.15)}catch(e){}if(!AC)return;startWind();if(!WG)return;const out=!insideHouse(cam.position.x,cam.position.z);WG.gain.setTargetAtTime(sndOn?(out?.009:.0006):0,AC.currentTime,.7)}
+// ---- soft everyday sounds: footsteps, the hum and rumble of whatever you are riding, birds by day, crickets at night,
+//      distant traffic near the main road, and a two-note chime when the bus pulls in at a stop while you are on it. All kept quiet.
+function foot(x,z){if(!sndOn||performance.now()<quiet||!actx())return;const t=AC.currentTime+.01,j=1+(Math.random()-.5)*.2,run=SELF.run||Math.abs(SELF.mv||0)>3.5,v=run?1.25:1;
+ const k=insideHouse(x,z)?floorK(x,z):'out';
+ if(k==='fc')nz(t,.09,'lowpass',420*j,.7,.07*v);                                           /* carpet: a muffled pad */
+ else if(k==='ft'){nz(t,.04,'bandpass',2400*j,2,.06*v);tn(t,.05,'sine',210*j,120,.04*v)}   /* tiles: a light tap */
+ else if(k==='fw'||k==='fo'){tn(t,.08,'sine',140*j,70,.08*v);nz(t,.05,'bandpass',900*j,1.1,.06*v)}   /* timber floor */
+ else{nz(t,.07,'bandpass',1300*j,1.0,.07*v);nz(t+.015,.05,'lowpass',500*j,.7,.05*v)}}       /* outside: soft scuff on the path */
+const AMB={t:0,bird:3,px:null,pz:null,sp:0,lastAt:-1};
+function ambStart(){if(AMB.on||!AC)return;const c=AC;AMB.on=true;
+ // rolling noise (tyres, wheels on rails) and a low engine tone, both silent until you ride something
+ const s=c.createBufferSource();s.buffer=c.nb;s.loop=true;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=300;f.Q.value=.5;AMB.rg=c.createGain();AMB.rg.gain.value=0;AMB.rf=f;s.connect(f);f.connect(AMB.rg);AMB.rg.connect(c.m);s.start();
+ const o=c.createOscillator();o.type='sawtooth';o.frequency.value=48;const of=c.createBiquadFilter();of.type='lowpass';of.frequency.value=160;AMB.eg=c.createGain();AMB.eg.gain.value=0;AMB.eo=o;o.connect(of);of.connect(AMB.eg);AMB.eg.connect(c.m);o.start();
+ // distant traffic: deep filtered noise
+ const s2=c.createBufferSource();s2.buffer=c.nb;s2.loop=true;const f2=c.createBiquadFilter();f2.type='lowpass';f2.frequency.value=220;AMB.tg=c.createGain();AMB.tg.gain.value=0;s2.connect(f2);f2.connect(AMB.tg);AMB.tg.connect(c.m);s2.start(0,.7);
+ // crickets: a high tone pulsed on and off
+ const o3=c.createOscillator();o3.frequency.value=4600;const pg=c.createGain();pg.gain.value=0;const l=c.createOscillator();l.type='square';l.frequency.value=6;const lg=c.createGain();lg.gain.value=.5;l.connect(lg);lg.connect(pg.gain);
+ const l2=c.createOscillator();l2.frequency.value=.35;const l2g=c.createGain();l2g.gain.value=.5;l2.connect(l2g);l2g.connect(pg.gain);
+ AMB.cg=c.createGain();AMB.cg.gain.value=0;o3.connect(pg);pg.connect(AMB.cg);AMB.cg.connect(c.m);o3.start();l.start();l2.start()}
+function chirp(t,g){const n=2+Math.floor(Math.random()*3),f0=2600+Math.random()*1400;for(let i=0;i<n;i++){const tt=t+i*(.09+Math.random()*.05);tn(tt,.07,'sine',f0*(1+Math.random()*.1),f0*(1.35+Math.random()*.3),g)}}
+function chime(){if(!sndOn||!actx())return;const t=AC.currentTime+.02;tn(t,.6,'sine',880,870,.07);tn(t+.32,.8,'sine',660,655,.07)}
+function ambTick(dt){if(!AC||!sndOn&&!AMB.on)return;ambStart();if(!AMB.on)return;const c=AC,T=c.currentTime,ok=sndOn&&performance.now()>=quiet;
+ // how fast am I going, and on what
+ let kind='',sp=0;
+ if(RT.on){kind=RT.bus?'bus':'train';const p=RT.bus&&window.BUS?null:V.t;if(RT.bus&&window.BUS)sp=Math.abs(BUS.v());else{if(AMB.px!==null)sp=Math.hypot(p.x-AMB.px,p.z-AMB.pz)/Math.max(dt,1e-3);AMB.px=p.x;AMB.pz=p.z}}
+ else if(GM&&typeof GM.sp==='number'){sp=Math.abs(GM.sp);kind=GM===window.CARK?'car':'bike';AMB.px=null}else AMB.px=null;
+ if(sp>60)sp=AMB.sp;AMB.sp+=(sp-AMB.sp)*Math.min(1,dt*3);const v=AMB.sp;
+ let rg=0,rf=300,eg=0,ef=48;
+ if(kind==='bike'){rg=Math.min(1,v/6)*.035;rf=500+v*120}
+ else if(kind==='car'){rg=Math.min(1,v/15)*.03;rf=260+v*25;eg=.012+Math.min(1,v/18)*.012;ef=42+v*3.2}
+ else if(kind==='bus'){rg=Math.min(1,v/12)*.03;rf=240+v*20;eg=.016+Math.min(1,v/12)*.01;ef=38+v*2.4;
+  const at=BUS.at();if(at>=0&&AMB.lastAt<0&&RT.ph==='ride')chime();AMB.lastAt=at}
+ else if(kind==='train'){rg=Math.min(1,v/20)*.045;rf=180+v*8;eg=.006+Math.min(1,v/25)*.008;ef=55+v*.8;
+  AMB.cl=(AMB.cl||0)+v*dt;if(v>2&&AMB.cl>18){AMB.cl=0;if(ok){const t=T+.01;nz(t,.05,'bandpass',700,2,.05);nz(t+.11,.05,'bandpass',650,2,.045)}}}   /* clack-clack over the rail joints */
+ if(kind!=='bus')AMB.lastAt=-1;
+ AMB.rg.gain.setTargetAtTime(ok?rg:0,T,.25);AMB.rf.frequency.setTargetAtTime(rf,T,.25);AMB.eg.gain.setTargetAtTime(ok?eg:0,T,.3);AMB.eo.frequency.setTargetAtTime(ef,T,.3);
+ // the world around you
+ const cx=cam.position.x,cz=cam.position.z,out=!insideHouse(cx,cz)&&!(RT.on&&RT.bus&&RT.view!=='out'),night=NM.v>.5;
+ AMB.tg.gain.setTargetAtTime(ok?Math.max(0,1-Math.abs(cx+120)/140)*(out?.02:.006):0,T,1);
+ AMB.cg.gain.setTargetAtTime(ok&&night?(out?.006:.0015):0,T,1.5);
+ if(!night&&ok&&(AMB.bird-=dt)<0){AMB.bird=3+Math.random()*7;chirp(T+.02,out?.025:.006)}}
 addEventListener('pointerdown',()=>actx(),{once:false});addEventListener('keydown',()=>actx());
 function fov(v){cam.fov=v;cam.updateProjectionMatrix()}
 function rs(){ren.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',rs);rs();
@@ -2811,7 +2905,9 @@ function wZoom(d){if(GM){fov(Math.min(95,Math.max(25,cam.fov+d)));return}if(walk
 addEventListener('keydown',e=>{if(e.code in AK&&!tour&&walk&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||'')){AK[e.code]=1;e.preventDefault()}});
 addEventListener('keyup',e=>{if(e.code in AK)AK[e.code]=0});
 addEventListener('blur',()=>{for(const q in AK)AK[q]=0});
-var WHT=0;function arrowTick(dt){padVis();if(window.CPV&&CPV.act&&(!GM||!walk||tour))CPV.release();if(!walk||tour)return;if(GM){if(window.CPV)CPV.pre();if(GM===window.BKM)window.bkTick(dt);else if(GM===window.CARK)window.carTick(dt);else gmTick(dt);if(window.CPV)CPV.post(dt);return}if(RT.on)return;walkTick(dt)}
+var WHT=0,CAMP=0;function arrowTick(dt){padVis();
+ if(walk&&!tour){const cu=((AK.CamU||!GM&&AK.ArrowUp)?1:0)-((AK.CamD||!GM&&AK.ArrowDown)?1:0);if(cu)CAMP=Math.min(.75,Math.max(-.75,CAMP+cu*.9*dt))}else CAMP=0;   /* right circle (or arrow keys) up / down: the camera looks up or down; you and the camera stay where you are */
+if(window.CPV&&CPV.act&&(!GM||!walk||tour))CPV.release();if(!walk||tour)return;if(GM){if(window.CPV)CPV.pre();if(GM===window.BKM)window.bkTick(dt);else if(GM===window.CARK)window.carTick(dt);else gmTick(dt);if(window.CPV)CPV.post(dt);return}if(RT.on)return;walkTick(dt)}
 
 // ---- on-screen walk joysticks (touch devices): drive the same AK key state as the keyboard, so behaviour matches PC
 const PADON=true;   /* the move circles show on phones, tablets and computers */
@@ -2828,8 +2924,9 @@ function mkStick(id,lab,K,ax,arr){const d=document.createElement('div');d.classN
  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>d.addEventListener(n,end));d.addEventListener('contextmenu',e=>e.preventDefault());
  d.reset=()=>{pid=null;setK(0,0,0,0);kn.style.transform='';d.classList.remove('dn')};
  document.body.appendChild(d);(arr||padEls).push(d)}
-if(PADON){   /* left circle: up = forward, down = back. right circle: left / right turns. Same circles while walking and riding */
- mkStick('padL',['\u25B2','\u25BC','',''],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'v');mkStick('padR',['','','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'h');
+if(PADON){   /* left circle: up = forward, down = back, left/right = side-step (walking). right circle: left / right turns. Same circles while walking and riding */
+ mkStick('padL',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'StrL',r:'StrR'});   /* left/right on the left circle side-steps while walking (you keep facing the same way) */
+ mkStick('padR',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'CamU',d:'CamD',l:'ArrowLeft',r:'ArrowRight'});   /* right circle turns (arrow keys: A / D now side-step when walking) */
  mkStick('padGL',['\u25B2','\u25BC','',''],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'v',padG);mkStick('padGR',['','','\u25C0','\u25B6'],{u:'KeyW',d:'KeyS',l:'KeyA',r:'KeyD'},'h',padG);
  if(0)mkStick('padR',['\u25B2','\u25BC','\u25C0','\u25B6'],{u:'ArrowUp',d:'ArrowDown',l:'ArrowLeft',r:'ArrowRight'})}
 if(0){ // right side (replaced by the action buttons): swipe area to look around, with camera-height buttons above it
@@ -2975,7 +3072,7 @@ function gmHit(x,z,r){{const cb=window.CARB;if(cb&&GAMES_ON&&CAR_ON&&GM!==window
   side(0,[6.25,18.75,31.25,43.75,-6.25,-18.75,-31.25,-43.75],6.25,9.0,4.0,-17.1,5.55,1);seg(-17.1,6.35,-17.1,43.75);seg(-17.1,-6.35,-17.1,-43.75);   // our side of the street (our own lot's fences already exist)
   side(1,[-47.75,-33.25,-18.75,-4.25,10.25,24.75,39.25,53.75],7.25,37.2,42.0,55,5.55,-1);seg(55,-47.75,55,53.75)}                                // far side
  // trees on both green belts
- const tree=(x,z,sc)=>{const g=new THREE.Group();const t=new THREE.Mesh(new THREE.CylinderGeometry(.09*sc,.14*sc,2.4*sc,8),mTr);t.position.y=1.2*sc-.19;t.castShadow=true;g.add(t);[[0,2.9,0,1.15],[.5,2.4,.3,.8],[-.45,2.5,-.3,.85]].forEach(c=>{const l=new THREE.Mesh(new THREE.IcosahedronGeometry(c[3]*sc,1),mLf);l.position.set(c[0]*sc,c[1]*sc-.19,c[2]*sc);l.castShadow=true;g.add(l)});g.position.set(x,0,z);scene.add(g);if(x<20)GMO.push([x,z,.22,.22])};
+ const tree=(x,z,sc)=>{const g=new THREE.Group();euc(g,sc,Math.round(x*7+z*13)+500);g.position.set(x,0,z);g.rotation.y=(x*3.1+z)%6.28;scene.add(g);if(x<20)GMO.push([x,z,.12,.12])};   /* young gums, like the real ones on the nature strips */
  [-24,-15,-8,12.3,16,24,32].forEach(z=>tree(17.6,z,.9));[-30,-19,-6,6,18,28].forEach(z=>tree(27.1,z,.95))}
 function cm(rx,ry){const m=mConc.clone();m.map=mConc.map.clone();m.map.wrapS=m.map.wrapT=THREE.RepeatWrapping;m.map.repeat.set(rx,ry);m.map.needsUpdate=true;return m}
 {const g0=NM.slg;NM.slh=[];NM.sls=[];if(g0){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),gr=x.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,235,190,1)');gr.addColorStop(.35,'rgba(255,215,150,.5)');gr.addColorStop(1,'rgba(255,200,120,0)');x.fillStyle=gr;x.fillRect(0,0,64,64);const tx=new THREE.CanvasTexture(c);
@@ -3428,7 +3525,7 @@ function trainUse(fromClick,onlyBoard){const T=window.TRN;if(!T||tour)return fal
  if(GM&&GM===window.CARK){if(onlyBoard)return false;showCap("Cars can't go on the train: park it and walk up to the platform",2600);return true}
  if(!T.ok()){if(onlyBoard)return false;showCap('The trains are busy with the tour right now',2200);return true}
  const at=T.atStation(zs),other=-zs;
- if(at&&T.goes(at.q,zs)){if(Math.abs(p.x+45)>7){if(onlyBoard)return false;showCap('Go up onto the platform to board',2200);return true}trainBoard(at.q,zs);return true}
+ if(at&&T.goes(at.q,zs)){if(!fromClick&&Math.abs(p.x+45)>7){if(onlyBoard)return false;showCap('Go up onto the platform to board',2200);return true}trainBoard(at.q,zs);return true}
  if(onlyBoard)return false;
  const n=T.next(zs),now=performance.now();
  if(!n){if(RT.ask&&now-RT.ask<5000&&RT.askZ===zs){RT.ask=0;T.skip(T.toDayEnd()+5);showCap('Skipping to the morning…',2500);
@@ -3438,7 +3535,8 @@ function trainUse(fromClick,onlyBoard){const T=window.TRN;if(!T||tour)return fal
  RT.ask=now;RT.askZ=zs;
  if(n.w<=15){showCap('The train to '+STN[other]+' is just pulling in',2500);return true}
  showCap((at?"This train isn't going to "+STN[other]+'. ':'')+'Next train to '+STN[other]+' in '+Math.ceil(n.w/60)+' min. Press Use again to skip the wait',5000);return true}
-function trainClick(cx,cy){if(RT.on&&RT.bus){if(RT.ph==='ride'&&window.BUS&&BUS.at()>=0)busOff();else if(RT.ph==='ride'){const n=BUS.nextStop();showCap('Wait until the bus stops'+(n>=0?' at '+BUS.stops[n].n:''),1600)}return true}
+function trainClick(cx,cy){if(RT.on&&!RT.bus){trainOff();return true}   /* on the train: tap / click anywhere to get off when it stops */
+ if(RT.on&&RT.bus){if(RT.ph==='ride'&&window.BUS&&BUS.at()>=0)busOff();else if(RT.ph==='ride'){const n=BUS.nextStop();showCap('Wait until the bus stops'+(n>=0?' at '+BUS.stops[n].n:''),1600)}return true}
  const T=window.TRN;if(!T)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
  for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true;for(let q=o;q;q=q.parent)if(!q.visible){vis=false;break}if(!vis)continue;
   const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false||m.blending===THREE.AdditiveBlending)continue;
@@ -3571,18 +3669,21 @@ function walkOK(ox,oz,nx,nz,r){if(!walkHit(nx,nz,r)&&!peerHit(nx,nz,r))return tr
  if(d0<=1e-6&&!walkHit(ox,oz,r))return false;   /* clear now: never step into anything */
  return d1<d0-1e-6||(d1<=1e-6&&d0<=1e-6)}      /* stuck: only moves that get you out (outside the mapped area everything stays free roam) */
 function walkTick(dt){const S=SELF;
- const f=((AK.KeyW||AK.ArrowUp)?1:0)-((AK.KeyS||AK.ArrowDown)?1:0),t=((AK.KeyD||AK.ArrowRight)?1:0)-((AK.KeyA||AK.ArrowLeft)?1:0),zm=(AK.Equal||AK.NumpadAdd?1:0)-(AK.Minus||AK.NumpadSubtract?1:0);
+ const f=(AK.KeyW?1:0)-(AK.KeyS?1:0),   /* walking: W / S move; the arrow keys work like the right circle (turn and tilt the view) */
+ t=(AK.ArrowRight?1:0)-(AK.ArrowLeft?1:0),   /* walking: arrow keys (and the right circle) turn; A / D side-step */zm=(AK.Equal||AK.NumpadAdd?1:0)-(AK.Minus||AK.NumpadSubtract?1:0);
  if(zm)wZoom(-zm*4*dt);
  if(t)G.th+=t*2.1*dt;
  const run=S.run||AK.ShiftLeft||AK.ShiftRight,tg=f>0?(run?6.5:2.4):f<0?-1.5:0;
  S.sp+=(tg-S.sp)*Math.min(1,dt*(f?5:9));if(!f&&Math.abs(S.sp)<.03)S.sp=0;S.mv=0;
- if(S.sp){const c=Math.cos(G.th),n=Math.sin(G.th),d=S.sp*dt,R=.22,x=G.t.x,z=G.t.z,g0=_wbr(x,z,G.t.y-1.12);   /* walls, fences, closed doors and other players block you (slide along them) */
+ /* side-step: left/right on the left circle (or A / D keys) moves you sideways without turning */
+ const sf=((AK.StrR||AK.KeyD)?1:0)-((AK.StrL||AK.KeyA)?1:0),stg=sf*(run?3.6:1.8);S.ss=S.ss||0;S.ss+=(stg-S.ss)*Math.min(1,dt*(sf?6:10));if(!sf&&Math.abs(S.ss)<.03)S.ss=0;
+ if(S.sp||S.ss){const c0=Math.cos(G.th),n0=Math.sin(G.th),vx=-c0*S.sp+n0*S.ss,vz=-n0*S.sp-c0*S.ss,vl=Math.hypot(vx,vz)||1,c=-vx/vl,n=-vz/vl,d=vl*dt,R=.22,x=G.t.x,z=G.t.z,g0=_wbr(x,z,G.t.y-1.12);   /* walls, fences, closed doors and other players block you (slide along them) */
   /* move in short sub-steps (max 5 cm) so a slow frame can never jump you past a thin wall; if you are already overlapping something
      (a door closed on you, you stepped off a ride into it) you may only move in ways that get you less stuck, never deeper or through it */
   const ns=Math.max(1,Math.ceil(Math.abs(d)/.05)),dd=d/ns;
   for(let i=0;i<ns;i++){const ox=G.t.x,oz=G.t.z,nx=Math.min(60,Math.max(-240,ox-c*dd)),nz=Math.min(380,Math.max(-380,oz-n*dd));
    if(walkOK(ox,oz,nx,oz,R))G.t.x=nx;if(walkOK(G.t.x,oz,G.t.x,nz,R))G.t.z=nz;if(G.t.x===ox&&G.t.z===oz)break}
-  S.mv=Math.hypot(G.t.x-x,G.t.z-z)/Math.max(dt,1e-4)*Math.sign(S.sp);if(Math.abs(S.mv)<Math.abs(S.sp)*.3)S.sp*=.85;
+  S.mv=Math.hypot(G.t.x-x,G.t.z-z)/Math.max(dt,1e-4)*(S.sp<0?-1:1);if(!(S.jy>.02)){S.stp=(S.stp||0)+Math.abs(S.mv)*dt;if(S.stp>(Math.abs(S.mv)>3.5?1.35:.72)){S.stp=0;foot(G.t.x,G.t.z)}}if(Math.abs(S.mv)<vl*.3){S.sp*=.85;S.ss*=.85}
   G.t.y+=_wbr(G.t.x,G.t.z,G.t.y-1.12)-g0;
   // walk into the football and it gets kicked
   if(BALL.m&&S.sp>.4){const bp=BALL.m.position,dx=bp.x-G.t.x,dz=bp.z-G.t.z,dd=Math.hypot(dx,dz);if(dd<.32+BALL.R&&dd>.001&&(dx*-c+dz*-n)/dd>.2){BALL.dx=dx/dd*.6-c*.4;BALL.dz=dz/dd*.6-n*.4;const l=Math.hypot(BALL.dx,BALL.dz)||1;BALL.dx/=l;BALL.dz/=l;BALL.sp=Math.max(BALL.sp,2.5+S.sp*1.1);SV=.8;sfx('bk');SV=1}}}
@@ -3717,7 +3818,7 @@ if(tour&&!scrub){if(!tPause)tourTick(dtf);if(tw){const q=tw;skE.value=Math.round
 gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-gp2;gp2+=Math.sign(d2)*Math.min(Math.abs(d2),dtf/3);if(gateG)gateG.rotation.y=Math.PI/2*gp2*.95}lt=nw;const k=.12;if(GM){V.t.copy(G.t);V.r=G.r;V.th=G.th;V.ph=G.ph}else{if(walk&&!tour&&V.t.distanceTo(G.t)<1.5)V.t.copy(G.t);else V.t.lerp(G.t,k);V.r+=(G.r-V.r)*k;V.th+=(G.th-V.th)*k;V.ph+=(G.ph-V.ph)*k;}
  LIFT=!walk&&!GM&&!window.SKYV&&V.r>2.5&&(!tour||!!(tw&&tw.ph==='o'&&tw.t>=16));let cph=V.ph;
  if(LIFT){const lt_=V.ph-clearPh(V.t,V.r,V.th,V.ph);if(LPH==null)LPH=lt_;LPH+=(lt_-LPH)*Math.min(1,dtf*(lt_>LPH?9:2.5));cph=Math.max(.12,V.ph-Math.max(0,LPH))}else LPH=null;
- try{selfTick(dtf)}catch(e){};cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=camFl(cam.position.x,cam.position.z,subIn(V.t))+.3;if(cam.position.y<gy)cam.position.y=gy}try{walkCam(dtf,cph)}catch(e){}try{subCam()}catch(e){}cam.lookAt(V.t);ren.render(scene,cam)})();
+ try{selfTick(dtf)}catch(e){};cam.position.set(V.t.x+V.r*Math.sin(cph)*Math.cos(V.th),V.t.y+V.r*Math.cos(cph),V.t.z+V.r*Math.sin(cph)*Math.sin(V.th));{const gy=camFl(cam.position.x,cam.position.z,subIn(V.t))+.3;if(cam.position.y<gy)cam.position.y=gy}try{walkCam(dtf,cph)}catch(e){}try{subCam()}catch(e){}cam.lookAt(V.t);if(walk&&!tour&&CAMP)cam.rotateX(CAMP);ren.render(scene,cam)})();   /* look up / down: the camera stays where it is and turns its view */
 
 // mobile: always lay out in landscape. Portrait phones get the page turned a quarter turn (CSS), so the user rotates the phone to read it.
 // innerWidth/innerHeight, pointer coordinates and bounding rects are mapped into the turned page so all controls keep working.
