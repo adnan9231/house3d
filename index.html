@@ -1265,7 +1265,12 @@ setTimeout(()=>{try{
  const _dv=new THREE.Vector3();
  window.BUS={get g(){return AB.g},stops:STOPS,at:()=>AB.S.at,v:()=>AB.S.v,eta:k=>eta(k),next:k=>(k+1)%STOPS.length,list:UB,active:()=>AB.k,
   nextStop:()=>nextStop(AB.S),
-  skipTo:k=>{const S=AB.S;S.d=(STOPS[k].d-70+BLEN)%BLEN;S.at=-1;S.dw=0;S.v=VL[idxAt(S.d)]||5},
+  skipTo:k=>{if(window.MP&&MP.on&&MP.isHost&&!MP.isHost()){MP.busSkip&&MP.busSkip(AB.k,k);return}const S=AB.S;S.d=(STOPS[k].d-70+BLEN)%BLEN;S.at=-1;S.dw=0;S.v=VL[idxAt(S.d)]||5},
+  skipBus:(b,k)=>{const u=UB[b];if(!u)return;const S=u.S;S.d=(STOPS[k].d-70+BLEN)%BLEN;S.at=-1;S.dw=0;S.v=VL[idxAt(S.d)]||5},
+  // Play together: one player (the host) drives all the buses and sends where they are; everyone else follows, so all screens see the same buses
+  state:()=>UB.map(u=>[+u.S.d.toFixed(2),+u.S.v.toFixed(2),u.S.at,+u.S.dw.toFixed(2),+u.dp.toFixed(2),u.S.lastAt]),
+  sync:a=>{if(!Array.isArray(a))return;a.forEach((q,k)=>{const u=UB[k];if(!u||!Array.isArray(q))return;const S=u.S;let df=fwd(S.d,q[0]);if(df>BLEN/2)df-=BLEN;
+   if(Math.abs(df)>8)S.d=q[0];else S.d=((S.d+df*.35)%BLEN+BLEN)%BLEN;S.v=q[1];S.at=q[2];S.dw=q[3];if(Math.abs(u.dp-q[4])>.3)u.dp=q[4];S.lastAt=q[5]})},
   // which bus do you mean? the one whose door you are standing at, otherwise the next one due at your stop (never changes while you are on board)
   pick:(x,z)=>{if(RT.on&&RT.bus)return;let best=null,bd=12;UB.forEach(u=>{u.g.updateMatrixWorld(true);const dp=u.g.localToWorld(_dv.set(1.1,0,2.45)),d=Math.hypot(x-dp.x,z-dp.z);if(d<bd){bd=d;best=u}});
    if(!best&&typeof busStopNear==='function'){const sk=busStopNear(x,z);if(sk>=0){let m=1e9;UB.forEach(u=>{const w=eta(sk,u.S);if(w<m){m=w;best=u}})}}if(best)AB=best},
@@ -1351,7 +1356,7 @@ setTimeout(()=>{try{
    if(!ln.hold)ln.hold=UB.some(U=>{const bp=U.g.position;if(U.blk||Math.abs(bp.x-ln.x)>=U.bhx+1)return false;return VH.some(q=>{if(q.ln!==ln)return false;const a=(bp.z-q.g.position.z)*ln.dir;return a>0&&a<q.g.userData.L/2+U.bhz+6})})});
   VH.forEach(q=>{if(!q.ln.hold)q.s=(q.s+q.v*dt)%SPAN;q.g.position.set(q.ln.x,-.18,q.ln.dir*(q.s-SPAN/2));const a=q.v*dt/q.g.userData.r;q.g.userData.ws.forEach(w=>w.rotation.x+=a)});
   CY.forEach(c=>{c.s=(c.s+c.v*dt)%1200;c.g.position.z=c.dir*(c.s-600);c.upd(dt)});
-  UB.forEach(U=>{const bus=U.g,BS=U.S,BW=U.W,bBlk=U.blk,hold=U===AB&&window.BUSHOLD&&BUSHOLD();bus.visible=true;
+  UB.forEach(U=>{const bus=U.g,BS=U.S,BW=U.W,bBlk=U.blk,hold=(U===AB&&window.BUSHOLD&&BUSHOLD())||!!(window.MP&&MP.on&&MP.busHold&&MP.busHold(U.k));bus.visible=true;
    {const want=BS.at>=0&&(BS.dw>1.3||hold);U.dp=Math.max(0,Math.min(1,U.dp+(want?1:-1)*dt*1.4));if(bus.userData.door)bus.userData.door(U.dp)}   // doors open once stopped, shut before pulling away
    if(BS.at>=0){if(hold)BS.dw=Math.max(BS.dw,1.5);else BS.dw-=dt;BS.v=0;if(BS.dw<=0&&U.dp<=0){BS.at=-1;BS.d=(BS.d+.02)%BLEN}}
    else if(!bBlk){
@@ -3914,6 +3919,9 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  const AD=(a,b)=>{const T=Math.PI*2;return((a-b+Math.PI)%T+T)%T-Math.PI};
  const bike=v=>(window.BKS||[]).find(b=>b.id===v);
  const pname=id=>{const p=MP.peers.get(id);return p&&p.name?p.name:'Someone'};
+ MP.isHost=()=>{if(!MP.on)return true;let m=MP.self||'';MP.peers.forEach((P,id)=>{if(P.name!==undefined&&id<m)m=id});return m===MP.self};   /* the player with the lowest id runs the buses for everyone */
+ MP.busHold=k=>{let h=false;MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&P.tp[4]<.999&&(P.tp[6]|0)===k)h=true});return h};   /* someone is getting on or off that bus */
+ MP.busSkip=(b,k)=>{try{ev({t:'bskip',b,k})}catch(e){}};
  MP.col=()=>ME.col;MP.shirt=()=>MP.on||LS.get('col',null)!=null?ME.col:0xffc93c;   /* your shirt: the colour you picked (even before joining a room), otherwise the default yellow */MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.mode==='b')return;if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
 
  // ---------- transport: Trystero (nostr relays) on the web; a BroadcastChannel stand-in for local testing (?mptest=1)
@@ -4036,12 +4044,14 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   case 'snap':applySnap(d,from);break;
   case 'req':ev(snap(true),from);break;
   case 'hey':P.jt=d.jt;break;
+  case 'bskip':if(MP.isHost()&&window.BUS&&BUS.skipBus)BUS.skipBus(d.b|0,d.k|0);break;
   case 'fx':if(d.k==='bell'){bellSnd();if(P.name)showCap('\u{1F514} '+P.name+' rang their bell',1500)}break}}
  function peer(id){let P=MP.peers.get(id);if(!P){P={id,name:'',col:0x888888,mode:'x',modeT:now(),last:now(),tp:null,vs:null,jt:0,ax:0,az:0,ay:0,ath:0,init:false};MP.peers.set(id,P);ui()}return P}
  function onSt(d,from){const P=peer(from);P.last=now();const nm=String(d.n||'Guest').slice(0,20);if(P.name!==nm||P.col!==d.c){const first=!P.name;P.name=nm;P.col=d.c|0;freshen(P);if(first)showCap(P.name+' joined',2500);ui()}
   if(P.mode!==d.m){const old=P.mode;P.mode=d.m;P.modeT=now();ui();if(VEH.includes(old)&&MP.own[old]&&MP.own[old].id===from&&!d.m.startsWith('bike')&&d.m!=='trike'){/* the drop message normally follows; if it was lost the watchdog parks it */}}
   if(VEH.includes(d.m)){P.vs=d.v;claim(d.m,from,d.ct||0)}
   if((d.m==='w'||d.m==='b')&&d.p)P.tp=d.p;
+  if(d.bs&&!MP.isHost()&&window.BUS&&BUS.sync){let m=from;MP.peers.forEach((Q,id)=>{if(id<m)m=id});if(m===from&&from<MP.self)BUS.sync(d.bs)}   /* follow the host's buses */
   {const gb=!!d.g;if(P.boy!==gb){P.boy=gb;if(P.av&&P.av.setG)P.av.setG(gb);const b=bike(P.mode);if(b&&b.setG&&MP.own[P.mode]&&MP.own[P.mode].id===P.id)b.setG(gb)}}P.jy=+d.j||0;P.em=d.e|0;P.run=d.r|0}
  function onJoin(id){peer(id);ev(snap(false),id);ev({t:'hey',jt:MP.jt},id)}
  function onLeave(id){const P=MP.peers.get(id);if(!P)return;VEH.forEach(v=>{if(MP.own[v]&&MP.own[v].id===id)release(v)});dropAvatar(P);MP.peers.delete(id);if(P.name)showCap(P.name+' left',2500);ui()}
@@ -4050,7 +4060,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  setInterval(()=>{if(!MP.on||!MP.T)return;let m='x',p=null,v=null;
   if(RT.on&&RT.bus&&SELF.av&&SELF.av.g.parent!==scene){const q=SELF.av.g.position;m='b';p=[+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+(RT.yaw||0).toFixed(3),RT.ph==='ride'?1:+(RT.sit||0).toFixed(2),RT.seat|0,window.BUS&&BUS.active?BUS.active():0]}
   else if(walk&&!tour){const r=riding();if(r==='trike'){m=r;v=tkSer()}else if(r&&bike(r)){m=r;v=bike(r).ser()}else if(!GM){m='w';p=[+V.t.x.toFixed(3),+V.t.y.toFixed(3),+V.t.z.toFixed(3),+V.th.toFixed(3)]}}
-  try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,g:window.AVBOY&&AVBOY()?1:0,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
+  try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,g:window.AVBOY&&AVBOY()?1:0,bs:MP.isHost()&&window.BUS&&BUS.state?BUS.state():undefined,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
   doorWatch()},100);
 
  // ---------- every frame: move the other players, their rides and their name tags
