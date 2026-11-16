@@ -746,7 +746,10 @@ const trainG=new THREE.Group();let trainTick=()=>{},trainReset=()=>{},trainGo=()
  for(let i=0;i<5;i++){const c=trainG.clone();c.visible=false;scene.add(c);pool.push(c)}
  const poolFx=pool.map(g=>{const a=[];g.traverse(o=>{if(o.isSprite)a.push(o)});return a});
  const trips=[];let tripKey='';
- const build=day=>{trips.length=0;const T=TT[day];
+ // service pattern used in the game: a train every 3 minutes each way, all day. Down trains (toward Geelong) stop at Tarneit then West Tarneit three minutes
+ // later; up trains stop at West Tarneit then Tarneit, offset by a minute and a half so the two directions don't arrive together.
+ const EVERY3=()=>{const d=[],u=[];for(let m=204;m<204+1440;m+=3){d.push([m-27,m,m+3,m+9]);u.push([m+42,m+4.5,m+1.5,m-4.5])}return{d,u}};
+ const build=day=>{trips.length=0;const T=EVERY3();
   T.d.forEach(([sc,t,w,wv])=>{let mt=t,mw=w;if(mt==null)mt=wv!=null?wv-9:sc+25;if(mw==null)mw=wv!=null?wv-6:mt+3;if(t==null&&w!=null)mt=mw-3;if(w==null&&t!=null)mw=Math.max(mt+3,wv!=null?wv-6:0);
    const P=[];const sT=t!=null,sW=w!=null;
    if(sT){P.push([mt*60-70,ZF,0],[mt*60-30,ZT,1],[mt*60,ZT,1])}else P.push([(mt+mw)*30-20-17,ZF,0],[(mt+mw)*30-20,ZT,0]);
@@ -3631,8 +3634,19 @@ function trainClick(cx,cy){if(RT.on&&!RT.bus){trainOff();return true}   /* on th
  for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true;for(let q=o;q;q=q.parent)if(!q.visible){vis=false;break}if(!vis)continue;
   const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false||m.blending===THREE.AdditiveBlending)continue;
   {let b=o;while(b&&!(window.BUSES||[busG]).includes(b))b=b.parent;if(b)return busClick(b)}   /* the minibus */
-  if(T.trainOf(o)<0)return false;return trainUse(true)}
+  {const tk=T.trainOf(o);if(tk<0)return false;return trainTap(tk)}}
  return false}
+let TPEND=null;
+function trainTap(k){const T=window.TRN;if(!T||tour)return false;if(!T.ok()){showCap('The trains are busy with the tour right now',2200);return true}
+ if(GM&&GM===window.CARK){showCap("Cars can't go on the train: park it and walk up to the platform",2600);return true}
+ const q=T.tripOf(k);if(!q)return false;const zs=q.dir<0?T.ZT:T.ZW,d=T.dwell(q,3);   /* where this train picks up for the other station on the map */
+ if(d&&d.z===zs&&T.goes(q,zs)){TPEND=null;trainBoard(q,zs);return true}
+ const P=q.P;let pick=null;for(let i=0;i<P.length-1;i++){if(P[i][2]&&P[i+1][2]&&P[i][1]===zs){pick=P[i+1][0];break}}
+ if(pick!=null&&T.now()<pick-3&&T.goes(q,zs)){if(TPEND&&TPEND.q===q){TPEND=null;showCap('OK, not catching that train',1800);return true}
+  TPEND={q,zs};showCap('Catching this train – you’ll get on at '+STN[zs]+'. Tap it again to cancel',3500);return true}
+ const n=T.next(zs);showCap('This train has already left '+STN[zs]+(n?'. The next one to '+STN[-zs]+' is in '+Math.max(1,Math.ceil(n.w/60))+' min':''),3200);return true}
+setInterval(()=>{try{if(!TPEND)return;const T=window.TRN;if(RT.on||tour||!T||!T.live(TPEND.q)){TPEND=null;return}
+ if(GM&&GM===window.CARK){TPEND=null;return}const d=T.dwell(TPEND.q,3);if(d&&d.z===TPEND.zs){const q=TPEND.q,zs=TPEND.zs;TPEND=null;trainBoard(q,zs)}}catch(e){}},250);
 function trainBoard(q,zs){let veh=null;
  if(GM===GMK){veh={k:'trike'};GM.fw=0;gmExit();if(KID)KID.visible=false}
  else if(GM&&GM.enter){veh={k:'bike',b:GM};GM.fw=0;gmExit();if(veh.b.g)veh.b.g.visible=false}   /* the bike or trike comes on the train with you */
@@ -3647,14 +3661,15 @@ function trainAlight(zs){const veh=RT.veh,x=-41.85,z=zs>0?zs+31:zs;RT.on=false;R
  if(veh&&!rode){if(veh.k==='trike'&&KID)KID.visible=GAMES_ON}
  if(!rode){G.t.set(x,1.12+_wbr(x,z),z);V.t.copy(G.t);G.th=V.th=Math.PI;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62)}
  showCap('Welcome to '+STN[zs]+' station',3000)}
-function trainOff(){if(!RT.on)return;if(RT.bus){busOff();return}const d=TRN.dwell(RT.q,0);if(d&&(d.z===RT.to||d.z===RT.from))trainAlight(d.z);else showCap('Wait until the train stops at '+STN[RT.to],2000)}
+function trainOff(){if(!RT.on)return;if(RT.bus){busOff();return}const d=TRN.dwell(RT.q,0);if(d&&(d.z===RT.to||d.z===RT.from)){RT.wantOff=false;trainAlight(d.z)}
+ else{RT.wantOff=!RT.wantOff;showCap(RT.wantOff?'You’ll get off at '+STN[RT.to]+'. Tap again to stay on':'OK, staying on the train',2400)}}
 function trainView(){if(!RT.on)return;if(RT.bus){busView();return}RT.view=RT.view==='out'?'cab':'out';RT.thSet=0;if(RT.view==='out'){G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55)}else{fov(62)}showCap(RT.view==='cab'?"Driver's cab":'Outside view',900)}
 function rtPos(){if(!RT.on)return;if(tour||!walk||GM){rtCancel();return}
  if(RT.bus){busPos();return}
  const T=window.TRN,g=T&&T.g(RT.q);
  if(!g||!T.live(RT.q)||!g.visible){trainAlight(RT.arr?RT.to:RT.from);return}
  const d=T.dwell(RT.q,0);
- if(d&&d.z===RT.to){if(!RT.arr){RT.arr=true;showCap(STN[RT.to]+'. Press Get off (E), or click the train',6000)}}
+ if(d&&d.z===RT.to){if(RT.wantOff){RT.wantOff=false;trainAlight(RT.to);return}if(!RT.arr){RT.arr=true;showCap(STN[RT.to]+'. Tap anywhere to get off',6000)}}
  else if(RT.arr){trainAlight(RT.to);return}   /* the doors are closing at the last station on the map: everybody off */
  g.updateMatrixWorld(true);
  if(RT.view==='cab'){const fz=-(T.N-1)*(T.L+T.gap)-T.L/2;G.t.copy(g.localToWorld(_rtv.set(0,2.95,fz+.9)));G.r=V.r=.05;G.ph=Math.PI/2;
