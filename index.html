@@ -932,6 +932,16 @@ function buildBus(busG){const mW=M({color:0xf4f4f2,roughness:.35}),mO=M({color:0
  busG.userData.glass=mGl;busG.visible=false;scene.add(busG);
  busG.rotation.order='YXZ';busG.userData.W=WH;return WH}
 const busG=new THREE.Group();window.BUSW=buildBus(busG);window.BUSES=[busG];for(let k=1;k<5;k++){const g=new THREE.Group();buildBus(g);BUSES.push(g)}
+// fleet numbers: each bus carries its own number (101 to 105) on the front, the back and both sides
+BUSES.forEach((g,k)=>{const n=String(101+k);g.userData.num=n;
+ const t=cv(256,112,c=>{c.fillStyle='#ffffff';c.fillRect(0,0,256,112);c.strokeStyle='#1d2a3a';c.lineWidth=6;c.strokeRect(5,5,246,102);c.fillStyle='#1d2a3a';c.font='bold 84px Arial,Helvetica,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(n,128,60)});
+ t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.anisotropy=4;const m=new THREE.MeshStandardMaterial({map:t,roughness:.5,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+ const pl=(w,h,x,y,z,ry)=>{const o=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);o.position.set(x,y,z);o.rotation.y=ry;g.add(o)};
+ pl(.56,.24,0,1.16,3.505,0);              // front, under the windscreen
+ pl(.62,.27,0,1.28,-3.505,Math.PI);        // back, under the rear window
+ pl(.7,.3,1.093,1.3,-2.2,Math.PI/2);    // left (door) side, toward the back
+ pl(.7,.3,-1.093,1.3,-2.2,-Math.PI/2);  // right side
+ pl(.7,.3,-1.093,1.3,2.4,-Math.PI/2)});  // right side, toward the front
 // ---- street layout beyond the houses: the street turns toward the railway at both ends, climbs over the line on a bridge and crosses a main road at an intersection;
 //      a supermarket (right of the house when facing it) and a department store (left) sit just past the intersections. Built once the rest of the scene exists.
 setTimeout(()=>{try{
@@ -1356,7 +1366,7 @@ setTimeout(()=>{try{
    if(!ln.hold)ln.hold=UB.some(U=>{const bp=U.g.position;if(U.blk||Math.abs(bp.x-ln.x)>=U.bhx+1)return false;return VH.some(q=>{if(q.ln!==ln)return false;const a=(bp.z-q.g.position.z)*ln.dir;return a>0&&a<q.g.userData.L/2+U.bhz+6})})});
   VH.forEach(q=>{if(!q.ln.hold)q.s=(q.s+q.v*dt)%SPAN;q.g.position.set(q.ln.x,-.18,q.ln.dir*(q.s-SPAN/2));const a=q.v*dt/q.g.userData.r;q.g.userData.ws.forEach(w=>w.rotation.x+=a)});
   CY.forEach(c=>{c.s=(c.s+c.v*dt)%1200;c.g.position.z=c.dir*(c.s-600);c.upd(dt)});
-  UB.forEach(U=>{const bus=U.g,BS=U.S,BW=U.W,bBlk=U.blk,hold=(U===AB&&window.BUSHOLD&&BUSHOLD())||!!(window.MP&&MP.on&&MP.busHold&&MP.busHold(U.k));bus.visible=true;
+  UB.forEach(U=>{const bus=U.g,BS=U.S,BW=U.W,bBlk=U.blk,hold=(U===AB&&window.BUSHOLD&&BUSHOLD())||!!(window.BUSHOLD2&&BUSHOLD2(U.k))||!!(window.MP&&MP.on&&MP.busHold&&MP.busHold(U.k));bus.visible=true;
    {const want=BS.at>=0&&(BS.dw>1.3||hold);U.dp=Math.max(0,Math.min(1,U.dp+(want?1:-1)*dt*1.4));if(bus.userData.door)bus.userData.door(U.dp)}   // doors open once stopped, shut before pulling away
    if(BS.at>=0){if(hold)BS.dw=Math.max(BS.dw,1.5);else BS.dw-=dt;BS.v=0;if(BS.dw<=0&&U.dp<=0){BS.at=-1;BS.d=(BS.d+.02)%BLEN}}
    else if(!bBlk){
@@ -3616,11 +3626,11 @@ function trainUse(fromClick,onlyBoard){const T=window.TRN;if(!T||tour)return fal
  if(n.w<=15){showCap('The train to '+STN[other]+' is just pulling in',2500);return true}
  showCap((at?"This train isn't going to "+STN[other]+'. ':'')+'Next train to '+STN[other]+' in '+Math.ceil(n.w/60)+' min. Press Use again to skip the wait',5000);return true}
 function trainClick(cx,cy){if(RT.on&&!RT.bus){trainOff();return true}   /* on the train: tap / click anywhere to get off when it stops */
- if(RT.on&&RT.bus){if(RT.ph==='ride'&&window.BUS&&BUS.at()>=0)busOff();else if(RT.ph==='ride'){const n=BUS.nextStop();showCap('Wait until the bus stops'+(n>=0?' at '+BUS.stops[n].n:''),1600)}return true}
+ if(RT.on&&RT.bus){if(RT.ph==='ride')busOff(true);return true}
  const T=window.TRN;if(!T)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
  for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true;for(let q=o;q;q=q.parent)if(!q.visible){vis=false;break}if(!vis)continue;
   const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false||m.blending===THREE.AdditiveBlending)continue;
-  {let b=o;while(b&&!(window.BUSES||[busG]).includes(b))b=b.parent;if(b)return trainUse(true)}   /* the minibus */
+  {let b=o;while(b&&!(window.BUSES||[busG]).includes(b))b=b.parent;if(b)return busClick(b)}   /* the minibus */
   if(T.trainOf(o)<0)return false;return trainUse(true)}
  return false}
 function trainBoard(q,zs){let veh=null;
@@ -3686,7 +3696,7 @@ function busBoard(k){const B=window.BUS,g=B.g,av=SELF.av;if(!av){showCap('Just a
  RT={on:true,bus:true,last:k,view:'in',ry:g.rotation.y,ask:0,ph:'enter',seat:si,P:busAvPath([[lp.x,0,lp.z],[1.8,0,2.45],[.75,.62,2.45],[.1,.62,1.7],[.1,.62,st.z+.45],[st.x,.62,st.z+.45]]),seg:0,f:0,sit:0,lt:performance.now(),yaw:0};
  g.add(av.g);av.g.position.copy(RT.P[0]);av.g.rotation.set(0,0,0);av.g.visible=true;busGlass(true);
  G.ph=1.3;G.r=SELF.d;fov(62);busPos();V.t.copy(G.t);
- showCap('All aboard the bus! Next stop: '+B.stops[B.next(k)].n,4000)}
+ showCap('All aboard bus '+(window.BUS&&BUS.g&&BUS.g.userData.num||'')+'! Next stop: '+B.stops[B.next(k)].n,4000)}
 function busAvPose(av,walk,sit,dt){   /* walking swing, or sitting: legs forward, hands in the lap */
  if(walk){av.ph+=dt*7;const sw=Math.sin(av.ph)*.5;av.L[0].rotation.x=sw;av.L[1].rotation.x=-sw;av.A[0].rotation.x=-sw*.8;av.A[1].rotation.x=sw*.8;avBend(av,av.ph,.5,false)}
  else{const a=-1.5*sit;av.L[0].rotation.x=a;av.L[1].rotation.x=a;av.A[0].rotation.x=-.35*sit;av.A[1].rotation.x=-.35*sit;if(av.K){av.K[0].rotation.x=av.K[1].rotation.x=.06+1.35*sit;av.E[0].rotation.x=av.E[1].rotation.x=-.2-.85*sit}}   /* sitting: thighs on the seat, knees bent, hands in the lap */
@@ -3719,11 +3729,23 @@ function busPos(){const B=window.BUS,g=B&&B.g,av=SELF.av;if(!g||!av){rtCancel();
   if(RT.ph!=='ride'){let w=-Math.PI/2-(ry+RT.yaw)-G.th;while(w>Math.PI)w-=2*Math.PI;while(w<-Math.PI)w+=2*Math.PI;G.th+=w*Math.min(1,dt*3)}}
  V.t.copy(G.t)}
 function busGlass(on){const m=((window.BUS&&BUS.g)||busG).userData.glass;if(m)m.opacity=on?.2:.42}   /* clear windows while you are on the bus */
+// click / tap anywhere on a bus: if it is standing at a stop you get on it straight away (if you are not right at the door you are
+// walked to it); if it is moving, you get on it when it next stops (it waits for you). Tap it again to cancel.
+let BPEND=null;
+function busNear(g){g.updateMatrixWorld(true);const dp=g.localToWorld(_bv.set(2.3,0,2.45));if(Math.hypot(G.t.x-dp.x,G.t.z-dp.z)>5){G.t.set(dp.x,1.12+_wbr(dp.x,dp.z),dp.z);V.t.copy(G.t)}}
+function busClick(g){const B=window.BUS;if(!B||!B.list||tour||GM)return false;const k=(window.BUSES||[]).indexOf(g);if(k<0)return false;B.use(k);const num=g.userData.num||'';
+ if(B.at()>=0){BPEND=null;busNear(g);busBoard(B.at());return true}
+ if(BPEND&&BPEND.k===k){BPEND=null;showCap('OK, not catching bus '+num,1800);return true}
+ const n=B.nextStop();BPEND={k,t:performance.now()};showCap('Catching bus '+num+(n>=0?' – you’ll get on at '+B.stops[n].w:'')+'. Tap it again to cancel',3500);return true}
+setInterval(()=>{try{const B=window.BUS;if(!B||!B.list)return;
+ if(BPEND){if(RT.on||GM||tour||performance.now()-BPEND.t>300000){BPEND=null;return}const u=B.list[BPEND.k];if(u&&u.S.at>=0){const k=BPEND.k;BPEND=null;B.use(k);busNear(u.g);busBoard(u.S.at)}}
+ if(RT.on&&RT.bus&&RT.ph==='ride'&&RT.wantOff&&B.at()>=0){RT.wantOff=false;busOff()}}catch(e){}},200);
+window.BUSHOLD2=k=>!!(BPEND&&BPEND.k===k);
 function busOff(){const B=window.BUS,k=B?B.at():-1;if(RT.ph!=='ride')return;
  if(k>=0){const g=B.g,t=B.stops[k];g.updateMatrixWorld(true);const sp=g.worldToLocal(_bv.set(t.ax,g.position.y,t.az)).clone();sp.y=0;
   RT.ph='exit';RT.k=k;RT.sit=1;RT.seg=0;RT.f=0;RT.P=busAvPath([[BSEAT.x,.62,BSEAT.z+.45],[.1,.62,BSEAT.z+.45],[.1,.62,1.7],[.75,.62,2.45],[1.8,0,2.45],[sp.x,0,sp.z]]);RT.yaw=0;
   showCap('Getting off at '+t.w,2000);return}
- const n=B?B.nextStop():-1;showCap('Wait until the bus stops'+(n>=0?' at '+B.stops[n].n:''),2000)}
+ const n=B?B.nextStop():-1;RT.wantOff=!RT.wantOff;showCap(RT.wantOff?('Stop requested – you’ll get off at '+(n>=0?B.stops[n].w:'the next stop')+'. Tap again to stay on'):'OK, staying on the bus',2600);if(RT.wantOff)try{chime()}catch(e){}}
 function busAvFree(){const av=SELF.av;if(av&&av.g.parent!==scene){scene.add(av.g);av.g.rotation.set(0,0,0,'XYZ')}busGlass(false)}
 function busAlight(k){const t=window.BUS.stops[k];RT={on:false};busAvFree();
  G.t.set(t.ax,1.12+_wbr(t.ax,t.az),t.az);V.t.copy(G.t);G.th=V.th=t.th;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62);
@@ -3978,7 +4000,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   P.av.setG=boy=>{P.av.boy=!!boy;pony.visible=!boy;hBk.visible=!boy;mLg.color.setHex(boy?0x2f4a7d:0x4b3f8f);mSo.color.setHex(boy?0x3d6fd6:0xff7aa8);mHr.color.setHex(boy?0x3b2618:0x5b3a24)};   /* boy: short hair (no ponytail), jeans, blue-soled sneakers */
   P.av.setG(!!P.boy);
 
-  const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(P.name,P.col),transparent:true,depthTest:false,depthWrite:false,fog:false}));tag.scale.set(1.25,.27,1);tag.renderOrder=20;tag.visible=false;scene.add(tag);P.tag=tag;P.tagKey=P.name+'|'+P.col}
+  const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(P.name,P.col),transparent:true,depthTest:false,depthWrite:false,fog:false}));tag.scale.set(1.25,.27,1);tag.renderOrder=20;tag.visible=false;tag.material.visible=false;scene.add(tag);   /* name tags are not shown over players (the tag still marks where a rider is, for bumping) */P.tag=tag;P.tagKey=P.name+'|'+P.col}
  function freshen(P){if(!P.av)mkAvatar(P);const k=P.name+'|'+P.col;if(k!==P.tagKey){P.tagKey=k;P.tag.material.map.dispose();P.tag.material.map=tagTex(P.name,P.col);P.av.mSh.color.setHex(P.col);const b=bike(P.mode);if(b&&MP.own[P.mode]&&MP.own[P.mode].id===P.id)b.tint(P.col)}}
  function dropAvatar(P){if(P.av){scene.remove(P.av.g);P.av=null}if(P.tag){scene.remove(P.tag);P.tag.material.map.dispose();P.tag=null}}
  const gnd=(x,z)=>{try{return window.BKNET?window.BKNET.terr(x,z):terr(x,z)}catch(e){return 0}};
