@@ -1,6 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}#spdo{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));width:150px;height:150px;pointer-events:none;display:none;z-index:5;filter:drop-shadow(0 2px 8px rgba(0,0,0,.35))}
 #spdo.show{display:block}
-</style></head><body>
+</style><style>.kid{width:38px!important;height:46px!important;display:block;margin:0 auto;overflow:visible}.kidb{display:flex!important;align-items:center;justify-content:center;padding:4px 0!important;min-height:54px}.kidb.on{background:#fff1ea!important;box-shadow:inset 0 0 0 2px #c8462b!important;color:inherit!important}button:not(.on)>.kid{opacity:.55;filter:saturate(.6)}button.on>.kid .bd{animation:kidHop 1.1s ease-in-out infinite}button.on>.kid .wave{transform-box:view-box;transform-origin:27px 25px;animation:kidWave .55s ease-in-out infinite alternate}button.on>.kid .pony{transform-box:view-box;transform-origin:27px 10px;animation:kidPony 1.1s ease-in-out infinite}button:hover>.kid{opacity:1}@keyframes kidHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}@keyframes kidWave{from{transform:rotate(-15deg)}to{transform:rotate(-140deg)}}@keyframes kidPony{0%,100%{transform:rotate(0)}50%{transform:rotate(14deg)}}@media (prefers-reduced-motion:reduce){button.on>.kid .bd,button.on>.kid .wave,button.on>.kid .pony{animation:none}}</style>
+</head><body>
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -120,7 +121,7 @@ input[type=date]{font:inherit;font-size:13px;font-weight:600;height:34px;box-siz
 <div hidden><div class="row"><button id="bRoof" class="tg on">Roof: on</button><button id="bMM" class="tg">Floor plan: off</button><button id="bFurn" class="tg" title="Show or hide loose furniture (beds in Bed 3)">Furniture: off</button><button id="bSky" class="tg" title="See where the sun and moon are right now, relative to the house">Sky view: off</button><button id="bLab" class="tg" style="display:none">Labels</button><button id="bGMo" class="tg" style="display:none">Game mode: off</button></div></div>
 <div class="grp"><span class="gl">Light</span><div class="seg" role="radiogroup" aria-label="Lighting"><button id="bNight" role="radio" aria-checked="true" class="on">Night</button><button id="bDay" role="radio" aria-checked="false">Day</button><button id="bLive" role="radio" aria-checked="false">Current time</button></div>
 <div id="sunClk" style="display:none"><div id="scT"></div><div id="scS"></div><div id="scB"><i></i></div><div id="scL" style="display:none"></div></div><div hidden><button id="bSun">Sun path: off</button><button id="bSV">Sun view: off</button><button id="bSM">Sun map: off</button><input type="date" id="sunDate"></div></div>
-<div class="grp"><span class="gl">Avatar</span><div class="seg" role="radiogroup" aria-label="Avatar"><button id="bGirl" role="radio" aria-checked="true" class="on">Girl</button><button id="bBoy" role="radio" aria-checked="false">Boy</button></div></div>
+<div class="grp"><span class="gl">Avatar</span><div class="seg" role="radiogroup" aria-label="Avatar"><button id="bGirl" role="radio" aria-checked="true" class="on kidb" aria-label="Girl" title="Girl"><svg class="kid" viewBox="0 0 40 48" aria-hidden="true"><g class="bd"><path class="pony" d="M27 10c5 1 7 7 4 12" stroke="#5b3a24" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M17 38v7M23 38v7" stroke="#e9bd98" stroke-width="3" stroke-linecap="round"/><path d="M15.5 45h3.4M21.5 45h3.4" stroke="#ff7aa8" stroke-width="2.4" stroke-linecap="round"/><path d="M14 26l-5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path class="wave" d="M26 26l5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path d="M15 23h10l6 16H9z" fill="#e85d9a"/><circle cx="20" cy="15" r="8" fill="#e9bd98"/><path d="M12 15.5a8 8.5 0 0 1 16 0c-2.5-3.5-7-4.5-11-2.5-2 1-4 2-5 2.5z" fill="#5b3a24"/><circle cx="27.3" cy="9.8" r="2" fill="#ff7aa8"/><circle cx="17.2" cy="15.5" r="1" fill="#1d1a18"/><circle cx="22.8" cy="15.5" r="1" fill="#1d1a18"/><path d="M17.6 19q2.4 2 4.8 0" stroke="#b5524e" stroke-width="1" fill="none" stroke-linecap="round"/></g></svg></button><button id="bBoy" role="radio" aria-checked="false" class="kidb" aria-label="Boy" title="Boy"><svg class="kid" viewBox="0 0 40 48" aria-hidden="true"><g class="bd"><path d="M17 37v8M23 37v8" stroke="#e9bd98" stroke-width="3" stroke-linecap="round"/><path d="M15.5 45h3.4M21.5 45h3.4" stroke="#3d6fd6" stroke-width="2.4" stroke-linecap="round"/><path d="M13.5 25l-4.5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path class="wave" d="M26.5 25l4.5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path d="M13 24q0-1.5 2-1.5h10q2 0 2 1.5v9H13z" fill="#3d7fd6"/><path d="M13.5 33h13v5h-5.5l-1-2.5-1 2.5h-5.5z" fill="#2f4a7d"/><circle cx="20" cy="15" r="8" fill="#e9bd98"/><path d="M12 14.5a8 8 0 0 1 16 0c-1.2-1.6-2.8-2.4-4.5-2.6l1-2-3 1.6-1.5-2.5-1.5 2.6c-3 .3-5 1.3-6.5 2.9z" fill="#3b2618"/><circle cx="17.2" cy="15.5" r="1" fill="#1d1a18"/><circle cx="22.8" cy="15.5" r="1" fill="#1d1a18"/><path d="M17.6 19q2.4 2 4.8 0" stroke="#b5524e" stroke-width="1" fill="none" stroke-linecap="round"/></g></svg></button></div></div>
 <div class="grp"><span class="gl">Display</span><div class="row"><button id="bSpd" class="tg" title="Show or hide a speedometer for walking, running, the bike, the trike, the car, the bus and the train">Speedometer: off</button></div></div>
 <div class="grp"><span class="gl">Next trains</span><div id="nxtT" style="display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.35"><div>Loading timetable…</div></div></div></div><div id="tAng"><span>UP</span><input type="range" id="tAngR" min="-60" max="40" value="0" aria-label="Camera angle"><span>FLOOR</span></div><canvas id="mm" width="246" height="128"></canvas><div id="cap"></div><input type="range" id="tSeek" min="0" max="1000" value="0" aria-label="Tour position"><div id="tSpd" role="radiogroup" aria-label="Tour speed"><button data-v=".25" role="radio" aria-checked="false">0.5×</button><button data-v=".5" class="on" role="radio" aria-checked="true">1×</button><button data-v="1" role="radio" aria-checked="false">2×</button></div><div id="tSeekV"><i></i></div><div id="topR"><button id="bWalk" title="Walk" aria-label="Walk"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 7.5v6.5M12 9.5l-4 3M12 9.5l4 2.5M12 14l-3 7M12 14l3.2 7"/></svg></button><button id="bSnd" title="Sound off" aria-label="Sound off"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button><button id="bGame" title="Game mode" aria-label="Game mode"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h5l3-7h-3M14 10l1-3h3M11 10l-2 7"/></svg></button><button id="bView" title="Inside / outside view (V)" aria-label="Inside or outside view" style="display:none"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button><button id="bFS" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="bTour">▶ Take tour</button><button id="bPanel">Options</button></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -834,9 +835,9 @@ function rbox(w,h,d,r,m){m=m||3;const S=2*m+2,g=new THREE.BoxGeometry(w,h,d,S,S,
   for(let a=0;a<3;a++){const hh=H[a],j=Math.round((v[a]+hh)/(2*hh)*S);let x;if(j<=m)x=-hh+r*j/m;else if(j>=S-m)x=hh-r*(S-j)/m;else x=-hh+r+(2*hh-2*r)*(j-m)/(S-2*m);v[a]=x;c[a]=Math.max(-(hh-r),Math.min(hh-r,x))}
   let ox=v[0]-c[0],oy=v[1]-c[1],oz=v[2]-c[2];const l=Math.hypot(ox,oy,oz);if(l>1e-9){ox/=l;oy/=l;oz/=l;p.setXYZ(i,c[0]+ox*r,c[1]+oy*r,c[2]+oz*r);nm.setXYZ(i,ox,oy,oz)}}
  p.needsUpdate=true;nm.needsUpdate=true;return g}
-// ---- small white-and-orange community minibus; it is driven along the street route (over both bridges) every minute by the road code further down
-const busG=new THREE.Group();
-{const mW=M({color:0xf4f4f2,roughness:.35}),mO=M({color:0xf2600f,roughness:.4}),mR=M({color:0xd8261c,roughness:.4}),mGl=new THREE.MeshStandardMaterial({color:0x56707c,roughness:.05,metalness:.3,transparent:true,opacity:.42,depthWrite:false,side:THREE.DoubleSide}),mFr=M({color:0x24282c,roughness:.5}),mBk=M({color:0x1a1b1d,roughness:.6}),mTy=M({color:0x141414,roughness:.95}),mRim=M({color:0xb8bcc0,metalness:.6,roughness:.3}),mHL=new THREE.MeshBasicMaterial({color:0xfff6dd}),mTL=new THREE.MeshBasicMaterial({color:0xff2a1a}),mInd=new THREE.MeshBasicMaterial({color:0xffa31a});
+// ---- small white-and-orange community minibuses (five of them, about a minute apart); they are driven along the street route (over both bridges) by the road code further down
+// five minibuses run the loop (one every minute or so); they are all built the same way
+function buildBus(busG){const mW=M({color:0xf4f4f2,roughness:.35}),mO=M({color:0xf2600f,roughness:.4}),mR=M({color:0xd8261c,roughness:.4}),mGl=new THREE.MeshStandardMaterial({color:0x56707c,roughness:.05,metalness:.3,transparent:true,opacity:.42,depthWrite:false,side:THREE.DoubleSide}),mFr=M({color:0x24282c,roughness:.5}),mBk=M({color:0x1a1b1d,roughness:.6}),mTy=M({color:0x141414,roughness:.95}),mRim=M({color:0xb8bcc0,metalness:.6,roughness:.3}),mHL=new THREE.MeshBasicMaterial({color:0xfff6dd}),mTL=new THREE.MeshBasicMaterial({color:0xff2a1a}),mInd=new THREE.MeshBasicMaterial({color:0xffa31a});
  const mSg=new THREE.MeshBasicMaterial({map:cv(256,32,g=>{g.fillStyle='#0b0b0c';g.fillRect(0,0,256,32);g.fillStyle='#ffb020';g.font='bold 22px monospace';g.textAlign='center';g.fillText('TARNEIT',128,24)})});mSg.map.wrapS=mSg.map.wrapT=THREE.ClampToEdgeWrapping;
  const b=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;busG.add(o);return o};
  const rb=(w,h,d,r,m,x,y,z)=>{const o=new THREE.Mesh(rbox(w,h,d,r),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;busG.add(o);return o};
@@ -929,7 +930,8 @@ const busG=new THREE.Group();
    busG.userData.pose(1,0,0)}
   [-1,1].forEach(s=>p(.03,.03,6,mRl,s*.8,2.32,-.3))}   // grab rails along the ceiling
  busG.userData.glass=mGl;busG.visible=false;scene.add(busG);
- busG.rotation.order='YXZ';window.BUSW=WH}
+ busG.rotation.order='YXZ';busG.userData.W=WH;return WH}
+const busG=new THREE.Group();window.BUSW=buildBus(busG);window.BUSES=[busG];for(let k=1;k<5;k++){const g=new THREE.Group();buildBus(g);BUSES.push(g)}
 // ---- street layout beyond the houses: the street turns toward the railway at both ends, climbs over the line on a bridge and crosses a main road at an intersection;
 //      a supermarket (right of the house when facing it) and a department store (left) sit just past the intersections. Built once the rest of the scene exists.
 setTimeout(()=>{try{
@@ -1248,36 +1250,48 @@ setTimeout(()=>{try{
      const L=Math.hypot(p1[0]-p0[0],p1[1]-p0[1]),kb=new THREE.Mesh(new THREE.BoxGeometry(.15,.11,L+.02),mK);kb.position.set((p0[0]+p1[0])/2,-.155,(p0[1]+p1[1])/2);kb.rotation.y=Math.atan2(p1[0]-p0[0],p1[1]-p0[1]);scene.add(kb)}};
   [ZC,-ZC].forEach(zj=>{[1,-1].forEach(sz=>{fil(XM,zj+sz*3.5,1,sz,9);fil(XM-20.4,zj+sz*3.5,-1,sz,9)})});
   [ZT,ZW].forEach(zs=>[1,-1].forEach(sz=>fil(XM,zs+sz*3.5,1,sz,7)))}
- let BDP=0;const BS={d:(STOPS[0].d-160+BLEN)%BLEN,v:0,dw:0,at:-1,lastAt:-1,gw:-1};
  const idxAt=d=>{let lo=0,hi=NB;while(hi-lo>1){const m=(lo+hi)>>1;if(CUM[m]<=d)lo=m;else hi=m}return lo};
  const fwd=(a,b)=>((b-a)%BLEN+BLEN)%BLEN;
  const tAt=d=>{const i=idxAt(d),f=(d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]);return TT[i]+(TT[i+1]-TT[i])*f};
- const eta=k=>{const t=STOPS[k];if(BS.at===k)return 0;let w=(tAt(t.d)-tAt(BS.d)+TT[NB])%TT[NB]+(BS.at>=0?BS.dw:0);
-  STOPS.forEach((o,j)=>{if(j!==k&&j!==BS.at&&fwd(BS.d,o.d)<fwd(BS.d,t.d))w+=o.dw});return w};
- window.BUS={g:bus,stops:STOPS,at:()=>BS.at,v:()=>BS.v,eta,next:k=>(k+1)%STOPS.length,
-  nextStop:()=>{let b=-1,bd=1e9;STOPS.forEach((o,j)=>{if(j===BS.at)return;const f=fwd(BS.d,o.d);if(f<bd){bd=f;b=j}});return b},
-  skipTo:k=>{BS.d=(STOPS[k].d-70+BLEN)%BLEN;BS.at=-1;BS.dw=0;BS.v=VL[idxAt(BS.d)]||5}};
- // passenger information boards inside the bus: amber LED screens hanging from the ceiling (one over the front seats, one over the middle of the bus),
- // facing the seats. They show the next stop and how long until the bus gets there; while the bus is standing at a stop they show that stop.
- if(bus){const SN=['No. 28 – House Stop','West Tarneit Station','Tarneit Station'],sn=k=>SN[k]||String(STOPS[k].n).replace(/^the /,'');
-  const c=document.createElement('canvas');c.width=512;c.height=112;const x=c.getContext('2d'),tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;tx.anisotropy=4;
-  const mScr=new THREE.MeshBasicMaterial({map:tx,toneMapped:false}),mHs=M({color:0x16181b,roughness:.5}),mRod=M({color:0xb8bcc0,metalness:.6,roughness:.35});
-  [1.75,-1.5].forEach(z=>{const g=new THREE.Group();g.position.set(0,2.36,z);bus.add(g);
-   const h=new THREE.Mesh(rbox(.96,.22,.06,.02),mHs);g.add(h);
-   const sc=new THREE.Mesh(new THREE.PlaneGeometry(.9,.18),mScr);sc.position.z=-.031;sc.rotation.y=Math.PI;g.add(sc);   /* the screen faces the back of the bus, toward the seated passengers */
-   const bk=new THREE.Mesh(new THREE.PlaneGeometry(.9,.18),mScr);bk.position.z=.031;g.add(bk);                            /* and the same on the other side */
-   [-.38,.38].forEach(rx=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(.01,.01,.14,6),mRod);r.position.set(rx,.18,0);g.add(r)})});
-  let last='';const draw=()=>{let k=BS.at,top='THIS STOP',sub='';
-   if(k<0){k=window.BUS.nextStop();top='NEXT STOP';const e=k>=0?Math.round(eta(k)):0;sub=e<=5?'arriving':e<60?'in '+e+' s':'in '+Math.round(e/60)+' min'}
-   else sub=BDP>.05?'doors open':'';
-   const name=k>=0?sn(k):'',t=new Date(),clk=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0'),key=top+name+sub+clk;if(key===last)return;last=key;
-   x.fillStyle='#050505';x.fillRect(0,0,512,112);
-   x.fillStyle='rgba(255,170,40,.06)';for(let i=2;i<512;i+=4)x.fillRect(i,0,1,112);   /* faint LED pitch */
-   x.fillStyle='#ffb020';x.textBaseline='alphabetic';x.font='bold 22px monospace';x.textAlign='left';x.fillText(top,14,30);
-   x.textAlign='right';x.fillText(clk,498,30);if(sub){x.fillStyle='#ffcf70';x.font='20px monospace';x.fillText(sub,498,98)}
-   x.fillStyle='#ffb020';x.textAlign='left';let fs=40;x.font='bold '+fs+'px monospace';while(x.measureText(name).width>(sub?330:484)&&fs>22){fs-=2;x.font='bold '+fs+'px monospace'}x.fillText(name,14,84);
-   tx.needsUpdate=true};
-  draw();setInterval(()=>{try{if(bus.visible)draw()}catch(e){}},300)}
+ // every bus has its own place on the loop (spread evenly to start with), speed, stop and doors; AB is the one you are using (riding, or waiting for)
+ // spread them evenly in time round the loop (driving time plus the stops), so one comes past each stop about every minute
+ const dAtT=t=>{t=((t%TT[NB])+TT[NB])%TT[NB];let lo=0,hi=NB;while(hi-lo>1){const m=(lo+hi)>>1;if(TT[m]<=t)lo=m;else hi=m}const f=(t-TT[lo])/Math.max(1e-6,TT[lo+1]-TT[lo]);return CUM[lo]+(CUM[lo+1]-CUM[lo])*f};
+ const LOOP=TT[NB]+STOPS.reduce((a,t)=>a+t.dw,0),t0=tAt((STOPS[0].d-160+BLEN)%BLEN);
+ const UB=(window.BUSES||[bus]).map((g,k,a)=>({g,k,W:g.userData.W||(k?[]:BW),dp:0,S:{d:dAtT(t0-k*TT[NB]/a.length),v:0,dw:0,at:-1,lastAt:-1,gw:-1}}));
+ let AB=UB[0];
+ const eta=(k,S)=>{S=S||AB.S;const t=STOPS[k];if(S.at===k)return 0;let w=(tAt(t.d)-tAt(S.d)+TT[NB])%TT[NB]+(S.at>=0?S.dw:0);
+  STOPS.forEach((o,j)=>{if(j!==k&&j!==S.at&&fwd(S.d,o.d)<fwd(S.d,t.d))w+=o.dw});return w};
+ const nextStop=S=>{let b=-1,bd=1e9;STOPS.forEach((o,j)=>{if(j===S.at)return;const f=fwd(S.d,o.d);if(f<bd){bd=f;b=j}});return b};
+ const _dv=new THREE.Vector3();
+ window.BUS={get g(){return AB.g},stops:STOPS,at:()=>AB.S.at,v:()=>AB.S.v,eta:k=>eta(k),next:k=>(k+1)%STOPS.length,list:UB,active:()=>AB.k,
+  nextStop:()=>nextStop(AB.S),
+  skipTo:k=>{const S=AB.S;S.d=(STOPS[k].d-70+BLEN)%BLEN;S.at=-1;S.dw=0;S.v=VL[idxAt(S.d)]||5},
+  // which bus do you mean? the one whose door you are standing at, otherwise the next one due at your stop (never changes while you are on board)
+  pick:(x,z)=>{if(RT.on&&RT.bus)return;let best=null,bd=12;UB.forEach(u=>{u.g.updateMatrixWorld(true);const dp=u.g.localToWorld(_dv.set(1.1,0,2.45)),d=Math.hypot(x-dp.x,z-dp.z);if(d<bd){bd=d;best=u}});
+   if(!best&&typeof busStopNear==='function'){const sk=busStopNear(x,z);if(sk>=0){let m=1e9;UB.forEach(u=>{const w=eta(sk,u.S);if(w<m){m=w;best=u}})}}if(best)AB=best},
+  use:k=>{if(UB[k])AB=UB[k]}};
+ // passenger information boards inside every bus: amber LED screens hanging from the ceiling (one over the front seats, one over the middle of the bus),
+ // facing the seats. They show the next stop and how long until that bus gets there; while it is standing at a stop they show that stop.
+ {const SN=['No. 28 – House Stop','West Tarneit Station','Tarneit Station'],sn=k=>SN[k]||String(STOPS[k].n).replace(/^the /,'');
+  const mHs=M({color:0x16181b,roughness:.5}),mRod=M({color:0xb8bcc0,metalness:.6,roughness:.35});
+  UB.forEach(U=>{const c=document.createElement('canvas');c.width=512;c.height=112;const x=c.getContext('2d'),tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;tx.anisotropy=4;
+   const mScr=new THREE.MeshBasicMaterial({map:tx,toneMapped:false});
+   [1.75,-1.5].forEach(z=>{const g=new THREE.Group();g.position.set(0,2.36,z);U.g.add(g);
+    const h=new THREE.Mesh(rbox(.96,.22,.06,.02),mHs);g.add(h);
+    const sc=new THREE.Mesh(new THREE.PlaneGeometry(.9,.18),mScr);sc.position.z=-.031;sc.rotation.y=Math.PI;g.add(sc);   /* the screen faces the back of the bus, toward the seated passengers */
+    const bk=new THREE.Mesh(new THREE.PlaneGeometry(.9,.18),mScr);bk.position.z=.031;g.add(bk);
+    [-.38,.38].forEach(rx=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(.01,.01,.14,6),mRod);r.position.set(rx,.18,0);g.add(r)})});
+   let last='';U.draw=()=>{const S=U.S;let k=S.at,top='THIS STOP',sub='';
+    if(k<0){k=nextStop(S);top='NEXT STOP';const e=k>=0?Math.round(eta(k,S)):0;sub=e<=5?'arriving':e<60?'in '+e+' s':'in '+Math.round(e/60)+' min'}
+    else sub=U.dp>.05?'doors open':'';
+    const name=k>=0?sn(k):'',t=new Date(),clk=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0'),key=top+name+sub+clk;if(key===last)return;last=key;
+    x.fillStyle='#050505';x.fillRect(0,0,512,112);
+    x.fillStyle='rgba(255,170,40,.06)';for(let i=2;i<512;i+=4)x.fillRect(i,0,1,112);   /* faint LED pitch */
+    x.fillStyle='#ffb020';x.textBaseline='alphabetic';x.font='bold 22px monospace';x.textAlign='left';x.fillText(top,14,30);
+    x.textAlign='right';x.fillText(clk,498,30);if(sub){x.fillStyle='#ffcf70';x.font='20px monospace';x.fillText(sub,498,98)}
+    x.fillStyle='#ffb020';x.textAlign='left';let fs=40;x.font='bold '+fs+'px monospace';while(x.measureText(name).width>(sub?330:484)&&fs>22){fs-=2;x.font='bold '+fs+'px monospace'}x.fillText(name,14,84);
+    tx.needsUpdate=true};U.draw()});
+  setInterval(()=>{UB.forEach(U=>{try{if(U===AB||Math.hypot(U.g.position.x-cam.position.x,U.g.position.z-cam.position.z)<40)U.draw()}catch(e){}})},300)}
  // bus stop beside no. 28: shelter (glass back and roof, bench) and a pole sign; plain pole signs at the two station bus bays
  {const mPo=M({color:0x4a4f55,metalness:.5,roughness:.4}),mGs=new THREE.MeshStandardMaterial({color:0x9fc4d4,transparent:true,opacity:.35,roughness:.1,side:THREE.DoubleSide}),mBn=M({color:0x8a6a4a});
   const sgT=cv(192,256,c=>{c.fillStyle='#f5f5f2';c.fillRect(0,0,192,256);c.fillStyle='#e8701a';c.fillRect(0,0,192,96);c.fillStyle='#ffffff';c.font='bold 64px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText('BUS',96,72);
@@ -1325,19 +1339,21 @@ setTimeout(()=>{try{
  const rider=()=>{const b=GM;return b&&(b===window.BKM||b===window.CARK)?b:null},ahead=(px,pz,fx,fz,b,len)=>{const dx=b.x-px,dz=b.z-pz,a=dx*fx+dz*fz,l=Math.abs(-dx*fz+dz*fx);return a>0&&a<len&&l<1.7};
  let lt=0;(function roadLoop(now){requestAnimationFrame(roadLoop);const dt=Math.min(.1,Math.max(0,(now-lt)/1000));lt=now;
   const rd=rider();
-  // the minibus: blocked by a car right in front of it, by the girl on her bike, or by a walker in the road; otherwise main-road cars wait behind it
-  let bBlk=false;const bp=bus.position,bfx=Math.sin(bus.rotation.y),bfz=Math.cos(bus.rotation.y);
-  for(const q of VH){const p=q.g.position,dx=p.x-bp.x,dz=p.z-bp.z,a=dx*bfx+dz*bfz,l=Math.abs(-dx*bfz+dz*bfx);if(a>0&&a<3.5+q.g.userData.L/2+3&&l<1.15+q.g.userData.L/2*Math.abs(bfx)+.95*Math.abs(bfz)){bBlk=true;break}}
-  if(!bBlk&&rd&&ahead(bp.x,bp.z,bfx,bfz,rd,9))bBlk=true;
-  if(!bBlk&&walk&&!tour&&!GM&&!RT.on&&!STOPS.some(t=>Math.hypot(G.t.x-t.ax,G.t.z-t.az)<3.5)&&ahead(bp.x,bp.z,bfx,bfz,{x:G.t.x,z:G.t.z},7))bBlk=true;
-  const bhx=1.05*Math.abs(bfz)+3.5*Math.abs(bfx),bhz=1.05*Math.abs(bfx)+3.5*Math.abs(bfz);
+  // the minibuses: each is blocked by a car right in front of it, by the girl on her bike, by a walker in the road, or by another bus just ahead
+  //   (so they queue at a stop instead of overlapping); otherwise main-road cars wait behind them
+  UB.forEach(U=>{const bp=U.g.position,bfx=Math.sin(U.g.rotation.y),bfz=Math.cos(U.g.rotation.y);let bBlk=false;
+   for(const q of VH){const p=q.g.position,dx=p.x-bp.x,dz=p.z-bp.z,a=dx*bfx+dz*bfz,l=Math.abs(-dx*bfz+dz*bfx);if(a>0&&a<3.5+q.g.userData.L/2+3&&l<1.15+q.g.userData.L/2*Math.abs(bfx)+.95*Math.abs(bfz)){bBlk=true;break}}
+   if(!bBlk&&rd&&ahead(bp.x,bp.z,bfx,bfz,rd,9))bBlk=true;
+   if(!bBlk&&walk&&!tour&&!GM&&!RT.on&&!STOPS.some(t=>Math.hypot(G.t.x-t.ax,G.t.z-t.az)<3.5)&&ahead(bp.x,bp.z,bfx,bfz,{x:G.t.x,z:G.t.z},7))bBlk=true;
+   if(!bBlk&&U.S.at<0&&UB.some(o=>o!==U&&(()=>{const f=fwd(U.S.d,o.S.d);return f>0&&f<11})()))bBlk=true;
+   U.blk=bBlk;U.bhx=1.05*Math.abs(bfz)+3.5*Math.abs(bfx);U.bhz=1.05*Math.abs(bfx)+3.5*Math.abs(bfz)});
   LANES.forEach(ln=>{ln.hold=!!rd&&VH.some(q=>q.ln===ln&&ahead(ln.x,ln.dir*(q.s-SPAN/2),0,ln.dir,rd,q.g.userData.L/2+5));
-   if(!ln.hold&&!bBlk&&Math.abs(bp.x-ln.x)<bhx+1)ln.hold=VH.some(q=>{if(q.ln!==ln)return false;const a=(bp.z-q.g.position.z)*ln.dir;return a>0&&a<q.g.userData.L/2+bhz+6})});
+   if(!ln.hold)ln.hold=UB.some(U=>{const bp=U.g.position;if(U.blk||Math.abs(bp.x-ln.x)>=U.bhx+1)return false;return VH.some(q=>{if(q.ln!==ln)return false;const a=(bp.z-q.g.position.z)*ln.dir;return a>0&&a<q.g.userData.L/2+U.bhz+6})})});
   VH.forEach(q=>{if(!q.ln.hold)q.s=(q.s+q.v*dt)%SPAN;q.g.position.set(q.ln.x,-.18,q.ln.dir*(q.s-SPAN/2));const a=q.v*dt/q.g.userData.r;q.g.userData.ws.forEach(w=>w.rotation.x+=a)});
   CY.forEach(c=>{c.s=(c.s+c.v*dt)%1200;c.g.position.z=c.dir*(c.s-600);c.upd(dt)});
-  if(bus){bus.visible=true;
-   {const want=BS.at>=0&&(BS.dw>1.3||(window.BUSHOLD&&BUSHOLD()));BDP=Math.max(0,Math.min(1,BDP+(want?1:-1)*dt*1.4));if(bus.userData.door)bus.userData.door(BDP)}   // doors open once stopped, shut before pulling away
-   if(BS.at>=0){if(window.BUSHOLD&&BUSHOLD())BS.dw=Math.max(BS.dw,1.5);else BS.dw-=dt;BS.v=0;if(BS.dw<=0&&BDP<=0){BS.at=-1;BS.d=(BS.d+.02)%BLEN}}
+  UB.forEach(U=>{const bus=U.g,BS=U.S,BW=U.W,bBlk=U.blk,hold=U===AB&&window.BUSHOLD&&BUSHOLD();bus.visible=true;
+   {const want=BS.at>=0&&(BS.dw>1.3||hold);U.dp=Math.max(0,Math.min(1,U.dp+(want?1:-1)*dt*1.4));if(bus.userData.door)bus.userData.door(U.dp)}   // doors open once stopped, shut before pulling away
+   if(BS.at>=0){if(hold)BS.dw=Math.max(BS.dw,1.5);else BS.dw-=dt;BS.v=0;if(BS.dw<=0&&U.dp<=0){BS.at=-1;BS.d=(BS.d+.02)%BLEN}}
    else if(!bBlk){
     // give way at the main road
     let wait=false;for(let gi=0;gi<GW.length;gi++){const g=GW[gi],f=fwd(BS.d,g.d);if(f<1.5||(BS.gw===gi&&f<2)){
@@ -1350,7 +1366,7 @@ setTimeout(()=>{try{
    else BS.v=0;
    const i=idxAt(BS.d),A=BR[i],B=BR[(i+1)%NB],f=(BS.d-CUM[i])/Math.max(1e-6,CUM[i+1]-CUM[i]);
    bus.position.lerpVectors(A,B,f);const C=BR[(i+NB-2)%NB],D=BR[(i+3)%NB],dx=D.x-C.x,dz=D.z-C.z,dy=D.y-C.y;{const ny=Math.atan2(dx,dz);let dyw=ny-bus.rotation.y;while(dyw>Math.PI)dyw-=2*Math.PI;while(dyw<-Math.PI)dyw+=2*Math.PI;const wl=bus.userData.wheel;if(wl&&dt>0){const tg=Math.max(-2.6,Math.min(2.6,dyw/dt*-3));wl.rotation.z+=(tg-wl.rotation.z)*Math.min(1,dt*4)}bus.rotation.y=ny;
-    if(dt>0){const u=bus.userData;u.yr=(u.yr||0)+(dyw/dt-(u.yr||0))*Math.min(1,dt*4);u.acc=(u.acc||0)+((BS.v-(u.pv||0))/dt-(u.acc||0))*Math.min(1,dt*3);u.pv=BS.v;if(u.pose)u.pose(dt,u.yr,u.acc)}}   /* how hard it is turning and speeding up or braking: the driver and passengers sway with it */bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz))}})(0)
+    if(dt>0){const u=bus.userData;u.yr=(u.yr||0)+(dyw/dt-(u.yr||0))*Math.min(1,dt*4);u.acc=(u.acc||0)+((BS.v-(u.pv||0))/dt-(u.acc||0))*Math.min(1,dt*3);u.pv=BS.v;if(u.pose)u.pose(dt,u.yr,u.acc)}}   /* how hard it is turning and speeding up or braking: the driver and passengers sway with it */bus.rotation.x=-Math.atan2(dy,Math.hypot(dx,dz))})})(0)
 }catch(e){console.error('roads',e)}},0);
 // ---- kids' 20-inch bike: parked in the garage; click it to ride as a 7-year-old girl. She can ride the street, over both bridges, along the main road and into the store car parks.
 function mkBikeF(BC){try{
@@ -1396,7 +1412,11 @@ function mkBikeF(BC){try{
    for(let i=0;i<10;i++){const a=i*Math.PI/5,t=new THREE.Mesh(new THREE.BoxGeometry(.175,.025,.05),mTy);t.position.set(0,Math.cos(a)*WR,Math.sin(a)*WR);t.rotation.x=a;w.add(t)}   /* tread lugs, so you can see them turn */
    const hb=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.18,10),mDk);hb.rotation.z=Math.PI/2;w.add(hb);return w};
   rw=new THREE.Group();rw.position.set(...RA);body.add(rw);[-.36,.36].forEach(x=>rw.add(qw(x)));tube([-.36,RA[1],RA[2]],[.36,RA[1],RA[2]],.022,mDk,body);
-  fst=new THREE.Group();fst.position.set(...FA);body.add(fst);fw=new THREE.Group();fst.add(fw);[-.36,.36].forEach(x=>fw.add(qw(x)));
+  /* front wheels: each turns on its own pivot (kingpin) beside the nose, a little more than the bars so you can see it, inner wheel a touch more (Ackermann) */
+  const FP=[-.36,.36].map(x=>{const pv=new THREE.Group();pv.position.set(x,FA[1],FA[2]);body.add(pv);const w=qw(0);pv.add(w);const kp=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.16,8),mDk);kp.position.set(-Math.sign(x)*.1,0,0);pv.add(kp);return {pv,w,x}});
+  tube([-.26,FA[1],FA[2]],[.26,FA[1],FA[2]],.02,mDk,body);   /* tie rod between the pivots */
+  fw={rotation:{}};Object.defineProperty(fw.rotation,'x',{set(v){FP.forEach(f=>f.w.rotation.x=v)},get(){return FP[0].w.rotation.x}});
+  fst={rotation:{}};Object.defineProperty(fst.rotation,'y',{set(v){const a=Math.max(-.62,Math.min(.62,v*1.45));FP.forEach(f=>f.pv.rotation.y=a*(1+.12*Math.sign(a)*Math.sign(f.x)))},get(){return FP[0].pv.rotation.y}});
   // chassis, engine, body panels
   bxm(.36,.1,1.0,mDk,0,.27,0,body);bxm(.3,.22,.36,mDk,0,.36,-.04,body);
   {const rf=new THREE.Mesh(rbox(1.0,.07,.52,.03),mFr);rf.position.set(0,.47,-.44);rf.castShadow=true;body.add(rf);const ff=new THREE.Mesh(rbox(.98,.07,.46,.03),mFr);ff.position.set(0,.47,.44);ff.castShadow=true;body.add(ff)}
@@ -1439,9 +1459,11 @@ function mkBikeF(BC){try{
  const LG=[-1,1].map(s=>({s,S:new THREE.Vector3(s*.075,.78,-.22),th:limb(.05,.042,mLg),sh:limb(.04,.033,mLg),kn:sph(.042,mLg,0,0,0),ft:(()=>{const f=new THREE.Group();girl.add(f);bxm(.075,.055,.15,mSh,0,.02,.03,f);bxm(.077,.02,.152,mSo,0,-.005,.03,f);return f})(),L1:.33,L2:.32}));
  const ik=(S,T,L1,L2,hint)=>{const d0=new THREE.Vector3().subVectors(T,S);let d=d0.length();const mx=L1+L2-.002;if(d>mx){T=S.clone().addScaledVector(d0,mx/d);d=mx}const dir=d0.normalize(),x=(L1*L1-L2*L2+d*d)/(2*d),h=Math.sqrt(Math.max(0,L1*L1-x*x)),hn=hint.clone().addScaledVector(dir,-hint.dot(dir)).normalize();return[S.clone().addScaledVector(dir,x).addScaledVector(hn,h),T]};
  const tmp=new THREE.Vector3();
+ const qLean=(K,dt)=>{if(!Q)return;const a=Math.max(-.3,Math.min(.3,K.st*(.3+Math.min(1,Math.abs(K.sp)/5)*.55)));K.gl=(K.gl||0)+(a-(K.gl||0))*Math.min(1,dt*6);
+  girl.rotation.z=K.gl;girl.position.set(.8*Math.sin(K.gl)-K.gl*.22,.8-.8*Math.cos(K.gl),0)};   /* pivots at the hips on the seat */
  const pose=()=>{g.updateMatrixWorld(true);
-  A.forEach((a,i)=>{tmp.set(0,0,0);GRIP[i].localToWorld(tmp);body.worldToLocal(tmp);const T=tmp.clone().add(new THREE.Vector3(0,.012,-.01));const[E,T2]=ik(a.S,T,a.L1,a.L2,new THREE.Vector3(a.s*.6,-.6,-.3));place(a.up,a.S,E);place(a.fo,E,T2);a.el.position.copy(E);a.hand.position.copy(T2)});
-  LG.forEach((l,i)=>{tmp.set(0,0,0);PD[i].localToWorld(tmp);body.worldToLocal(tmp);const T=tmp.clone().add(new THREE.Vector3(0,.04,-.015));const[E,T2]=ik(l.S,T,l.L1,l.L2,new THREE.Vector3(l.s*.12,.35,1));place(l.th,l.S,E);place(l.sh,E,T2);l.kn.position.copy(E);l.ft.position.copy(T2).add(new THREE.Vector3(0,-.03,0))})};
+  A.forEach((a,i)=>{tmp.set(0,0,0);GRIP[i].localToWorld(tmp);girl.worldToLocal(tmp);const T=tmp.clone().add(new THREE.Vector3(0,.012,-.01));const[E,T2]=ik(a.S,T,a.L1,a.L2,new THREE.Vector3(a.s*.6,-.6,-.3));place(a.up,a.S,E);place(a.fo,E,T2);a.el.position.copy(E);a.hand.position.copy(T2)});
+  LG.forEach((l,i)=>{tmp.set(0,0,0);PD[i].localToWorld(tmp);girl.worldToLocal(tmp);const T=tmp.clone().add(new THREE.Vector3(0,.04,-.015));const[E,T2]=ik(l.S,T,l.L1,l.L2,new THREE.Vector3(l.s*.12,.35,1));place(l.th,l.S,E);place(l.sh,E,T2);l.kn.position.copy(E);l.ft.position.copy(T2).add(new THREE.Vector3(0,-.03,0))})};
  g.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(g);
  // ---- ride state; the parked bike starts in the garage against the side wall, pointing at the garage door
  const BK={quad:Q,id:BC.id,x:BC.px,z:BC.pz,th:BC.th,sp:0,st:0,ln:0,wa:0,ca:0,y:-.09,cth:0,pt:0,fw:0,parked:true};if(!window.BKM)window.BKM=BK;window.BKS.push(BK);
@@ -1517,7 +1539,7 @@ function mkBikeF(BC){try{
   K.wa+=ds/WR;rw.rotation.x=K.wa;fw.rotation.x=K.wa;
   if(f>0&&K.sp>0)K.ca+=Math.max(ds,K.sp*dt*.3)/WR/1.9;crank.rotation.x=K.ca;PD.forEach(p=>p.rotation.x=-K.ca);
   pony.rotation.x=-.25-Math.min(.6,Math.abs(K.sp)*.12)+Math.sin(performance.now()*.008)*.05*Math.min(1,Math.abs(K.sp));pony.rotation.z=-K.ln*.8;
-  head.rotation.y=K.st*.6;girl.position.y=!Q&&f>0&&K.sp<1.5?Math.abs(Math.sin(K.ca))*.012:0;
+  head.rotation.y=K.st*.6;girl.position.y=!Q&&f>0&&K.sp<1.5?Math.abs(Math.sin(K.ca))*.012:0;qLean(K,dt);
   pose();
   try{gmRoll(K,moved>0?Math.min(1,Math.abs(K.sp)/3):0)}catch(e){}
   // chase camera, pulled in when something is in the way
@@ -1535,7 +1557,7 @@ function mkBikeF(BC){try{
   const k=Math.min(1,dt*10),ox=K.x,oz=K.z;K.x+=(s[0]-K.x)*k;K.y+=(s[1]-K.y)*k;K.z+=(s[2]-K.z)*k;K.th+=AD(s[3],K.th)*k;K.st+=(s[4]-K.st)*k;K.ln+=(s[5]-K.ln)*k;K.pt+=(s[6]-K.pt)*k;K.sp=s[7];
   const ds=Math.hypot(K.x-ox,K.z-oz)*(K.sp<0?-1:1);g.position.set(K.x,K.y,K.z);g.rotation.y=K.th;body.rotation.set(-K.pt,0,K.ln);steer.rotation.y=K.st;if(fst)fst.rotation.y=K.st;
   K.wa+=ds/WR;rw.rotation.x=K.wa;fw.rotation.x=K.wa;if(K.sp>.05)K.ca+=Math.max(ds,0)/WR/1.9;crank.rotation.x=K.ca;PD.forEach(p=>p.rotation.x=-K.ca);
-  pony.rotation.x=-.25-Math.min(.6,Math.abs(K.sp)*.12);pony.rotation.z=-K.ln*.8;head.rotation.y=K.st*.6;pose()};
+  pony.rotation.x=-.25-Math.min(.6,Math.abs(K.sp)*.12);pony.rotation.z=-K.ln*.8;head.rotation.y=K.st*.6;qLean(K,dt);pose()};
  if(window.BKM===BK)act();
 }catch(e){console.error('bike',e)}}
 // three kids' bikes share the garage: the original teal one against the side wall, a blue one beside it and a red one further along
@@ -1634,7 +1656,7 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;
  const fit=(g,L,W,y)=>{[-1,1].forEach(s=>{const a=new THREE.Sprite(hlS);a.position.set(s*(W/2-.3),y,L/2+.08);a.scale.setScalar(.9);g.add(a);const b=new THREE.Sprite(tlS);b.position.set(s*(W/2-.28),y+.05,-L/2-.08);b.scale.setScalar(.6);g.add(b)});
   const bg=new THREE.PlaneGeometry(W+1.6,16);bg.rotateX(-Math.PI/2);bg.translate(0,.03,L/2+8);const bm=new THREE.Mesh(bg,mBeam);bm.renderOrder=2;bm.frustumCulled=false;g.add(bm)};
  (R.VH||[]).forEach(q=>{const L=q.g.userData.L;fit(q.g,L,L>8?2.5:L>5?2.0:1.85,L>8?.85:.75)});
- if(typeof busG!=='undefined'&&busG)fit(busG,7,2.1,.78);
+ (window.BUSES||[]).forEach(g=>fit(g,7,2.1,.78));
  let lv=-1;(function tick(){requestAnimationFrame(tick);const v=NM.v||0;if(Math.abs(v-lv)<.004)return;lv=v;
   POOL.forEach(m=>m.opacity=.55*v);SPR.forEach(m=>m.opacity=.9*v);BEAM.forEach(m=>m.opacity=.45*v);TAIL.forEach(m=>m.opacity=.8*v);
   HEADS.forEach(m=>m.color.setHex(0xc9ced2).lerp(new THREE.Color(0xfff1cc),v))})()
@@ -3577,7 +3599,7 @@ function trainClick(cx,cy){if(RT.on&&!RT.bus){trainOff();return true}   /* on th
  const T=window.TRN;if(!T)return false;const r=el.getBoundingClientRect();RC.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-((cy-r.top)/r.height)*2+1},cam);RC.camera=cam;
  for(const h of RC.intersectObjects(scene.children,true)){const o=h.object;let vis=true;for(let q=o;q;q=q.parent)if(!q.visible){vis=false;break}if(!vis)continue;
   const m=Array.isArray(o.material)?o.material[0]:o.material;if(!m||o.isPoints||o.isSprite||o.isLine||(m.transparent&&m.opacity<.95)||m.depthWrite===false||m.blending===THREE.AdditiveBlending)continue;
-  {let b=o;while(b&&b!==busG)b=b.parent;if(b)return trainUse(true)}   /* the minibus */
+  {let b=o;while(b&&!(window.BUSES||[busG]).includes(b))b=b.parent;if(b)return trainUse(true)}   /* the minibus */
   if(T.trainOf(o)<0)return false;return trainUse(true)}
  return false}
 function trainBoard(q,zs){let veh=null;
@@ -3616,7 +3638,7 @@ let BASK=0,BASKK=-1;
 const busFmt=w=>w<60?Math.ceil(w/5)*5+' s':Math.round(w/60)+' min';
 function busStopNear(x,z){const B=window.BUS;if(!B)return -1;let bi=-1,bd=1e9;B.stops.forEach((t,i)=>{const d=Math.hypot(x-t.ax,z-t.az);if(d<bd){bd=d;bi=i}});return bd<6?bi:-1}
 function busUse(fromClick,onlyBoard){const B=window.BUS;if(!B||!B.g||tour||GM)return false;
- B.g.updateMatrixWorld(true);const x=G.t.x,z=G.t.z,dp=B.g.localToWorld(_rtv.set(1.1,0,2.45)),dd=Math.hypot(x-dp.x,z-dp.z),k=B.at();
+ if(B.pick)B.pick(G.t.x,G.t.z);B.g.updateMatrixWorld(true);const x=G.t.x,z=G.t.z,dp=B.g.localToWorld(_rtv.set(1.1,0,2.45)),dd=Math.hypot(x-dp.x,z-dp.z),k=B.at();
  if(dd<(fromClick?12:6)){if(k>=0){busBoard(k);return true}if(onlyBoard)return false;showCap('The bus only picks up at its stops: wait for it at the bus stop',2600);return true}
  const sk=busStopNear(x,z);
  if(sk<0){if(fromClick&&!onlyBoard){showCap('Catch the bus at the bus stop beside no. 28, or at the bus bay at Tarneit or West Tarneit station',3200);return true}return false}
@@ -3632,7 +3654,7 @@ function busUse(fromClick,onlyBoard){const B=window.BUS;if(!B||!B.g||tour||GM)re
 // When the bus is standing at a stop, click anywhere (or Get off / E) and you stand up and walk back out of the door to the footpath.
 // seats: one player per double seat, kerb side first, front to back; you take the first seat nobody else on the bus is sitting in (or heading for)
 const BSEATS=[];[.6,-.25,-1.1,-1.95,-2.8].forEach(z=>[.55,-.55].forEach(x=>BSEATS.push(new THREE.Vector3(x,.6,z))));
-function busTaken(){const t=new Set();if(window.MP&&MP.on)MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&P.tp[5]>=0)t.add(P.tp[5]|0)});return t}
+function busTaken(){const t=new Set();if(window.MP&&MP.on)MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&P.tp[5]>=0&&(P.tp[6]|0)===(window.BUS&&BUS.active?BUS.active():0))t.add(P.tp[5]|0)});return t}   /* seats taken on this bus */
 function busPick(){const t=busTaken();for(let i=0;i<BSEATS.length;i++)if(!t.has(i))return i;return 0}
 const BSEAT=new THREE.Vector3(.55,.6,.6),_bv=new THREE.Vector3(),_bq=new THREE.Quaternion();
 window.BUSHOLD=()=>RT.on&&RT.bus&&RT.ph!=='ride';   /* the bus waits while you are getting on or off */
@@ -3664,7 +3686,7 @@ function busPos(){const B=window.BUS,g=B&&B.g,av=SELF.av;if(!g||!av){rtCancel();
   else if(RT.ph==='enter'){RT.sit=Math.min(1,RT.sit+dt*1.8);const e=P[P.length-1];av.g.position.lerpVectors(e,BSEAT,RT.sit);let dy=0-RT.yaw;while(dy>Math.PI)dy-=2*Math.PI;while(dy<-Math.PI)dy+=2*Math.PI;RT.yaw+=dy*Math.min(1,dt*8);av.g.rotation.y=RT.yaw;busAvPose(av,false,RT.sit,dt);
    if(RT.sit>=1){RT.ph='ride';av.g.rotation.y=RT.yaw=0;const n=B.nextStop();showCap('Sitting down. Next stop: '+(n>=0?B.stops[n].n:'')+'. View (V) follows the bus from outside',4000)}}
   else{busAlight(RT.k);return}}
- else{if(window.MP&&MP.on&&(RT.chk=(RT.chk||0)+dt)>.5){RT.chk=0;let c=false;MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&(P.tp[5]|0)===RT.seat&&P.tp[4]>.5&&P.id<MP.self)c=true});if(c){RT.seat=busPick();BSEAT.copy(BSEATS[RT.seat])}}
+ else{if(window.MP&&MP.on&&(RT.chk=(RT.chk||0)+dt)>.5){RT.chk=0;let c=false;MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&(P.tp[5]|0)===RT.seat&&(P.tp[6]|0)===BUS.active()&&P.tp[4]>.5&&P.id<MP.self)c=true});if(c){RT.seat=busPick();BSEAT.copy(BSEATS[RT.seat])}}
   const u=g.userData,ln=Math.max(-.2,Math.min(.2,(u.yr||0)*.15)),pt=Math.max(-.14,Math.min(.14,-(u.acc||0)*.04));   /* pushed outward in turns, back when the bus pulls away, forward when it brakes */
   RT.sl=(RT.sl||0)+(ln-(RT.sl||0))*Math.min(1,dt*5);RT.sp=(RT.sp||0)+(pt-(RT.sp||0))*Math.min(1,dt*5);
   av.g.rotation.set(RT.sp,0,RT.sl,'ZXY');_bq.setFromEuler(av.g.rotation);_bv.set(0,.6,0).applyQuaternion(_bq);av.g.position.copy(BSEAT).add(new THREE.Vector3(0,.6,0)).sub(_bv);busAvPose(av,false,1,dt)}
@@ -3675,7 +3697,7 @@ function busPos(){const B=window.BUS,g=B&&B.g,av=SELF.av;if(!g||!av){rtCancel();
   G.r=inside?1.3:SELF.d;G.ph=inside?1.22:1.3;
   if(RT.ph!=='ride'){let w=-Math.PI/2-(ry+RT.yaw)-G.th;while(w>Math.PI)w-=2*Math.PI;while(w<-Math.PI)w+=2*Math.PI;G.th+=w*Math.min(1,dt*3)}}
  V.t.copy(G.t)}
-function busGlass(on){const m=typeof busG!=='undefined'&&busG.userData.glass;if(m)m.opacity=on?.2:.42}   /* clear windows while you are on the bus */
+function busGlass(on){const m=((window.BUS&&BUS.g)||busG).userData.glass;if(m)m.opacity=on?.2:.42}   /* clear windows while you are on the bus */
 function busOff(){const B=window.BUS,k=B?B.at():-1;if(RT.ph!=='ride')return;
  if(k>=0){const g=B.g,t=B.stops[k];g.updateMatrixWorld(true);const sp=g.worldToLocal(_bv.set(t.ax,g.position.y,t.az)).clone();sp.y=0;
   RT.ph='exit';RT.k=k;RT.sit=1;RT.seg=0;RT.f=0;RT.P=busAvPath([[BSEAT.x,.62,BSEAT.z+.45],[.1,.62,BSEAT.z+.45],[.1,.62,1.7],[.75,.62,2.45],[1.8,0,2.45],[sp.x,0,sp.z]]);RT.yaw=0;
@@ -4010,7 +4032,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
 
  // ---------- my state, ten times a second
  setInterval(()=>{if(!MP.on||!MP.T)return;let m='x',p=null,v=null;
-  if(RT.on&&RT.bus&&SELF.av&&SELF.av.g.parent!==scene){const q=SELF.av.g.position;m='b';p=[+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+(RT.yaw||0).toFixed(3),RT.ph==='ride'?1:+(RT.sit||0).toFixed(2),RT.seat|0]}
+  if(RT.on&&RT.bus&&SELF.av&&SELF.av.g.parent!==scene){const q=SELF.av.g.position;m='b';p=[+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+(RT.yaw||0).toFixed(3),RT.ph==='ride'?1:+(RT.sit||0).toFixed(2),RT.seat|0,window.BUS&&BUS.active?BUS.active():0]}
   else if(walk&&!tour){const r=riding();if(r==='trike'){m=r;v=tkSer()}else if(r&&bike(r)){m=r;v=bike(r).ser()}else if(!GM){m='w';p=[+V.t.x.toFixed(3),+V.t.y.toFixed(3),+V.t.z.toFixed(3),+V.th.toFixed(3)]}}
   try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,g:window.AVBOY&&AVBOY()?1:0,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
   doorWatch()},100);
@@ -4020,7 +4042,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   // rides held by someone who has gone quiet or got off without a message go back where they belong
   VEH.forEach(v=>{const o=MP.own[v];if(!o||o.id===MP.self)return;const P=MP.peers.get(o.id);if(!P||t-P.last>6000)release(v);else if(P.mode!==v&&t-P.modeT>2500){const s=P.vs;release(v,s?s[0]:undefined,s?s[2]:undefined,s?s[3]:undefined)}});
   MP.peers.forEach(P=>{if(!P.av)return;const av=P.av;let tagAt=null;
-   if(P.mode==='b'&&P.tp&&window.BUS&&BUS.g){const g=BUS.g,[x,y,z,yw,si]=P.tp;g.updateMatrixWorld(true);P.init=false;
+   if(P.mode==='b'&&P.tp&&window.BUS&&BUS.g){const g=((BUS.list&&BUS.list[P.tp[6]|0])||BUS).g,[x,y,z,yw,si]=P.tp;g.updateMatrixWorld(true);P.init=false;
     const wp=g.localToWorld(new THREE.Vector3(x,y,z));
     av.g.visible=true;av.g.position.copy(wp);g.getWorldQuaternion(av.g.quaternion);av.g.rotateY(yw);P.ax=wp.x;P.az=wp.z;busAvPose(av,si<=.02,Math.max(0,si),dt);tagAt=[wp.x,wp.y+1.5,wp.z]}
    else if(P.mode==='w'&&P.tp){const [x,y,z,th]=P.tp,gy=gnd(x,z);if(!P.init){P.ax=x;P.az=z;P.ath=th;P.init=true}const k=Math.min(1,dt*9),ox=P.ax,oz=P.az;P.ax+=(x-P.ax)*k;P.az+=(z-P.az)*k;P.ath+=AD(th,P.ath)*k;
@@ -4047,7 +4069,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  {const st=document.createElement('style');st.textContent='#topR #bMP{width:42px;padding:0;justify-content:center;border-radius:50%}#mpGB{display:flex;gap:8px}#mpGB button{flex:1;padding:9px 0;text-align:center;justify-content:center;display:flex;align-items:center;border-radius:12px;border:1px solid rgba(0,0,0,.14);background:rgba(255,255,255,.7);font:inherit;font-weight:600;cursor:pointer;color:inherit}#mpGB button.on{background:#c8462b;border-color:#c8462b;color:#fff}';document.head.appendChild(st)}
  const pn=document.createElement('div');pn.id='mpP';pn.setAttribute('role','dialog');pn.setAttribute('aria-label','Play together');
  pn.innerHTML='<button id="mpX" aria-label="Close">✕</button><h2>Play together</h2><p>Everyone who types the same room code walks and rides in this house together. Share the invite link or the code.</p>'+
-  '<label for="mpN">Your name</label><input id="mpN" maxlength="20" autocomplete="nickname" placeholder="e.g. Adnan"><label>Avatar</label><div id="mpGB" role="radiogroup" aria-label="Avatar"><button data-b="0" role="radio">Girl</button><button data-b="1" role="radio">Boy</button></div><label>Shirt colour</label><div id="mpSw"></div>'+
+  '<label for="mpN">Your name</label><input id="mpN" maxlength="20" autocomplete="nickname" placeholder="e.g. Adnan"><label>Avatar</label><div id="mpGB" role="radiogroup" aria-label="Avatar"><button data-b="0" role="radio" class="kidb" aria-label="Girl" title="Girl"><svg class="kid" viewBox="0 0 40 48" aria-hidden="true"><g class="bd"><path class="pony" d="M27 10c5 1 7 7 4 12" stroke="#5b3a24" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M17 38v7M23 38v7" stroke="#e9bd98" stroke-width="3" stroke-linecap="round"/><path d="M15.5 45h3.4M21.5 45h3.4" stroke="#ff7aa8" stroke-width="2.4" stroke-linecap="round"/><path d="M14 26l-5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path class="wave" d="M26 26l5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path d="M15 23h10l6 16H9z" fill="#e85d9a"/><circle cx="20" cy="15" r="8" fill="#e9bd98"/><path d="M12 15.5a8 8.5 0 0 1 16 0c-2.5-3.5-7-4.5-11-2.5-2 1-4 2-5 2.5z" fill="#5b3a24"/><circle cx="27.3" cy="9.8" r="2" fill="#ff7aa8"/><circle cx="17.2" cy="15.5" r="1" fill="#1d1a18"/><circle cx="22.8" cy="15.5" r="1" fill="#1d1a18"/><path d="M17.6 19q2.4 2 4.8 0" stroke="#b5524e" stroke-width="1" fill="none" stroke-linecap="round"/></g></svg></button><button data-b="1" role="radio" class="kidb" aria-label="Boy" title="Boy"><svg class="kid" viewBox="0 0 40 48" aria-hidden="true"><g class="bd"><path d="M17 37v8M23 37v8" stroke="#e9bd98" stroke-width="3" stroke-linecap="round"/><path d="M15.5 45h3.4M21.5 45h3.4" stroke="#3d6fd6" stroke-width="2.4" stroke-linecap="round"/><path d="M13.5 25l-4.5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path class="wave" d="M26.5 25l4.5 8" stroke="#e9bd98" stroke-width="2.8" stroke-linecap="round"/><path d="M13 24q0-1.5 2-1.5h10q2 0 2 1.5v9H13z" fill="#3d7fd6"/><path d="M13.5 33h13v5h-5.5l-1-2.5-1 2.5h-5.5z" fill="#2f4a7d"/><circle cx="20" cy="15" r="8" fill="#e9bd98"/><path d="M12 14.5a8 8 0 0 1 16 0c-1.2-1.6-2.8-2.4-4.5-2.6l1-2-3 1.6-1.5-2.5-1.5 2.6c-3 .3-5 1.3-6.5 2.9z" fill="#3b2618"/><circle cx="17.2" cy="15.5" r="1" fill="#1d1a18"/><circle cx="22.8" cy="15.5" r="1" fill="#1d1a18"/><path d="M17.6 19q2.4 2 4.8 0" stroke="#b5524e" stroke-width="1" fill="none" stroke-linecap="round"/></g></svg></button></div><label>Shirt colour</label><div id="mpSw"></div>'+
   '<label for="mpR">Room code</label><input id="mpR" maxlength="24" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g. family28">'+
   '<div class="row2"><button id="mpGo">Join room</button><button id="mpCp">Copy invite link</button></div><div id="mpSt"></div><ul id="mpL"></ul>';
  document.body.appendChild(pn);['keydown','keyup','pointerdown','wheel'].forEach(n=>pn.addEventListener(n,e=>e.stopPropagation()));
