@@ -1509,8 +1509,8 @@ function mkBikeF(BC){try{
   pony.rotation.x=-.25-Math.min(.6,Math.abs(K.sp)*.12);pony.rotation.z=-K.ln*.8;head.rotation.y=K.st*.6;pose()};
  if(window.BKM===BK)act();
 }catch(e){console.error('bike',e)}}
-// two kids' bikes share the garage: the original teal one against the side wall, and a blue one beside it
-setTimeout(()=>{window.BKS=[];mkBikeF({id:'bike1',fr:0x2bb3a3,ac:0xf06aa8,px:5.3,pz:5.75,th:Math.PI/2});mkBikeF({id:'bike2',fr:0x2457c9,ac:0xf4f4f2,px:6.15,pz:5.12,th:Math.PI/2})},0);
+// three kids' bikes share the garage: the original teal one against the side wall, a blue one beside it and a red one further along
+setTimeout(()=>{window.BKS=[];mkBikeF({id:'bike1',fr:0x2bb3a3,ac:0xf06aa8,px:5.3,pz:5.75,th:Math.PI/2});mkBikeF({id:'bike2',fr:0x2457c9,ac:0xf4f4f2,px:6.15,pz:5.12,th:Math.PI/2});mkBikeF({id:'bike3',fr:0xd32f2f,ac:0xffd54f,px:7.7,pz:5.5,th:Math.PI/2})},0);   /* and a red one with yellow trim further along the wall */
 // ---- the kid's tricycle parks in the garage beside the bike; click it to start the tricycle game from wherever it is parked
 setTimeout(()=>{try{if(!KID)gmBuild();window.TKP={x:5.0,z:4.85,h:Math.PI};
  window.tkPark=()=>{const p=window.TKP;KK.visible=false;KID.visible=GAMES_ON;   /* nobody sits on the parked trike; the kid appears when you tap it to ride */KID.position.set(p.x,terr(p.x,p.z),p.z);KID.rotation.y=Math.PI-p.h;KB.rotation.set(0,0,0);KF.rotation.y=0};
@@ -2052,7 +2052,7 @@ $('bMM').onclick=e=>{mmOn=!mmOn;$('bMM').classList.toggle('on',mmOn);$('bMM').te
 function setGames(on){GAMES_ON=!!on;if(!GAMES_ON&&GM){GM.fw=0;gmExit()}
  (window.BKS||[]).forEach(b=>{if(!b.rem)b.g.visible=GAMES_ON});if(KID&&!(window.TR&&TR.on)){KID.visible=GAMES_ON;if(KK&&!GM)KK.visible=false}carG.visible=GAMES_ON&&CAR_ON;
  const b=$('bGMo');if(b){b.classList.toggle('on',GAMES_ON);b.textContent='Game mode: '+(GAMES_ON?'on':'off')}
- showCap(GAMES_ON?'Game mode on: the trike and the two bikes are parked in the garage. Tap one to get in':'Game mode off',3000);if(GAMES_ON&&!GM)gmChoose()}   /* turning game mode on takes the camera straight to the parked trike and bike */
+ showCap(GAMES_ON?'Game mode on: the trike and the three bikes are parked in the garage. Tap one to get in':'Game mode off',3000);if(GAMES_ON&&!GM)gmChoose()}   /* turning game mode on takes the camera straight to the parked trike and bike */
 $('bGMo').onclick=()=>setGames(!GAMES_ON);
 // game mode is always on: the walk (person) button is hidden and no longer switches it
 // ---- backyard football (Australia ball): touch/click it and it rolls away from you, slows down and bounces off the fences
@@ -3825,10 +3825,10 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
 (function(){try{const so=screen.orientation;if(so&&so.lock)so.lock('landscape').catch(()=>{})}catch(e){}})();
 // ---- Play together (peer to peer multiplayer): everyone who types the same room code walks and rides in the same house.
 //      Browsers connect straight to each other (Trystero over WebRTC; free public relays only introduce them), so the page needs no server.
-//      Each player has a name and a shirt colour. The trike and the two bikes are shared: whoever gets on first rides it, everyone else sees them riding it,
+//      Each player has a name and a shirt colour. The trike and the three bikes are shared: whoever gets on first rides it, everyone else sees them riding it,
 //      and when they get off it stays where they left it. Doors, the garage, the gate, cupboards, taps, lights and Day / Night / Current time are shared too.
 (function(){try{
- const VEH=['trike','bike1','bike2'],VNAME={trike:'the trike',bike1:'the teal bike',bike2:'the blue bike'},HOME={trike:{x:5.0,z:4.85,h:Math.PI}};
+ const VEH=['trike','bike1','bike2','bike3'],VNAME={trike:'the trike',bike1:'the teal bike',bike2:'the blue bike',bike3:'the red bike'},HOME={trike:{x:5.0,z:4.85,h:Math.PI}};
  const COLS=[0xe53935,0xfb8c00,0xfdd835,0x43a047,0x00acc1,0x1e88e5,0x5e35b1,0xec407a,0x6d4c41,0x263238];
  const hex=c=>'#'+(c>>>0).toString(16).padStart(6,'0');
  const LS={get(k,d){try{const v=localStorage.getItem('mp_'+k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem('mp_'+k,v)}catch(e){}}};
