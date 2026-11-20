@@ -704,15 +704,19 @@ function treeTick(tm){const g=Math.max(.45,.95+.45*Math.sin(tm*.31)+.25*Math.sin
 {const RX=-45,LEN=2600,far=new THREE.Mesh(new THREE.PlaneGeometry(4200,4200),mLawn);far.rotation.x=-Math.PI/2;far.position.y=-.27;scene.add(far);
  const mB=M({color:0x6e6b66,roughness:1}),mS=M({color:0x7a766f,roughness:.9}),mR=M({color:0x5b4a40,roughness:.5,metalness:.5}),mP=M({color:0x6d7175,roughness:.6,metalness:.4}),mW=M({color:0x2b2b2b});
  const add=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y-.19,z);scene.add(o);return o};
- add(new THREE.BoxGeometry(9,.16,LEN),M({color:0x4a7a38,roughness:1}),RX,.02,0);
- add(new THREE.BoxGeometry(4.6,.36,LEN),mB,RX,.18,0);
- const n=Math.floor(LEN/.62),im=new THREE.InstancedMesh(new THREE.BoxGeometry(2.6,.15,.26),mS,n),d=new THREE.Object3D();
- for(let i=0;i<n;i++){d.position.set(RX,.4,-LEN/2+i*.62);d.updateMatrix();im.setMatrixAt(i,d.matrix)}scene.add(im);
- [-.8,.8].forEach(o=>{add(new THREE.BoxGeometry(.07,.17,LEN),mR,RX+o,.55,0);add(new THREE.BoxGeometry(.12,.03,LEN),mR,RX+o,.46,0)});
- for(let z=-LEN/2+25;z<LEN/2;z+=50){add(new THREE.BoxGeometry(.22,8,.22),mP,RX+3.4,4,z);add(new THREE.BoxGeometry(.12,.12,3.6),mP,RX+1.7,7.6,z);add(new THREE.BoxGeometry(.5,.12,.12),mP,RX+3.4,7.9,z)}
- add(new THREE.BoxGeometry(.03,.03,LEN),mW,RX-.1,7.15,0);add(new THREE.BoxGeometry(.03,.03,LEN),mW,RX-.1,6.5,0);
- for(let z=-460;z<460;z+=4)add(new THREE.BoxGeometry(.05,1.4,.05),mP,RX-3.6,.7,z+Math.random()*.01),0;
- add(new THREE.BoxGeometry(.03,.03,LEN),mP,RX-3.6,1.3,0);add(new THREE.BoxGeometry(.03,.03,LEN),mP,RX-3.6,.9,0)}
+ /* double track, left-hand running: trains toward Southern Cross (+z) on the house-side track (RX), trains toward Geelong (-z) on the main-road-side track (RX-TS) */
+ const TS=4,XT=[RX,RX-TS];
+ add(new THREE.BoxGeometry(9+TS,.16,LEN),M({color:0x4a7a38,roughness:1}),RX-TS/2,.02,0);
+ add(new THREE.BoxGeometry(4.6+TS,.36,LEN),mB,RX-TS/2,.18,0);
+ const n=Math.floor(LEN/.62),im=new THREE.InstancedMesh(new THREE.BoxGeometry(2.6,.15,.26),mS,n*2),d=new THREE.Object3D();
+ XT.forEach((tx,t)=>{for(let i=0;i<n;i++){d.position.set(tx,.4,-LEN/2+i*.62+t*.31);d.updateMatrix();im.setMatrixAt(t*n+i,d.matrix)}});scene.add(im);
+ XT.forEach(tx=>[-.8,.8].forEach(o=>{add(new THREE.BoxGeometry(.07,.17,LEN),mR,tx+o,.55,0);add(new THREE.BoxGeometry(.12,.03,LEN),mR,tx+o,.46,0)}));
+ /* masts on the house side; a cross-arm reaches over both tracks with a hanger above each one */
+ for(let z=-LEN/2+25;z<LEN/2;z+=50){add(new THREE.BoxGeometry(.22,8,.22),mP,RX+3.4,4,z);add(new THREE.BoxGeometry(.12,.12,3.6),mP,RX+1.7,7.6,z);add(new THREE.BoxGeometry(.5,.12,.12),mP,RX+3.4,7.9,z);
+  add(new THREE.BoxGeometry(3.4+TS+.6,.14,.14),mP,RX+3.4-(3.4+TS+.6)/2,7.75,z);XT.forEach(tx=>add(new THREE.BoxGeometry(.06,.6,.06),mP,tx-.1,7.4,z))}
+ XT.forEach(tx=>{add(new THREE.BoxGeometry(.03,.03,LEN),mW,tx-.1,7.15,0);add(new THREE.BoxGeometry(.03,.03,LEN),mW,tx-.1,6.5,0)});
+ for(let z=-460;z<460;z+=4)add(new THREE.BoxGeometry(.05,1.4,.05),mP,RX-TS-3.6,.7,z+Math.random()*.01),0;
+ add(new THREE.BoxGeometry(.03,.03,LEN),mP,RX-TS-3.6,1.3,0);add(new THREE.BoxGeometry(.03,.03,LEN),mP,RX-TS-3.6,.9,0)}
 
 
 // ---- V/Line train (purple) running slowly along the track, loops forever
@@ -740,7 +744,7 @@ const trainG=new THREE.Group();let trainTick=()=>{},trainReset=()=>{},trainGo=()
   c.position.set(0,0,z0);trainG.add(c)}
  trainG.position.set(RX,.49,0);scene.add(trainG);
  const span=N*(L+gap),LIM=450;let tt=0,z=60,spd=8,tph=3,tdw=0,dir=-1,tourRun=false;const SZ=-62.4;
- let hold=false;trainReset=()=>{hold=true;z=104;tph=3;spd=8;hornT=0;dir=-1;tourRun=false;trainG.rotation.y=0;trainG.visible=false};trainGo=()=>{if(hold){hold=false;tourRun=true;dir=1;trainG.rotation.y=Math.PI;z=-184;tph=3;spd=8;hornT=0;trainG.visible=true}};trainRel=()=>{hold=false;tourRun=false;trainG.visible=true};const oldTick=function(t){if(hold){if(typeof TS!=='undefined'&&TS)TS.out.gain.value=0;return}const dt=Math.min(.1,Math.max(0,t-tt));tt=t;if(tph===0){if(z>SZ){const tg=Math.min(8,Math.sqrt(2*.9*(z-SZ))+.25);spd=Math.min(tg,spd+1.2*dt)}if(z-spd*dt<=SZ){z=SZ;spd=0;tph=1;tdw=0}else z-=spd*dt}else if(tph===1){tdw+=dt;if(tdw>14)tph=2}else{spd=Math.min(8,spd+.8*dt);z+=dir*spd*dt;if(z<SZ-60)tph=3}if(tph===3){spd=8;z+=dir*dt*8}if(dir<0?z<-LIM-span:z>(tourRun?150:LIM+span)){dir=-dir;z=dir>0?-LIM-span:(tourRun?300:LIM);trainG.rotation.y=dir>0?Math.PI:0;tph=3;spd=8}trainG.position.z=z;TG.forEach(q=>{q.material.opacity=.3+.65*NM.v;q.scale.setScalar(1.3+2.4*NM.v)});TB[0].opacity=.06+.5*NM.v;trainSnd(dir>0?z+span-11:z,span,t)}
+ let hold=false;trainReset=()=>{hold=true;z=104;tph=3;spd=8;hornT=0;dir=-1;tourRun=false;trainG.rotation.y=0;trainG.visible=false};trainGo=()=>{if(hold){hold=false;tourRun=true;dir=1;trainG.rotation.y=Math.PI;z=-184;tph=3;spd=8;hornT=0;trainG.visible=true}};trainRel=()=>{hold=false;tourRun=false;trainG.visible=true};const oldTick=function(t){if(hold){if(typeof TS!=='undefined'&&TS)TS.out.gain.value=0;return}const dt=Math.min(.1,Math.max(0,t-tt));tt=t;if(tph===0){if(z>SZ){const tg=Math.min(8,Math.sqrt(2*.9*(z-SZ))+.25);spd=Math.min(tg,spd+1.2*dt)}if(z-spd*dt<=SZ){z=SZ;spd=0;tph=1;tdw=0}else z-=spd*dt}else if(tph===1){tdw+=dt;if(tdw>14)tph=2}else{spd=Math.min(8,spd+.8*dt);z+=dir*spd*dt;if(z<SZ-60)tph=3}if(tph===3){spd=8;z+=dir*dt*8}if(dir<0?z<-LIM-span:z>(tourRun?150:LIM+span)){dir=-dir;z=dir>0?-LIM-span:(tourRun?300:LIM);trainG.rotation.y=dir>0?Math.PI:0;tph=3;spd=8}trainG.position.x=dir>0?RX:RX-4;window.TRX=trainG.position.x;trainG.position.z=z;TG.forEach(q=>{q.material.opacity=.3+.65*NM.v;q.scale.setScalar(1.3+2.4*NM.v)});TB[0].opacity=.06+.5*NM.v;trainSnd(dir>0?z+span-11:z,span,t)}
  // ---- real V/Line Geelong-line timetable (effective 13 Sep 2026): trains run by the Melbourne clock. Tarneit (Kmart side, z=+300) and West Tarneit (Woolworths side, z=-300);
  //      down trains (Southern Cross to Geelong) run +z to -z, up trains -z to +z. Rows are [Southern Cross, Tarneit, West Tarneit, Wyndham Vale] in minutes (null = not stopping).
  const TT={"wd":{"d":[[286,313,316,322],[333,360,363,369],[364,391,394,400],[387,414,417,423],[407,434,437,443],[425,452,455,461],[444,null,null,null],[447,474,477,483],[468,495,498,504],[490,517,520,526],[510,537,540,546],[530,557,560,566],[550,577,580,586],[570,597,600,606],[590,617,620,626],[610,null,null,null],[613,640,643,649],[630,657,660,666],[650,677,680,686],[670,697,700,706],[690,717,720,726],[710,737,740,746],[730,757,760,766],[750,777,780,786],[770,797,800,806],[790,null,null,null],[793,820,823,829],[810,837,840,846],[830,857,860,866],[850,877,880,886],[870,897,900,906],[890,917,920,926],[910,937,940,946],[929,956,960,966],[947,null,null,979],[953,979,982,990],[969,null,null,1001],[973,1000,1004,1012],[985,null,null,null],[991,null,null,1024],[995,1022,1025,1034],[1006,null,null,null],[1009,null,null,1043],[1014,1042,1045,1053],[1029,null,null,null],[1032,null,null,1064],[1035,1062,1065,1073],[1049,null,null,null],[1052,null,null,null],[1055,1083,1086,1094],[1065,null,null,null],[1072,null,null,1106],[1075,1103,1107,1115],[1092,null,null,null],[1095,1122,1125,1134],[1111,null,null,1140],[1114,1142,1145,1153],[1138,null,null,1169],[1141,1169,1172,1181],[1165,null,null,null],[1173,1201,1204,1210],[1195,1222,1225,1231],[1235,1262,1265,1271],[1275,1302,1305,1311],[1320,1347,1350,1356],[1365,1392,1395,1401],[1410,1437,1440,1446],[1455,1482,1485,1491],[1515,1542,1545,1551]],"u":[[354,324,321,316],[369,339,336,331],[390,360,357,351],[408,376,373,368],[414,384,380,374],[434,404,400,395],[444,null,null,null],[451,422,418,412],[454,null,null,420],[467,434,null,null],[473,443,439,434],[476,null,null,442],[486,null,null,null],[492,462,458,453],[495,null,null,460],[506,476,null,null],[512,483,479,473],[516,null,null,482],[533,504,500,494],[538,null,null,null],[554,525,521,516],[559,null,null,null],[577,546,543,537],[580,null,null,null],[602,571,568,563],[622,590,587,582],[642,610,607,602],[662,630,627,622],[682,650,647,642],[702,670,667,662],[722,690,687,682],[742,710,707,702],[762,730,727,722],[765,null,null,null],[782,750,747,742],[802,770,767,762],[822,790,787,782],[842,810,807,802],[862,830,827,822],[882,850,847,842],[902,870,867,862],[922,890,887,882],[942,910,907,902],[945,null,null,null],[962,930,927,922],[982,950,947,942],[1002,970,967,962],[1022,990,987,982],[1043,1010,1007,1002],[1062,1031,1028,1023],[1085,1054,1051,1046],[1100,1067,1064,1058],[1117,1085,1082,1077],[1120,null,null,null],[1136,1105,1102,1096],[1155,1124,1121,1115],[1184,1153,1150,1145],[1206,1175,1172,1167],[1233,1202,1199,1194],[1261,1230,1227,1222],[1296,1265,1262,1257],[1331,1300,1297,1292],[1370,1339,1336,1331],[1412,1381,1378,1373],[1455,1424,1421,1416]]},"sa":{"d":[[424,451,454,460],[469,496,499,504],[485,null,null,null],[490,517,520,526],[510,537,540,546],[530,557,560,566],[550,577,580,586],[570,597,600,606],[590,617,620,626],[607,null,null,null],[610,637,640,646],[630,657,660,666],[650,677,680,686],[670,697,700,706],[690,717,720,726],[710,737,740,746],[730,757,760,766],[750,777,780,786],[770,797,800,806],[790,null,null,null],[793,820,823,829],[810,837,840,846],[830,857,860,866],[850,877,880,886],[870,897,900,906],[890,917,920,926],[910,937,940,946],[930,957,960,966],[950,977,980,986],[970,997,1000,1006],[990,1017,1020,1026],[1010,1037,1040,1046],[1027,null,null,null],[1030,1057,1060,1066],[1050,1077,1080,1086],[1070,1097,1100,1106],[1090,1117,1120,1126],[1110,1137,1140,1146],[1130,1157,1160,1166],[1147,null,null,null],[1150,1177,1180,1186],[1170,1197,1200,1206],[1190,1217,1220,1226],[1210,1237,1240,1246],[1230,1257,1260,1266],[1250,1277,1280,1286],[1270,1297,1300,1305],[1315,1342,1345,1350],[1360,1387,1390,1395],[1405,1432,1435,1440],[1450,1477,1480,1485],[1510,1537,1540,1545]],"u":[[400,369,366,360],[460,429,426,420],[517,486,483,477],[537,506,503,497],[557,526,523,517],[580,549,546,540],[599,568,565,559],[602,null,null,null],[622,590,587,582],[642,610,607,602],[662,630,627,622],[682,650,647,642],[702,670,667,662],[722,690,687,682],[725,null,null,null],[742,710,707,702],[762,730,727,722],[782,750,747,742],[802,770,767,762],[822,790,787,782],[842,810,807,802],[862,830,827,822],[882,850,847,842],[902,870,867,862],[922,890,887,882],[942,910,907,902],[945,null,null,null],[962,930,927,922],[982,950,947,942],[1002,970,967,962],[1022,990,987,982],[1042,1010,1007,1002],[1062,1030,1027,1022],[1082,1050,1047,1042],[1102,1070,1067,1062],[1122,1090,1087,1082],[1125,null,null,null],[1142,1110,1107,1102],[1162,1130,1127,1122],[1182,1150,1147,1142],[1202,1170,1167,1162],[1222,1190,1187,1182],[1242,1210,1207,1202],[1262,1230,1227,1222],[1282,1250,1247,1242],[1302,1270,1267,1262],[1322,1290,1287,1282],[1342,1310,1307,1302],[1364,1333,1329,1324],[1404,1373,1369,1364],[1444,1413,1409,1404]]},"su":{"d":[[424,451,454,460],[469,496,499,504],[485,null,null,null],[490,517,520,526],[510,537,540,546],[530,557,560,566],[550,577,580,586],[570,597,600,606],[590,617,620,626],[607,null,null,null],[610,637,640,646],[630,657,660,666],[650,677,680,686],[670,697,700,706],[690,717,720,726],[710,737,740,746],[730,757,760,766],[750,777,780,786],[770,797,800,806],[790,null,null,null],[793,820,823,829],[810,837,840,846],[830,857,860,866],[850,877,880,886],[870,897,900,906],[890,917,920,926],[910,937,940,946],[930,957,960,966],[950,977,980,986],[970,997,1000,1006],[990,1017,1020,1026],[1010,1037,1040,1046],[1027,null,null,null],[1030,1057,1060,1066],[1050,1077,1080,1086],[1070,1097,1100,1106],[1090,1117,1120,1126],[1110,1137,1140,1146],[1130,1157,1160,1166],[1147,null,null,null],[1150,1177,1180,1186],[1170,1197,1200,1206],[1190,1217,1220,1226],[1210,1237,1240,1246],[1230,1257,1260,1266],[1250,1277,1280,1286],[1270,1297,1300,1305],[1330,1357,1360,1365],[1390,1417,1420,1425],[1450,1477,1480,1485]],"u":[[480,449,446,440],[517,486,483,477],[537,506,503,497],[557,526,523,517],[580,549,546,540],[599,568,565,559],[602,null,null,null],[622,590,587,582],[642,610,607,602],[662,630,627,622],[682,650,647,642],[702,670,667,662],[722,690,687,682],[725,null,null,null],[742,710,707,702],[762,730,727,722],[782,750,747,742],[802,770,767,762],[822,790,787,782],[842,810,807,802],[862,830,827,822],[882,850,847,842],[902,870,867,862],[922,890,887,882],[942,910,907,902],[945,null,null,null],[962,930,927,922],[982,950,947,942],[1002,970,967,962],[1022,990,987,982],[1042,1010,1007,1002],[1062,1030,1027,1022],[1082,1050,1047,1042],[1102,1070,1067,1062],[1122,1090,1087,1082],[1125,null,null,null],[1142,1110,1107,1102],[1162,1130,1127,1122],[1182,1150,1147,1142],[1202,1170,1167,1162],[1222,1190,1187,1182],[1242,1210,1207,1202],[1262,1230,1227,1222],[1282,1250,1247,1242],[1302,1270,1267,1262],[1322,1290,1287,1282],[1342,1310,1307,1302],[1364,1333,1329,1324],[1404,1373,1369,1364],[1444,1413,1409,1404]]}};
@@ -775,8 +779,8 @@ const trainG=new THREE.Group();let trainTick=()=>{},trainReset=()=>{},trainGo=()
   act.forEach(q=>{let k=asg.get(q);if(k==null||used.has(k)){for(k=0;k<pool.length&&used.has(k);k++);if(k>=pool.length)return;asg.set(q,k)}used.add(k)});
   for(const [q,k] of asg)if(!act.includes(q))asg.delete(q);
   pool.forEach((g,k)=>{g.visible=false});
-  act.forEach(q=>{const k=asg.get(q);if(k==null)return;const c=zAt(q.P,m.sec);if(c==null)return;const g=pool[k];g.visible=true;g.rotation.y=q.dir>0?Math.PI:0;g.position.z=c-q.dir*CO;
-   const dz=Math.abs(c-cam.position.z);if(dz<nearD){nearD=dz;nz=g.position.z;nd=q.dir}any=true});
+  act.forEach(q=>{const k=asg.get(q);if(k==null)return;const c=zAt(q.P,m.sec);if(c==null)return;const g=pool[k];g.visible=true;g.rotation.y=q.dir>0?Math.PI:0;g.position.x=q.dir>0?RX:RX-4;g.position.z=c-q.dir*CO;   /* left-hand running: up trains on the house-side track, down trains on the main-road-side track */
+   const dz=Math.abs(c-cam.position.z);if(dz<nearD){nearD=dz;nz=g.position.z;nd=q.dir;window.TRX=g.position.x}any=true});
   const nv=NM.v;poolFx.forEach(a=>a.forEach(q=>{q.scale.setScalar(1.3+2.4*nv)}));TG.forEach(q=>{q.material.opacity=.3+.65*nv});TB[0].opacity=.06+.5*nv;
   if(any)trainSnd(nd>0?nz+span-11:nz,span,t);else if(typeof TS!=='undefined'&&TS)TS.out.gain.value=0};
  trainTick=function(t){if(hold||tourRun){for(let i=1;i<pool.length;i++)pool[i].visible=false;oldTick(t)}else schedTick(t)};
@@ -807,7 +811,7 @@ function trainSnd(z,span,t){if(!AC)return;const c=AC;
   const lo=mk('lowpass',140,.7),mid=mk('lowpass',420,.5),out=c.createGain();out.gain.value=0;lo.g.connect(out);mid.g.connect(out);out.connect(c.m);
   const lf=c.createOscillator(),lg=c.createGain();lf.frequency.value=.9;lg.gain.value=.25;lf.connect(lg);lg.connect(mid.g.gain);lf.start();
   lo.g.gain.value=.55;mid.g.gain.value=.5;TS={out,lf,mid};}
- const zc=Math.max(z-span+11,Math.min(z+11,cam.position.z)),dx=cam.position.x-(-45),dz=cam.position.z-zc,d=Math.sqrt(dx*dx+dz*dz+9);
+ const zc=Math.max(z-span+11,Math.min(z+11,cam.position.z)),dx=cam.position.x-(window.TRX!=null?TRX:-45),dz=cam.position.z-zc,d=Math.sqrt(dx*dx+dz*dz+9);
  const ins=insideHouse(cam.position.x,cam.position.z),near=Math.min(1,Math.max(0,(d)/1)),vol=sndOn?(ins?.35:1)*.15/(1+d/22)/(1+d/22):0;
  TS.out.gain.setTargetAtTime(Math.min(.105,vol*(z>-420&&z<430?1:0)),c.currentTime,.4);
  TS.mid.g.gain.setTargetAtTime(.35+.25*Math.min(1,d/60),c.currentTime,1);
@@ -1505,10 +1509,10 @@ function mkBikeF(BC){try{
   if(z>0&&x>=R.XM-68&&x<=R.XM-26&&z>=R.ZC+3&&z<=R.ZC+108)return true;   // Kmart centre car park and shopfront footpath
   if(z<0&&x>=R.XM-80.5&&x<=R.XM-40.3&&z<=-R.ZC-3&&z>=-R.ZC-40.6)return true;   // Woolworths car park and the footpaths along both shopfronts
   {const ZS=-R.ZC-100;   // West Tarneit station: driveway off the main road, car park and the ground-level forecourt at the foot of the stairs
-   if(Math.abs(z-ZS)<=3.6&&x>=R.XM+2.3&&x<=R.XM+40.2)return true;if(Math.abs(z-ZS)<=24&&x>=R.XM+40&&x<=-67.4)return true;if(Math.abs(z-ZS)<=9&&x>=-67.6&&x<=-63.8)return true}
-  {const ZT=R.ZC+100;if(Math.abs(z-ZT)<=3.6&&x>=R.XM+2.3&&x<=R.XM+40.2)return true;if(Math.abs(z-ZT)<=24&&x>=R.XM+40&&x<=-67.4)return true;if(Math.abs(z-ZT)<=9&&x>=-67.6&&x<=-63.8)return true}
+   if(Math.abs(z-ZS)<=3.6&&x>=R.XM+2.3&&x<=R.XM+40.2)return true;if(Math.abs(z-ZS)<=24&&x>=R.XM+40&&x<=-71.4)return true;if(Math.abs(z-ZS)<=9&&x>=-71.6&&x<=-67.8)return true}
+  {const ZT=R.ZC+100;if(Math.abs(z-ZT)<=3.6&&x>=R.XM+2.3&&x<=R.XM+40.2)return true;if(Math.abs(z-ZT)<=24&&x>=R.XM+40&&x<=-71.4)return true;if(Math.abs(z-ZT)<=9&&x>=-71.6&&x<=-67.8)return true}
   // green areas: the open grass reserve between the main road and the railway fence (clear of the raised bridge approaches) and the nature strips beside the community street
-  if(az<=690&&x>=R.XM+2.3&&x<=-50.5&&!(Math.abs(az-R.ZC)<14&&R.yAt&&R.yAt(x)>.25))return true;
+  if(az<=690&&x>=R.XM+2.3&&x<=-54.5&&!(Math.abs(az-R.ZC)<14&&R.yAt&&R.yAt(x)>.25))return true;
   if(az<=R.ZE&&((x>=12&&x<14.8)||(x>30.1&&x<=33)))return true;
   return false};
  const local=(x,z)=>x>-39.9&&x<48&&z>-48&&z<48;
@@ -1530,7 +1534,7 @@ function mkBikeF(BC){try{
  // click the parked bike to start riding
  const parts=[];g.traverse(o=>{if(o.isMesh)parts.push(o)});
  dRun(()=>iaReg(parts.filter(o=>!girl.children.includes(o)),Q?'Quad bike':'Kids bike',()=>{if(GM===BK){setTimeout(rideOff,0);return 'Hopping off'}setTimeout(GM?()=>gmTake(BK):bkEnter,0);return 'Hop on!'}));
- function bkEnter(){if(tour||GM||!GAMES_ON)return;if(window.MP&&!MP.take(BK.id))return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;BK.fw=!ww;gtg=1;$('bWalk').classList.remove('on');   /* hopping on opens the garage door */
+ function bkEnter(){if(window.PIL){if(window.PIL.b===BK)pilOff();return}if(tour||GM||!GAMES_ON)return;if(Q&&window.pilOn&&pilOn(BK))return;if(window.MP&&!MP.take(BK.id))return;const ww=walk;if(!walk)$('bWalk').click();if(!walk)return;BK.fw=!ww;gtg=1;$('bWalk').classList.remove('on');   /* hopping on opens the garage door */
   window.CPV&&CPV.snap();act();BK.tint(window.MP&&MP.shirt?MP.shirt():0xffc93c);BK.setG(window.AVBOY&&AVBOY());BK.rem=null;GM=BK;BK.parked=false;BK.sp=0;BK.st=0;BK.ln=0;BK.y=bkTerr(BK.x,BK.z);girl.visible=true;kick.visible=false;body.rotation.set(0,0,0);steer.rotation.y=0;if(fst)fst.rotation.y=0;
   BK.cth=Math.atan2(-Math.cos(BK.th),-Math.sin(BK.th));G.th=V.th=BK.cth;G.ph=V.ph=1.2;G.r=V.r=2.6;G.t.set(BK.x,BK.y+.95,BK.z);V.t.copy(G.t);fov(62);$('bGame').classList.add('on');
   showCap(Q?(matchMedia('(pointer:fine)').matches?'Quad bike: W / S throttle and brake · A / D steer · ride out the garage and around the neighbourhood':'Quad bike: left stick for throttle, brake and steering'):matchMedia('(pointer:fine)').matches?'Bike ride: W / S pedal and brake · A / D steer · ride out the garage, along the street and over the bridges to Kmart or Woolworths':'Bike ride: left stick pedals, brakes and steers',6500)}
@@ -1743,7 +1747,7 @@ if(0)setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=-R.ZC-1
 //      Two side platforms with grey shelters (teal/green glass backs), black palisade fences and tall black light poles; mulch berms with young plants;
 //      the same lime-green entrance (canopy with the station name, stairs, forecourts) on both sides; a pedestrian subway under the tracks at the far end
 //      of the platforms; the car park and its access road come off the main road (no access from the community street). Lights glow at night.
-setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=-R.ZC-100,PL=80,Y0=-.19,PT=1.1,g=new THREE.Group();scene.add(g);
+setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,TS=4,XR=s=>RX-(s<0?TS:0),ZS=-R.ZC-100,PL=80,Y0=-.19,PT=1.1,g=new THREE.Group();scene.add(g);
  const S=(c,r=.8,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:r},o||{}));
  const b=(x0,x1,y0,y1,z0,z1,m,sh=true,par=g)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1-x0),Math.abs(y1-y0),Math.abs(z1-z0)),m);o.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);o.castShadow=sh;o.receiveShadow=true;par.add(o);return o};
  const mCon=S(0xb9b6ae),mAsP=S(0x3e4146,.9),mWh=S(0xf2f2ee,.6),mTac=S(0xc8562a,.8),mFr=S(0x3a3d42,.5,{metalness:.4}),mBlk=S(0x1d1f22,.5,{metalness:.5}),mLime=S(0xa9c93a,.55),mRoofU=S(0xe9e2cc,.7),mRoofT=S(0xd9dadc,.6),mMul=S(0x4a3426,1),mPl=S(0x5f8a3e,1),mStep=S(0xc9c7c1,.75),mRail=S(0xc9ced2,.3,{metalness:.8}),mAs=S(0x3b3e43,.95);
@@ -1751,7 +1755,7 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=-R.ZC-100,PL
  const mGlass=new THREE.MeshStandardMaterial({map:glassT,transparent:true,opacity:.85,roughness:.25,side:THREE.DoubleSide});
  const z0=ZS-PL/2,z1=ZS+PL/2,SW=z0-5;   // platform ends; SW: centre line of the subway, just past the far end of the platforms
  // remove the plain railway fence through the station (its posts and rails), re-laying the rails either side of it
- scene.children.slice().forEach(o=>{if(!o.isMesh||!o.geometry||!o.geometry.parameters)return;const p=o.geometry.parameters,x=o.position.x,z=o.position.z;if(Math.abs(x-(RX-3.6))>.06)return;
+ scene.children.slice().forEach(o=>{if(!o.isMesh||!o.geometry||!o.geometry.parameters)return;const p=o.geometry.parameters,x=o.position.x,z=o.position.z;if(Math.abs(x-(RX-TS-3.6))>.06)return;
   if(p.depth>1000){o.visible=false;[[-1300,SW-6],[z1+6,1300]].forEach(([a,c])=>{const n=new THREE.Mesh(new THREE.BoxGeometry(p.width,p.height,c-a),o.material);n.position.set(x,o.position.y,(a+c)/2);scene.add(n)})}
   else if(z>SW-6&&z<z1+6)o.visible=false});
  // platforms: concrete body, dark surface, white edge line and orange tactile strip on the track side, palisade fence on the back edge (open at the entrance)
@@ -1765,14 +1769,14 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=-R.ZC-100,PL
    const gl=new THREE.Mesh(new THREE.PlaneGeometry(L-.5,2.5),mGlass);gl.rotation.y=Math.PI/2;gl.position.set(back-.05*s,PT+1.35,zc);g.add(gl);
    b(back-.55*s,back-.15*s,PT+.42,PT+.48,zc-2,zc+2,S(0x7a4e2c,.6));[zc-1.8,zc+1.8].forEach(z=>b(back-.5*s,back-.2*s,PT,PT+.45,z-.04,z+.04,mFr));
    const sg=new THREE.Mesh(new THREE.PlaneGeometry(1.6,.4),new THREE.MeshBasicMaterial({map:cv(256,64,c=>{c.fillStyle='#1d2a3a';c.fillRect(0,0,256,64);c.fillStyle='#ffffff';c.font='bold 30px Arial,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('West Tarneit',128,34)})}));sg.rotation.y=s>0?-Math.PI/2:Math.PI/2;sg.position.set(xm-1.1*s,PT+2.7,zc+2.2);g.add(sg)})};
- platform(RX+1.55,RX+5.5,1);platform(RX-5.5,RX-1.55,-1);
+ platform(RX+1.55,RX+5.5,1);platform(RX-TS-5.5,RX-TS-1.55,-1);
  // mulch berms from platform level down to the ground on both outer sides, with young plants (gap at each entrance)
  const berm=(xa,xb,za,zb)=>{const sh=new THREE.Shape();sh.moveTo(xa,PT);sh.lineTo(xb,Y0);sh.lineTo(xa,Y0);sh.closePath();const ge=new THREE.ExtrudeGeometry(sh,{depth:zb-za,bevelEnabled:false});ge.translate(0,0,za);const o=new THREE.Mesh(ge,mMul);o.receiveShadow=true;g.add(o);
   for(let i=0;i<(zb-za)/2.2;i++){const t=.2+((i*37)%60)/100,x=xa+(xb-xa)*t,y=PT+(Y0-PT)*t;const p=new THREE.Mesh(new THREE.ConeGeometry(.14,.35,5),mPl);p.position.set(x,y+.12,za+1+i*2.2);g.add(p)}};
- [1,-1].forEach(s=>{berm(RX+5.5*s,RX+12*s,z0,ZS-8);berm(RX+5.5*s,RX+12*s,ZS+8,z1)});
+ [1,-1].forEach(s=>{berm(XR(s)+5.5*s,XR(s)+12*s,z0,ZS-8);berm(XR(s)+5.5*s,XR(s)+12*s,ZS+8,z1)});
  // the same entrance on both sides: forecourt at platform level, stairs down, lime-green canopy with the station name, ground-level forecourt
  const mLn2=new THREE.MeshBasicMaterial({color:0xe9e7df,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4});
- const entrance=s=>{const X=d=>RX+d*s,xP=X(5.5),xS=X(11.5),xG=X(18.5);b(xP,xS,Y0,PT,ZS-8,ZS+8,mCon);b(xP,xS,PT-.01,PT+.01,ZS-8,ZS+8,S(0xcfcdc6,.8),false);
+ const entrance=s=>{const X=d=>XR(s)+d*s,xP=X(5.5),xS=X(11.5),xG=X(18.5);b(xP,xS,Y0,PT,ZS-8,ZS+8,mCon);b(xP,xS,PT-.01,PT+.01,ZS-8,ZS+8,S(0xcfcdc6,.8),false);
   const N=8,st=(xG-xS)/N;for(let i=0;i<N;i++){const x=xS+i*st,y=PT-(i+1)*(PT-Y0)/N;b(x,x+st+.01*s,Y0,y+(PT-Y0)/N,ZS-3,ZS+3,mStep)}
   [ZS-3.1,ZS,ZS+3.1].forEach(z=>{const p1=[xS,PT+.95],p2=[xG,Y0+.95],L=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]),r=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,L,8),mRail);r.rotation.z=Math.atan2(p2[1]-p1[1],p2[0]-p1[0])-Math.PI/2;r.position.set((p1[0]+p2[0])/2,(p1[1]+p2[1])/2,z);g.add(r);
    for(let k=0;k<=4;k++){const x=xS+k*(xG-xS)/4,y=PT+(Y0-PT)*k/4;b(x-.02,x+.02,y,y+.95,z-.02,z+.02,mRail,false)}});
@@ -1789,24 +1793,24 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=-R.ZC-100,PL
  // mesh balustrades on top), and a lit concrete tunnel under the track bed. The ground has openings cut for the ramps so you can see down into them.
  {const D=-2.9,W=4,za=SW-W/2,zb=SW+W/2,mPan=S(0x3c9f97,.6),mPan2=S(0x9cc7b6,.6),mStr=S(0xc7d63a,.6),mCeil=S(0xa8a49c,.8),mFl=S(0xb5b2aa,.85),mMesh=new THREE.MeshStandardMaterial({color:0xc9ced2,metalness:.6,roughness:.4,transparent:true,opacity:.45,side:THREE.DoubleSide});
   const RL=13;   // ramp length on each side
-  [1,-1].forEach(s=>{const xi=RX+5.2*s,xo=RX+(5.2+RL)*s,L=Math.abs(xo-xi),sl=Math.atan2(Y0-D,L);
+  [1,-1].forEach(s=>{const xi=XR(s)+5.2*s,xo=XR(s)+(5.2+RL)*s,L=Math.abs(xo-xi),sl=Math.atan2(Y0-D,L);
    const fl=new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(L,Y0-D),W),mFl);fl.rotation.x=-Math.PI/2;
    const flG=new THREE.Group();flG.position.set((xi+xo)/2,(Y0+D)/2,SW);flG.rotation.z=s*sl;g.add(flG);flG.add(fl);
    [za-.2,zb+.2].forEach((z,k)=>{b(xi,xo,D,Y0+.05,z-.2,z+.2,k?mPan:mPan2);b(xi,xo,(D+Y0)/2,(D+Y0)/2+.12,z+(k?-.21:.21),z+(k?-.2:.2),mStr,false);
     const ms=new THREE.Mesh(new THREE.PlaneGeometry(L,1.1),mMesh);ms.position.set((xi+xo)/2,Y0+.6,z);g.add(ms);b(xi,xo,Y0+1.12,Y0+1.18,z-.04,z+.04,mRail,false)})});
   // tunnel: floor, side walls with panels and a stripe, ceiling slab just under the track bed, light strip
-  b(RX-5.2,RX+5.2,D-.1,D,za,zb,mFl);[za-.2,zb+.2].forEach((z,k)=>{b(RX-5.2,RX+5.2,D,-.3,z-.2,z+.2,k?mPan:mPan2);b(RX-5.2,RX+5.2,D+1.1,D+1.22,z+(k?-.21:.21),z+(k?-.2:.2),mStr,false)});
-  b(RX-5.4,RX+5.4,-.6,-.27,za-.4,zb+.4,mCeil);const lt=new THREE.Mesh(new THREE.PlaneGeometry(10,.15),new THREE.MeshBasicMaterial({color:0xf4f0e0}));lt.rotation.x=Math.PI/2;lt.position.set(RX,-.61,SW);g.add(lt);
+  b(RX-TS-5.2,RX+5.2,D-.1,D,za,zb,mFl);[za-.2,zb+.2].forEach((z,k)=>{b(RX-TS-5.2,RX+5.2,D,-.3,z-.2,z+.2,k?mPan:mPan2);b(RX-TS-5.2,RX+5.2,D+1.1,D+1.22,z+(k?-.21:.21),z+(k?-.2:.2),mStr,false)});
+  b(RX-TS-5.4,RX+5.4,-.6,-.27,za-.4,zb+.4,mCeil);const lt=new THREE.Mesh(new THREE.PlaneGeometry(10+TS,.15),new THREE.MeshBasicMaterial({color:0xf4f0e0}));lt.rotation.x=Math.PI/2;lt.position.set(RX-TS/2,-.61,SW);g.add(lt);
   // portals: concrete frames at each tunnel mouth
-  [1,-1].forEach(s=>{const x=RX+5.2*s;b(x-.15,x+.15,-.6,.2,za-.45,zb+.45,mCeil)});
+  [1,-1].forEach(s=>{const x=XR(s)+5.2*s;b(x-.15,x+.15,-.6,.2,za-.45,zb+.45,mCeil)});
   // cut the ramp openings out of the surrounding grass so the ramps are visible from above
   scene.children.forEach(o=>{if(!o.isMesh||!o.geometry||!o.geometry.parameters||o.geometry.parameters.width!==4200)return;const H=2100,sh=new THREE.Shape([new THREE.Vector2(-H,-H),new THREE.Vector2(H,-H),new THREE.Vector2(H,H),new THREE.Vector2(-H,H)]);
-   [[RX+4.9,RX+5.2+RL+.1],[RX-5.2-RL-.1,RX-4.9]].forEach(([a,c])=>{const h=new THREE.Path([new THREE.Vector2(a,-(zb+.4)),new THREE.Vector2(c,-(zb+.4)),new THREE.Vector2(c,-(za-.4)),new THREE.Vector2(a,-(za-.4))]);sh.holes.push(h)});
+   [[RX+4.9,RX+5.2+RL+.1],[RX-TS-5.2-RL-.1,RX-TS-4.9]].forEach(([a,c])=>{const h=new THREE.Path([new THREE.Vector2(a,-(zb+.4)),new THREE.Vector2(c,-(zb+.4)),new THREE.Vector2(c,-(za-.4)),new THREE.Vector2(a,-(za-.4))]);sh.holes.push(h)});
    o.userData.shp=sh;o.geometry.dispose();o.geometry=new THREE.ShapeGeometry(sh)});
   // the footpaths from the forecourts come down beside the ramps' outer ends
-  [1,-1].forEach(s=>b(RX+(5.2+RL)*s,RX+(5.2+RL+2.5)*s,Y0,-.13,za-.4,SW+3,mCon,false))}
+  [1,-1].forEach(s=>b(XR(s)+(5.2+RL)*s,XR(s)+(5.2+RL+2.5)*s,Y0,-.13,za-.4,SW+3,mCon,false))}
  // car park on the main-road side, with its access road and driveway off the main road (no access from the community street)
- const XM=R.XM,cpA=XM+40,cpB=RX-22.5,cpz0=ZS-24,cpz1=ZS+24;
+ const XM=R.XM,cpA=XM+40,cpB=RX-TS-22.5,cpz0=ZS-24,cpz1=ZS+24;
  {const cp=new THREE.Mesh(new THREE.PlaneGeometry(cpB-cpA,cpz1-cpz0),mAs);cp.rotation.x=-Math.PI/2;cp.position.set((cpA+cpB)/2,-.184,(cpz0+cpz1)/2);cp.receiveShadow=true;g.add(cp)}
  for(let x=cpA+1.5;x<cpB-2;x+=2.6)[cpz0+2.5,cpz1-2.5,ZS-9.5,ZS+9.5].forEach(z=>{const l=new THREE.Mesh(new THREE.PlaneGeometry(.1,5),mLn2);l.rotation.x=-Math.PI/2;l.position.set(x,-.18,z);g.add(l)});
  {const ar=new THREE.Mesh(new THREE.PlaneGeometry(cpA-(XM+2.5),7),mAs);ar.rotation.x=-Math.PI/2;ar.position.set((cpA+XM+2.5)/2,-.182,ZS);ar.receiveShadow=true;g.add(ar);
@@ -1819,13 +1823,13 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=-R.ZC-100,PL
  const lamp=(x,y,z,dx)=>{b(x-.07,x+.07,y,y+6,z-.07,z+.07,mBlk);b(Math.min(x,x+dx),Math.max(x,x+dx),y+5.9,y+6.0,z-.06,z+.06,mBlk);b(Math.min(x+dx*.6,x+dx*1.2),Math.max(x+dx*.6,x+dx*1.2),y+5.85,y+6.0,z-.15,z+.15,mBlk);
   const l=new THREE.Mesh(new THREE.PlaneGeometry(.55,.26),mLens);l.rotation.x=Math.PI/2;l.position.set(x+dx*.9,y+5.84,z);g.add(l);const sp=new THREE.Sprite(sprM);sp.center.set(.5,1);sp.scale.set(2,1,1);sp.position.set(x+dx*.9,y+5.83,z);g.add(sp);
   const p=new THREE.Mesh(new THREE.PlaneGeometry(9,9),poolM);p.rotation.x=-Math.PI/2;p.position.set(x+dx*1.2,y+.03,z);g.add(p)};
- for(let z=z0+6;z<z1;z+=16){lamp(RX+5.2,PT,z,-1);lamp(RX-5.2,PT,z+8,1)}
- [1,-1].forEach(s=>{lamp(RX+22*s,Y0,ZS+8.5,-s);lamp(RX+(5.2+13+2)*s,Y0,SW+2,-s)});
+ for(let z=z0+6;z<z1;z+=16){lamp(RX+5.2,PT,z,-1);lamp(RX-TS-5.2,PT,z+8,1)}
+ [1,-1].forEach(s=>{lamp(XR(s)+22*s,Y0,ZS+8.5,-s);lamp(XR(s)+(5.2+13+2)*s,Y0,SW+2,-s)});
  [[cpA+8,ZS],[cpA+22,ZS-14],[cpA+22,ZS+14],[cpB-3,ZS]].forEach(([x,z])=>lamp(x,Y0,z,1));
  let lv=-1;(function tick(){requestAnimationFrame(tick);const v=NM.v||0;if(Math.abs(v-lv)<.004)return;lv=v;sprM.opacity=.9*v;poolM.opacity=.5*v;mLens.color.setHex(0xc9ced2).lerp(new THREE.Color(0xfff1cc),v)})();
 }catch(e){console.error('station',e)}},0);
 // ---- Tarneit station (from Adnan's photos): second station on the line, 100 m past the Kmart-side bridge (mirror of West Tarneit); dark angular station building with a tall black lift tower and the yellow vertical name.
-setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=R.ZC+100,PL=80,Y0=-.19,PT=1.1,g=new THREE.Group();scene.add(g);
+setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,TS=4,XR=s=>RX-(s<0?TS:0),ZS=R.ZC+100,PL=80,Y0=-.19,PT=1.1,g=new THREE.Group();scene.add(g);
  const S=(c,r=.8,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:r},o||{}));
  const b=(x0,x1,y0,y1,z0,z1,m,sh=true,par=g)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1-x0),Math.abs(y1-y0),Math.abs(z1-z0)),m);o.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);o.castShadow=sh;o.receiveShadow=true;par.add(o);return o};
  const mCon=S(0xb9b6ae),mAsP=S(0x3e4146,.9),mWh=S(0xf2f2ee,.6),mTac=S(0xc8562a,.8),mFr=S(0x3a3d42,.5,{metalness:.4}),mBlk=S(0x1d1f22,.5,{metalness:.5}),mLime=S(0xa9c93a,.55),mRoofU=S(0xe9e2cc,.7),mRoofT=S(0xd9dadc,.6),mMul=S(0x4a3426,1),mPl=S(0x5f8a3e,1),mStep=S(0xc9c7c1,.75),mRail=S(0xc9ced2,.3,{metalness:.8}),mAs=S(0x3b3e43,.95);
@@ -1833,7 +1837,7 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=R.ZC+100,PL=
  const mGlass=new THREE.MeshStandardMaterial({map:glassT,transparent:true,opacity:.85,roughness:.25,side:THREE.DoubleSide});
  const z0=ZS-PL/2,z1=ZS+PL/2,SW=z1+5;   // platform ends; SW: centre line of the subway, just past the far end of the platforms
  // remove the plain railway fence through the station (its posts and rails), re-laying the rails either side of it
- scene.children.slice().forEach(o=>{if(!o.isMesh||!o.geometry||!o.geometry.parameters)return;const p=o.geometry.parameters,x=o.position.x,z=o.position.z;if(Math.abs(x-(RX-3.6))>.06)return;
+ scene.children.slice().forEach(o=>{if(!o.isMesh||!o.geometry||!o.geometry.parameters)return;const p=o.geometry.parameters,x=o.position.x,z=o.position.z;if(Math.abs(x-(RX-TS-3.6))>.06)return;
   if(p.depth>1000){o.visible=false;[[o.position.z-p.depth/2,z0-6],[SW+6,o.position.z+p.depth/2]].forEach(([a,c])=>{const n=new THREE.Mesh(new THREE.BoxGeometry(p.width,p.height,c-a),o.material);n.position.set(x,o.position.y,(a+c)/2);scene.add(n)})}
   else if(z>z0-6&&z<SW+6)o.visible=false});
  // platforms: concrete body, dark surface, white edge line and orange tactile strip on the track side, palisade fence on the back edge (open at the entrance)
@@ -1847,14 +1851,14 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=R.ZC+100,PL=
    const gl=new THREE.Mesh(new THREE.PlaneGeometry(L-.5,2.5),mGlass);gl.rotation.y=Math.PI/2;gl.position.set(back-.05*s,PT+1.35,zc);g.add(gl);
    b(back-.55*s,back-.15*s,PT+.42,PT+.48,zc-2,zc+2,S(0x7a4e2c,.6));[zc-1.8,zc+1.8].forEach(z=>b(back-.5*s,back-.2*s,PT,PT+.45,z-.04,z+.04,mFr));
    const sg=new THREE.Mesh(new THREE.PlaneGeometry(1.6,.4),new THREE.MeshBasicMaterial({map:cv(256,64,c=>{c.fillStyle='#1d2a3a';c.fillRect(0,0,256,64);c.fillStyle='#ffffff';c.font='bold 30px Arial,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('Tarneit',128,34)})}));sg.rotation.y=s>0?-Math.PI/2:Math.PI/2;sg.position.set(xm-1.1*s,PT+2.7,zc+2.2);g.add(sg)})};
- platform(RX+1.55,RX+5.5,1);platform(RX-5.5,RX-1.55,-1);
+ platform(RX+1.55,RX+5.5,1);platform(RX-TS-5.5,RX-TS-1.55,-1);
  // mulch berms from platform level down to the ground on both outer sides, with young plants (gap at each entrance)
  const berm=(xa,xb,za,zb)=>{const sh=new THREE.Shape();sh.moveTo(xa,PT);sh.lineTo(xb,Y0);sh.lineTo(xa,Y0);sh.closePath();const ge=new THREE.ExtrudeGeometry(sh,{depth:zb-za,bevelEnabled:false});ge.translate(0,0,za);const o=new THREE.Mesh(ge,mMul);o.receiveShadow=true;g.add(o);
   for(let i=0;i<(zb-za)/2.2;i++){const t=.2+((i*37)%60)/100,x=xa+(xb-xa)*t,y=PT+(Y0-PT)*t;const p=new THREE.Mesh(new THREE.ConeGeometry(.14,.35,5),mPl);p.position.set(x,y+.12,za+1+i*2.2);g.add(p)}};
- [1,-1].forEach(s=>{const ZB=s>0?ZS+31:ZS;berm(RX+5.5*s,RX+12*s,z0,ZB-8);berm(RX+5.5*s,RX+12*s,ZB+8,z1)});
+ [1,-1].forEach(s=>{const ZB=s>0?ZS+31:ZS;berm(XR(s)+5.5*s,XR(s)+12*s,z0,ZB-8);berm(XR(s)+5.5*s,XR(s)+12*s,ZB+8,z1)});
  // the same entrance on both sides: forecourt at platform level, stairs down, lime-green canopy with the station name, ground-level forecourt
  const mLn2=new THREE.MeshBasicMaterial({color:0xe9e7df,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4});
- const entrance=s=>{const ZE=s>0?ZS+31:ZS,X=d=>RX+d*s,xP=X(5.5),xS=X(11.5),xG=X(18.5);b(xP,xS,Y0,PT,ZE-8,ZE+8,mCon);b(xP,xS,PT-.01,PT+.01,ZE-8,ZE+8,S(0xcfcdc6,.8),false);
+ const entrance=s=>{const ZE=s>0?ZS+31:ZS,X=d=>XR(s)+d*s,xP=X(5.5),xS=X(11.5),xG=X(18.5);b(xP,xS,Y0,PT,ZE-8,ZE+8,mCon);b(xP,xS,PT-.01,PT+.01,ZE-8,ZE+8,S(0xcfcdc6,.8),false);
   const N=8,st=(xG-xS)/N;for(let i=0;i<N;i++){const x=xS+i*st,y=PT-(i+1)*(PT-Y0)/N;b(x,x+st+.01*s,Y0,y+(PT-Y0)/N,ZE-3,ZE+3,mStep)}
   [ZE-3.1,ZE,ZE+3.1].forEach(z=>{const p1=[xS,PT+.95],p2=[xG,Y0+.95],L=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]),r=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,L,8),mRail);r.rotation.z=Math.atan2(p2[1]-p1[1],p2[0]-p1[0])-Math.PI/2;r.position.set((p1[0]+p2[0])/2,(p1[1]+p2[1])/2,z);g.add(r);
    for(let k=0;k<=4;k++){const x=xS+k*(xG-xS)/4,y=PT+(Y0-PT)*k/4;b(x-.02,x+.02,y,y+.95,z-.02,z+.02,mRail,false)}});
@@ -1882,24 +1886,24 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=R.ZC+100,PL=
  // mesh balustrades on top), and a lit concrete tunnel under the track bed. The ground has openings cut for the ramps so you can see down into them.
  {const D=-2.9,W=4,za=SW-W/2,zb=SW+W/2,mPan=S(0x3c9f97,.6),mPan2=S(0x9cc7b6,.6),mStr=S(0xc7d63a,.6),mCeil=S(0xa8a49c,.8),mFl=S(0xb5b2aa,.85),mMesh=new THREE.MeshStandardMaterial({color:0xc9ced2,metalness:.6,roughness:.4,transparent:true,opacity:.45,side:THREE.DoubleSide});
   const RL=13;   // ramp length on each side
-  [1,-1].forEach(s=>{const xi=RX+5.2*s,xo=RX+(5.2+RL)*s,L=Math.abs(xo-xi),sl=Math.atan2(Y0-D,L);
+  [1,-1].forEach(s=>{const xi=XR(s)+5.2*s,xo=XR(s)+(5.2+RL)*s,L=Math.abs(xo-xi),sl=Math.atan2(Y0-D,L);
    const fl=new THREE.Mesh(new THREE.PlaneGeometry(Math.hypot(L,Y0-D),W),mFl);fl.rotation.x=-Math.PI/2;
    const flG=new THREE.Group();flG.position.set((xi+xo)/2,(Y0+D)/2,SW);flG.rotation.z=s*sl;g.add(flG);flG.add(fl);
    [za-.2,zb+.2].forEach((z,k)=>{b(xi,xo,D,Y0+.05,z-.2,z+.2,k?mPan:mPan2);b(xi,xo,(D+Y0)/2,(D+Y0)/2+.12,z+(k?-.21:.21),z+(k?-.2:.2),mStr,false);
     const ms=new THREE.Mesh(new THREE.PlaneGeometry(L,1.1),mMesh);ms.position.set((xi+xo)/2,Y0+.6,z);g.add(ms);b(xi,xo,Y0+1.12,Y0+1.18,z-.04,z+.04,mRail,false)})});
   // tunnel: floor, side walls with panels and a stripe, ceiling slab just under the track bed, light strip
-  b(RX-5.2,RX+5.2,D-.1,D,za,zb,mFl);[za-.2,zb+.2].forEach((z,k)=>{b(RX-5.2,RX+5.2,D,-.3,z-.2,z+.2,k?mPan:mPan2);b(RX-5.2,RX+5.2,D+1.1,D+1.22,z+(k?-.21:.21),z+(k?-.2:.2),mStr,false)});
-  b(RX-5.4,RX+5.4,-.6,-.27,za-.4,zb+.4,mCeil);const lt=new THREE.Mesh(new THREE.PlaneGeometry(10,.15),new THREE.MeshBasicMaterial({color:0xf4f0e0}));lt.rotation.x=Math.PI/2;lt.position.set(RX,-.61,SW);g.add(lt);
+  b(RX-TS-5.2,RX+5.2,D-.1,D,za,zb,mFl);[za-.2,zb+.2].forEach((z,k)=>{b(RX-TS-5.2,RX+5.2,D,-.3,z-.2,z+.2,k?mPan:mPan2);b(RX-TS-5.2,RX+5.2,D+1.1,D+1.22,z+(k?-.21:.21),z+(k?-.2:.2),mStr,false)});
+  b(RX-TS-5.4,RX+5.4,-.6,-.27,za-.4,zb+.4,mCeil);const lt=new THREE.Mesh(new THREE.PlaneGeometry(10+TS,.15),new THREE.MeshBasicMaterial({color:0xf4f0e0}));lt.rotation.x=Math.PI/2;lt.position.set(RX-TS/2,-.61,SW);g.add(lt);
   // portals: concrete frames at each tunnel mouth
-  [1,-1].forEach(s=>{const x=RX+5.2*s;b(x-.15,x+.15,-.6,.2,za-.45,zb+.45,mCeil)});
+  [1,-1].forEach(s=>{const x=XR(s)+5.2*s;b(x-.15,x+.15,-.6,.2,za-.45,zb+.45,mCeil)});
   // cut the ramp openings out of the surrounding grass so the ramps are visible from above
   scene.children.forEach(o=>{if(!o.isMesh)return;let sh=o.userData.shp;if(!sh)return;
-   [[RX+4.9,RX+5.2+RL+.1],[RX-5.2-RL-.1,RX-4.9]].forEach(([a,c])=>{const h=new THREE.Path([new THREE.Vector2(a,-(zb+.4)),new THREE.Vector2(c,-(zb+.4)),new THREE.Vector2(c,-(za-.4)),new THREE.Vector2(a,-(za-.4))]);sh.holes.push(h)});
+   [[RX+4.9,RX+5.2+RL+.1],[RX-TS-5.2-RL-.1,RX-TS-4.9]].forEach(([a,c])=>{const h=new THREE.Path([new THREE.Vector2(a,-(zb+.4)),new THREE.Vector2(c,-(zb+.4)),new THREE.Vector2(c,-(za-.4)),new THREE.Vector2(a,-(za-.4))]);sh.holes.push(h)});
    o.userData.shp=sh;o.geometry.dispose();o.geometry=new THREE.ShapeGeometry(sh)});
   // the footpaths from the forecourts come down beside the ramps' outer ends
-  [1,-1].forEach(s=>b(RX+(5.2+RL)*s,RX+(5.2+RL+2.5)*s,Y0,-.13,za-.4,SW+3,mCon,false))}
+  [1,-1].forEach(s=>b(XR(s)+(5.2+RL)*s,XR(s)+(5.2+RL+2.5)*s,Y0,-.13,za-.4,SW+3,mCon,false))}
  // car park on the main-road side, with its access road and driveway off the main road (no access from the community street)
- const XM=R.XM,cpA=XM+40,cpB=RX-22.5,cpz0=ZS-24,cpz1=ZS+24;
+ const XM=R.XM,cpA=XM+40,cpB=RX-TS-22.5,cpz0=ZS-24,cpz1=ZS+24;
  {const cp=new THREE.Mesh(new THREE.PlaneGeometry(cpB-cpA,cpz1-cpz0),mAs);cp.rotation.x=-Math.PI/2;cp.position.set((cpA+cpB)/2,-.184,(cpz0+cpz1)/2);cp.receiveShadow=true;g.add(cp)}
  for(let x=cpA+1.5;x<cpB-2;x+=2.6)[cpz0+2.5,cpz1-2.5,ZS-9.5,ZS+9.5].forEach(z=>{const l=new THREE.Mesh(new THREE.PlaneGeometry(.1,5),mLn2);l.rotation.x=-Math.PI/2;l.position.set(x,-.18,z);g.add(l)});
  {const ar=new THREE.Mesh(new THREE.PlaneGeometry(cpA-(XM+2.5),7),mAs);ar.rotation.x=-Math.PI/2;ar.position.set((cpA+XM+2.5)/2,-.182,ZS);ar.receiveShadow=true;g.add(ar);
@@ -1912,8 +1916,8 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,ZS=R.ZC+100,PL=
  const lamp=(x,y,z,dx)=>{b(x-.07,x+.07,y,y+6,z-.07,z+.07,mBlk);b(Math.min(x,x+dx),Math.max(x,x+dx),y+5.9,y+6.0,z-.06,z+.06,mBlk);b(Math.min(x+dx*.6,x+dx*1.2),Math.max(x+dx*.6,x+dx*1.2),y+5.85,y+6.0,z-.15,z+.15,mBlk);
   const l=new THREE.Mesh(new THREE.PlaneGeometry(.55,.26),mLens);l.rotation.x=Math.PI/2;l.position.set(x+dx*.9,y+5.84,z);g.add(l);const sp=new THREE.Sprite(sprM);sp.center.set(.5,1);sp.scale.set(2,1,1);sp.position.set(x+dx*.9,y+5.83,z);g.add(sp);
   const p=new THREE.Mesh(new THREE.PlaneGeometry(9,9),poolM);p.rotation.x=-Math.PI/2;p.position.set(x+dx*1.2,y+.03,z);g.add(p)};
- for(let z=z0+6;z<z1;z+=16){lamp(RX+5.2,PT,z,-1);lamp(RX-5.2,PT,z+8,1)}
- [1,-1].forEach(s=>{lamp(RX+22*s,Y0,(s>0?ZS+31:ZS)+8.5,-s);lamp(RX+(5.2+13+2)*s,Y0,SW+2,-s)});
+ for(let z=z0+6;z<z1;z+=16){lamp(RX+5.2,PT,z,-1);lamp(RX-TS-5.2,PT,z+8,1)}
+ [1,-1].forEach(s=>{lamp(XR(s)+22*s,Y0,(s>0?ZS+31:ZS)+8.5,-s);lamp(XR(s)+(5.2+13+2)*s,Y0,SW+2,-s)});
  [[cpA+8,ZS],[cpA+22,ZS-14],[cpA+22,ZS+14],[cpB-3,ZS]].forEach(([x,z])=>lamp(x,Y0,z,1));
  // ---- 'TARNEIT' container art beside the access road (after Adnan's photos): a row of brightly coloured shipping containers on the right-hand side going from the main road to the station,
  //      with the big station name cut right through their long walls, behind a footpath
@@ -1953,7 +1957,7 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const RX=-45,PT=1.1,W=512,H=
  const fit=(c,t,px,max)=>{let f=px;c.font='bold '+f+FN;while(f>12&&c.measureText(t).width>max){f--;c.font='bold '+f+FN}};
  [[R.ZC+100,300],[-R.ZC-100,-300]].forEach(([ZS,zs])=>[1,-1].forEach(s=>{
   const cn=document.createElement('canvas');cn.width=W;cn.height=H;const tx=new THREE.CanvasTexture(cn);tx.encoding=THREE.sRGBEncoding;tx.anisotropy=8;
-  const mB=new THREE.MeshBasicMaterial({map:tx}),g=new THREE.Group();g.position.set(RX+3.525*s,PT,ZS+12);scene.add(g);
+  const mB=new THREE.MeshBasicMaterial({map:tx}),g=new THREE.Group();g.position.set(RX-(s<0?4:0)+3.525*s,PT,ZS+12);scene.add(g);
   const bx=(w,h,d,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mPo);o.position.set(x,y,z);o.castShadow=true;g.add(o)};
   [-1,1].forEach(x=>bx(.09,3.35,.09,x,1.675,0));bx(2.12,.08,.12,0,3.32,0);bx(1.96,1.02,.1,0,2.62,0);   // posts, top bar and the board's housing
   [1,-1].forEach(f=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.86,.93),mB);p.position.set(0,2.62,f*.052);if(f<0)p.rotation.y=Math.PI;g.add(p)});
@@ -2015,9 +2019,9 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const ZC=R.ZC,XP=-40.15,HW=2
    if(de<=8&&x>=-42.4&&x<=-33.5)return PT;
    if(de<=2.8&&x>-33.5&&x<=-26.5)return PT+(GY-PT)*Math.min(1,(x+33.5)/7);
    // west side (main-road side)
-   if(x>=-49.7&&x<=-47.7)return PT;
-   if(dz<=8&&x>=-56.5&&x<=-47.7)return PT;
-   if(dz<=2.8&&x>=-63.5&&x<-56.5)return PT+(GY-PT)*Math.min(1,(-56.5-x)/7);
+   if(x>=-53.7&&x<=-51.7)return PT;
+   if(dz<=8&&x>=-60.5&&x<=-51.7)return PT;
+   if(dz<=2.8&&x>=-67.5&&x<-60.5)return PT+(GY-PT)*Math.min(1,(-60.5-x)/7);
    return null};window.STH=(x,z)=>{const a=STH1(x,z,ZS,ZS);return a!==null?a:STH1(x,z,ZS2,ZS2+31)}}
 }catch(e){console.error('footpath',e)}},0);
 // ---- street light on the far side of the road (to the right when facing the house); glows at night
@@ -3734,12 +3738,12 @@ function trainBoard(q,zs){let veh=null;
  G.r=V.r=22;G.ph=V.ph=1.15;G.th=V.th=0;fov(55);rtPos();V.t.copy(G.t);
  showCap('All aboard'+(veh?' with the '+(veh.k==='trike'?'trike':'bike'):'')+'! Next stop: '+STN[-zs]+'. View (V) switches to the driver\'s cab',4500)}
 function rtCancel(){const v=RT.veh;RT.on=false;if(RT.bus)busAvFree();if(v){if(v.k==='trike'&&KID)KID.visible=GAMES_ON;else if(v.b&&v.b.g)v.b.g.visible=GAMES_ON}}
-function trainAlight(zs){const veh=RT.veh,x=-41.85,z=zs>0?zs+31:zs;RT.on=false;RT.arr=false;   /* off on the house side, in front of the stairs, facing them */
+function trainAlight(zs){const veh=RT.veh,rs=!!(RT.q&&RT.q.dir<0),x=rs?-52.15:-41.85,z=rs?zs:(zs>0?zs+31:zs);RT.on=false;RT.arr=false;   /* off onto the platform beside the train (house side or main-road side), in front of the stairs, facing them */
  let rode=false;
- if(veh&&veh.k==='trike'){window.TKP={x,z,h:Math.PI};gmEnter();rode=GM===GMK}
- else if(veh&&veh.b){const b=veh.b;if(b.g)b.g.visible=true;b.x=x;b.z=z;b.th=Math.PI/2;b.enter();rode=GM===b}
+ if(veh&&veh.k==='trike'){window.TKP={x,z,h:rs?0:Math.PI};gmEnter();rode=GM===GMK}
+ else if(veh&&veh.b){const b=veh.b;if(b.g)b.g.visible=true;b.x=x;b.z=z;b.th=rs?-Math.PI/2:Math.PI/2;b.enter();rode=GM===b}
  if(veh&&!rode){if(veh.k==='trike'&&KID)KID.visible=GAMES_ON}
- if(!rode){G.t.set(x,1.12+_wbr(x,z),z);V.t.copy(G.t);G.th=V.th=Math.PI;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62)}
+ if(!rode){G.t.set(x,1.12+_wbr(x,z),z);V.t.copy(G.t);G.th=V.th=rs?0:Math.PI;G.ph=V.ph=1.3;G.r=V.r=SELF.d;fov(62)}
  showCap('Welcome to '+STN[zs]+' station',3000)}
 function trainOff(){if(!RT.on)return;if(RT.bus){busOff();return}const d=TRN.dwell(RT.q,0);if(d&&(d.z===RT.to||d.z===RT.from)){RT.wantOff=false;trainAlight(d.z)}
  else{RT.wantOff=!RT.wantOff;showCap(RT.wantOff?'You’ll get off at '+STN[RT.to]+'. Tap again to stay on':'OK, staying on the train',2400)}}
@@ -3865,7 +3869,7 @@ function walkOK(ox,oz,nx,nz,r){if(!walkHit(nx,nz,r)&&!peerHit(nx,nz,r))return tr
  const d0=gmDepth(ox,oz,r)+peerHit(ox,oz,r),d1=gmDepth(nx,nz,r)+peerHit(nx,nz,r);
  if(d0<=1e-6&&!walkHit(ox,oz,r))return false;   /* clear now: never step into anything */
  return d1<d0-1e-6||(d1<=1e-6&&d0<=1e-6)}      /* stuck: only moves that get you out (outside the mapped area everything stays free roam) */
-function walkTick(dt){const S=SELF;
+function walkTick(dt){const S=SELF;if(window.PIL)return;
  const f=(AK.KeyW?1:0)-(AK.KeyS?1:0),   /* walking: W / S move; the arrow keys work like the right circle (turn and tilt the view) */
  t=(AK.ArrowRight?1:0)-(AK.ArrowLeft?1:0),   /* walking: arrow keys (and the right circle) turn; A / D side-step */zm=(AK.Equal||AK.NumpadAdd?1:0)-(AK.Minus||AK.NumpadSubtract?1:0);
  if(zm)wZoom(-zm*4*dt);
@@ -3907,11 +3911,11 @@ function walkCam(dt,ph0){const S=SELF;if(!(walk&&!tour&&!GM&&!RT.on&&!window.SKY
  let cr=clear(WCAM.ph);if(cr<Math.min(br,.9)){WCAM.ph=bp;cr=br}   /* rising too slowly would bring the camera right up to you: jump straight to the clear angle */
 if(WCAM.r>cr)WCAM.r=cr;if(WCAM.r<.2)WCAM.r=.2;   /* whatever the easing says, never past the first wall or the ceiling */
  const sp=Math.sin(WCAM.ph);cam.position.set(T.x+WCAM.r*sp*Math.cos(th),T.y+WCAM.r*Math.cos(WCAM.ph),T.z+WCAM.r*sp*Math.sin(th));WCAM.d=WCAM.r}
-function walkJump(){const S=SELF;if(!walk||tour||GM||RT.on||S.jy>0||S.jv)return;S.jv=4.6}
+function walkJump(){const S=SELF;if(window.PIL)return;if(!walk||tour||GM||RT.on||S.jy>0||S.jv)return;S.jv=4.6}
 function walkWave(){if(!walk||tour||GM)return;SELF.wv=2.4}
 function bellSnd(){if(!sndOn||!actx())return;const t=AC.currentTime+.01;[0,.17].forEach(o=>{tn(t+o,1.1,'sine',2350,2310,.2);tn(t+o,.7,'sine',3480,3440,.09);tn(t+o,.3,'triangle',5150,5100,.035)})}
 // "Use": the nearest door, cupboard, tap, light, appliance, ball or ride in front of you, within about two metres
-function useNear(){if(!walk||tour||GM)return;if(trainUse(false))return;const x=G.t.x,z=G.t.z,fx=-Math.cos(G.th),fz=-Math.sin(G.th),wp=new THREE.Vector3();let best=-1,bs=1e9;
+function useNear(){if(window.PIL){pilOff();return}if(!walk||tour||GM)return;if(trainUse(false))return;const x=G.t.x,z=G.t.z,fx=-Math.cos(G.th),fz=-Math.sin(G.th),wp=new THREE.Vector3();let best=-1,bs=1e9;
  scene.traverse(o=>{const id=o.userData&&o.userData.ia;if(typeof id!=='number'||id<0||!o.isMesh||!IA[id])return;for(let p=o;p;p=p.parent)if(!p.visible)return;
   o.getWorldPosition(wp);const dx=wp.x-x,dz=wp.z-z,d=Math.hypot(dx,dz);if(d>2.1||Math.abs(wp.y-(G.t.y-.4))>2.3)return;const dot=d>.05?(dx*fx+dz*fz)/d:1;if(dot<0&&d>.6)return;
   const sc=d-dot*.9+(IA[id].label==='Light'?1.3:0);if(sc<bs){bs=sc;best=id}});
@@ -3998,6 +4002,25 @@ function avLife(av,yaw,dt,amp,run){if(!av.up||!av.hd)return;const k=Math.min(1,d
  av.up.rotation.z+=(rz-av.up.rotation.z)*Math.min(1,dt*14);av.up.rotation.y+=(ry+av.hy*.25-av.up.rotation.y)*Math.min(1,dt*14);av.up.position.x+=(sx-av.up.position.x)*Math.min(1,dt*14);
  av.hd.rotation.y=av.hy*.75-ry*.7;av.hd.rotation.z=-av.up.rotation.z*.7}
 function avBend(av,ph,amp,run){if(!av.K)return;for(let i=0;i<2;i++){const a=ph+i*Math.PI;av.K[i].rotation.x=.06+Math.max(0,-Math.cos(a))*amp*(run?2.0:1.5);av.E[i].rotation.x=-(.18+(run?.95:.12)+Math.max(0,Math.sin(a))*amp*.7)}}
+// ---- ride along on the quad bike (Play together): while someone else is riding the quad, click it to sit on the back behind them;
+//      click it again (or press Use / E) to hop off. You also hop off if the rider gets off or leaves. Everyone sees you sitting on the back.
+window.PIL=null;
+const PIL_AT=[0,.15,-.5];   /* on the back of the quad's seat, just behind the rider (quad body frame, +z forward) */
+function avSit(av){   /* sitting astride: thighs forward and a little apart, shins down to the footrests, arms forward round the rider's waist */
+ av.L[0].rotation.set(-1.45,0,-.3);av.L[1].rotation.set(-1.45,0,.3);if(av.K){av.K[0].rotation.x=av.K[1].rotation.x=1.4}
+ av.A[0].rotation.set(-1.1,0,.28);av.A[1].rotation.set(-1.1,0,-.28);if(av.E){av.E[0].rotation.x=av.E[1].rotation.x=-.55}
+ if(av.up){av.up.rotation.set(.08,0,0);av.up.position.x=0;av.hd.rotation.set(-.05,0,0)}if(av.pony){av.pony.rotation.x=-.45;av.pony.rotation.z=0}}
+function avSeat(av,b){const body=b.g&&b.g.children[0];if(!body)return;if(av.g.parent!==body)body.add(av.g);av.g.position.set(PIL_AT[0],PIL_AT[1],PIL_AT[2]);av.g.rotation.set(0,0,0);av.g.visible=true;avSit(av)}
+function avUnseat(av){if(!av)return;if(av.g.parent!==scene){scene.add(av.g);av.g.rotation.set(0,0,0)}av.A[0].rotation.set(0,0,0);av.A[1].rotation.set(0,0,0);if(av.up){av.up.rotation.set(0,0,0);av.up.position.x=0;av.hd.rotation.set(0,0,0)}}
+function pilOn(b){const M=window.MP,S=SELF;if(!M||!M.on||tour||GM||RT.on||!walk||!b||!b.quad)return false;
+ const o=M.own[b.id];if(!o||o.id===M.self||!M.peers.has(o.id))return false;
+ if(M.pilTaken&&M.pilTaken(b.id)){showCap('Someone is already on the back of the quad bike',2400);return true}
+ if(Math.hypot(G.t.x-b.x,G.t.z-b.z)>6){showCap('Walk up to the quad bike to hop on the back',2400);return true}
+ S.jy=0;S.jv=0;S.sp=0;S.mv=0;window.PIL={v:b.id,b};const nm=M.peers.get(o.id).name||'them';
+ showCap('Riding along with '+nm+'! Click the quad bike again (or press E) to hop off',4000);return true}
+function pilOff(msg){const P=window.PIL;if(!P)return;window.PIL=null;const b=P.b,av=SELF.av;avUnseat(av);
+ const w=new THREE.Vector3(-.95,0,-.2);if(b.g){b.g.updateMatrixWorld(true);b.g.localToWorld(w)}else w.set(b.x+1,0,b.z);   /* step off on the quad's left side */
+ G.t.set(w.x,1.12+Math.max(0,b.y||0),w.z);V.t.copy(G.t);showCap(msg||'Hopping off',1800)}
 // every frame, after the camera target has moved: place, turn and animate my avatar, and keep the buttons in step
 function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&&!(typeof SS!=='undefined'&&SS.view));
  const m=walk&&!tour&&!window.SKYV?(GM?'ride':RT.on?'train':'walk'):'';if(m!==S.mode)actSet(m);
@@ -4008,6 +4031,9 @@ function selfTick(dt){const S=SELF,on=!!(walk&&!tour&&!GM&&!RT.on&&!window.SKYV&
  if(S.wv>0)S.wv=Math.max(0,S.wv-dt);
  if(!S.av&&window.MP&&MP.mkAv){const P=MP.mkAv({name:'',col:MP.shirt(),boy:window.AVBOY&&AVBOY()});S.av=P.av;S.col=MP.shirt();try{scene.remove(P.tag)}catch(e){}}
  const av=S.av;if(!av)return;
+ if(window.PIL){const P=PIL,b=P.b,M=window.MP,o=M&&M.own[P.v];
+  if(!M||!M.on||tour||!walk||GM||RT.on||!o||o.id===M.self||!M.peers.has(o.id)||!b.g||!b.g.visible||b.parked)pilOff((M&&M.on&&o)?'Hopping off':'The ride is over: hopping off');
+  else{avSeat(av,b);G.t.set(b.x,(b.y||0)+1.15,b.z);const cth=Math.atan2(-Math.cos(b.th),-Math.sin(b.th));let d=cth-G.th;d=((d+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;G.th+=d*Math.min(1,dt*2.5);return}}   /* the camera follows the quad from behind */
  if(RT.on&&RT.bus){av.g.visible=true;return}   /* on the bus: placed and posed by busPos */
  av.g.visible=on&&(WCAM.on?WCAM.d>.35:V.r>.75);if(!av.g.visible)return;
  {const sc=window.MP&&MP.shirt?MP.shirt():0xffc93c;if(sc!==S.col){S.col=sc;av.mSh.color.setHex(sc)}}
@@ -4048,7 +4074,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  MP.isHost=()=>{if(!MP.on)return true;let m=MP.self||'';MP.peers.forEach((P,id)=>{if(P.name!==undefined&&id<m)m=id});return m===MP.self};   /* the player with the lowest id runs the buses for everyone */
  MP.busHold=k=>{let h=false;MP.peers.forEach(P=>{if(P.mode==='b'&&P.tp&&P.tp[4]<.999&&(P.tp[6]|0)===k)h=true});return h};   /* someone is getting on or off that bus */
  MP.busSkip=(b,k)=>{try{ev({t:'bskip',b,k})}catch(e){}};
- MP.col=()=>ME.col;MP.shirt=()=>MP.on||LS.get('col',null)!=null?ME.col:0xffc93c;   /* your shirt: the colour you picked (even before joining a room), otherwise the default yellow */MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.mode==='b')return;if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
+ MP.col=()=>ME.col;MP.shirt=()=>MP.on||LS.get('col',null)!=null?ME.col:0xffc93c;   /* your shirt: the colour you picked (even before joining a room), otherwise the default yellow */MP.bodies=()=>{const a=[];MP.peers.forEach(P=>{if(P.mode==='b'||P.mode==='p')return;if(P.av&&P.av.g.visible)a.push([P.ax,P.az,.22]);else if(P.tag&&P.tag.visible)a.push([P.tag.position.x,P.tag.position.z,.45])});return a};   /* where the other players stand (walking) or ride, for bumping into them */MP.mkAv=P=>{mkAvatar(P);return P};MP.fx=k=>ev({t:'fx',k});
 
  // ---------- transport: Trystero (nostr relays) on the web; a BroadcastChannel stand-in for local testing (?mptest=1)
  async function connect(code){
@@ -4132,6 +4158,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  function release(v,x,z,h){delete MP.own[v];if(x===undefined){const q=homeOf(v);x=q.x;z=q.z;h=q.h}park(v,x,z,h)}
  MP.take=v=>{if(!MP.on)return true;const o=MP.own[v];if(o&&o.id!==MP.self&&MP.peers.has(o.id)){showCap(pname(o.id)+' is riding '+VNAME[v],2600);return false}const ts=Date.now();MP.own[v]={id:MP.self,ts};MP.ct[v]=ts;ev({t:'claim',v,ts});return true};
  MP.free=v=>{if(!MP.on)return true;const o=MP.own[v];if(o&&o.id!==MP.self&&MP.peers.has(o.id)){showCap(pname(o.id)+' is riding '+VNAME[v],2600);return false}return true};
+ MP.pilTaken=v=>{let t=false;MP.peers.forEach(P=>{if(P.mode==='p'&&P.pv===v)t=true});return t};
  MP.drop=(v,x,z,h)=>{if(!MP.on)return;const o=MP.own[v];if(o&&o.id!==MP.self)return;delete MP.own[v];delete MP.ct[v];ev({t:'drop',v,x:+x.toFixed(3),z:+z.toFixed(3),h:+h.toFixed(3)})};
 
  // ---------- shared clicks (doors, cupboards, taps, lights...): each click is sent as its label and its number among same-label objects;
@@ -4179,6 +4206,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   if(P.mode!==d.m){const old=P.mode;P.mode=d.m;P.modeT=now();ui();if(VEH.includes(old)&&MP.own[old]&&MP.own[old].id===from&&!d.m.startsWith('bike')&&d.m!=='trike'){/* the drop message normally follows; if it was lost the watchdog parks it */}}
   if(VEH.includes(d.m)){P.vs=d.v;claim(d.m,from,d.ct||0)}
   if((d.m==='w'||d.m==='b')&&d.p)P.tp=d.p;
+  P.pv=d.m==='p'&&d.p?String(d.p[0]):null;   /* riding along on the back of this vehicle */
   if(d.bs&&!MP.isHost()&&window.BUS&&BUS.sync){let m=from;MP.peers.forEach((Q,id)=>{if(id<m)m=id});if(m===from&&from<MP.self)BUS.sync(d.bs)}   /* follow the host's buses */
   {const gb=!!d.g;if(P.boy!==gb){P.boy=gb;if(P.av&&P.av.setG)P.av.setG(gb);const b=bike(P.mode);if(b&&b.setG&&MP.own[P.mode]&&MP.own[P.mode].id===P.id)b.setG(gb)}}P.jy=+d.j||0;P.em=d.e|0;P.run=d.r|0}
  function onJoin(id){peer(id);ev(snap(false),id);ev({t:'hey',jt:MP.jt},id)}
@@ -4187,6 +4215,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  // ---------- my state, ten times a second
  setInterval(()=>{if(!MP.on||!MP.T)return;let m='x',p=null,v=null;
   if(RT.on&&RT.bus&&SELF.av&&SELF.av.g.parent!==scene){const q=SELF.av.g.position;m='b';p=[+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+(RT.yaw||0).toFixed(3),RT.ph==='ride'?1:+(RT.sit||0).toFixed(2),RT.seat|0,window.BUS&&BUS.active?BUS.active():0]}
+  else if(window.PIL&&walk&&!tour){m='p';p=[PIL.v]}
   else if(walk&&!tour){const r=riding();if(r==='trike'){m=r;v=tkSer()}else if(r&&bike(r)){m=r;v=bike(r).ser()}else if(!GM){m='w';p=[+V.t.x.toFixed(3),+V.t.y.toFixed(3),+V.t.z.toFixed(3),+V.th.toFixed(3)]}}
   try{MP.T.send('st',{n:ME.name||'Guest',c:ME.col,g:window.AVBOY&&AVBOY()?1:0,bs:MP.isHost()&&window.BUS&&BUS.state?BUS.state():undefined,m,p,v,ct:MP.ct[m]||0,j:+(SELF.jy||0).toFixed(2),e:SELF.wv>0?1:0,r:SELF.run?1:0})}catch(e){}
   doorWatch()},100);
@@ -4196,6 +4225,9 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
   // rides held by someone who has gone quiet or got off without a message go back where they belong
   VEH.forEach(v=>{const o=MP.own[v];if(!o||o.id===MP.self)return;const P=MP.peers.get(o.id);if(!P||t-P.last>6000)release(v);else if(P.mode!==v&&t-P.modeT>2500){const s=P.vs;release(v,s?s[0]:undefined,s?s[2]:undefined,s?s[3]:undefined)}});
   MP.peers.forEach(P=>{if(!P.av)return;const av=P.av;let tagAt=null;
+   if(P.mode==='p'&&P.pv&&bike(P.pv)&&bike(P.pv).g&&bike(P.pv).g.visible){const b=bike(P.pv);avSeat(av,b);P.ax=b.x;P.az=b.z;P.init=false;tagAt=[b.x,(b.y||0)+1.5,b.z];
+    if(P.tag){P.tag.visible=true;P.tag.position.set(tagAt[0],tagAt[1],tagAt[2])}return}
+   if(av.g.parent!==scene&&P.mode!=='b')avUnseat(av);
    if(P.mode==='b'&&P.tp&&window.BUS&&BUS.g){const g=((BUS.list&&BUS.list[P.tp[6]|0])||BUS).g,[x,y,z,yw,si]=P.tp;g.updateMatrixWorld(true);P.init=false;
     const wp=g.localToWorld(new THREE.Vector3(x,y,z));
     av.g.visible=true;av.g.position.copy(wp);g.getWorldQuaternion(av.g.quaternion);av.g.rotateY(yw);P.ax=wp.x;P.az=wp.z;busAvPose(av,si<=.02,Math.max(0,si),dt);tagAt=[wp.x,wp.y+1.5,wp.z]}
@@ -4233,7 +4265,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  COLS.forEach(c=>{const b=document.createElement('button');b.style.background=hex(c);b.setAttribute('aria-label','Shirt colour '+hex(c));b.onclick=()=>{ME.col=c;LS.set('col',c);[...sw.children].forEach(x=>x.classList.toggle('on',x===b));const bk=bike(riding());if(bk)bk.tint(c)};if(c===ME.col)b.classList.add('on');sw.appendChild(b)});
  iN.oninput=()=>{ME.name=iN.value.trim().slice(0,20);LS.set('name',ME.name)};
  const clean=s=>s.toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24);iR.oninput=()=>{const c=clean(iR.value);if(c!==iR.value)iR.value=c};
- const doing=P=>P.mode==='w'?'walking':P.mode==='b'?'on the bus':VEH.includes(P.mode)?'on '+VNAME[P.mode]:'looking around';
+ const doing=P=>P.mode==='w'?'walking':P.mode==='b'?'on the bus':P.mode==='p'?'riding along on '+(VNAME[P.pv]||'the quad bike'):VEH.includes(P.mode)?'on '+VNAME[P.mode]:'looking around';
  function ui(){const n=MP.peers.size,bd=btn.querySelector('i');bd.textContent=n+1;bd.style.display=MP.on?'block':'none';btn.classList.toggle('on',MP.on);
   bGo.textContent=MP.on?'Leave room':'Join room';iR.disabled=MP.on;
   if(MP.on)sSt.innerHTML='In room <b></b> · '+(n?n+' other'+(n>1?'s':'')+' here':'waiting for others to join');if(MP.on)sSt.querySelector('b').textContent=MP.room;
