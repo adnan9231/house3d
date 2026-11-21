@@ -2024,6 +2024,29 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const ZC=R.ZC,XP=-40.15,HW=2
    if(dz<=2.8&&x>=-67.5&&x<-60.5)return PT+(GY-PT)*Math.min(1,(-60.5-x)/7);
    return null};window.STH=(x,z)=>{const a=STH1(x,z,ZS,ZS);return a!==null?a:STH1(x,z,ZS2,ZS2+31)}}
 }catch(e){console.error('footpath',e)}},0);
+// ---- ground-level footpaths from the community street to both bridges: on each side of the street (near and far footpaths) a path carries on past the
+//      end of the street, round the curve and along beside the bridge road, staying on the ground beside the ramp (never up onto the bridge),
+//      and joins the shared footpath along the railway line. Walkers, the kid's bike and the trike can use them.
+setTimeout(()=>{try{const R=window.RDN;if(!R)return;const CX=R.XS-R.RC,ZE=R.ZE,XP=-40.15,HW=2.5,W=2.4,YT=-.138,YB=-.19;
+ const mP=new THREE.MeshStandardMaterial({color:0xc4c0b6,roughness:.9,side:THREE.DoubleSide}),mK=new THREE.MeshStandardMaterial({color:0xa9a59b,roughness:.9,side:THREE.DoubleSide});
+ const arc=(cz,r,s,P)=>{for(let a=0;a<=90;a+=5){const t=a*Math.PI/180;P.push([CX+r*Math.cos(t),s*(cz+r*Math.sin(t))])}};
+ const PATHS=[];
+ [-1,1].forEach(s=>{
+  // near side (house side of the street): off the end of the near footpath, round the inside of the curve, then beside the ramp wall on the community side
+  {const P=[[15.6,s*(ZE-3)]];arc(ZE+.85,7.45,s,P);P.push([s>0?-2.2:XP+HW,s*194.3]);PATHS.push(P)}
+  // far side: off the end of the far footpath, round the outside of the curve, then along the outer side of the bridge road at ground level
+  {const P=[[29.3,s*(ZE-3)]];arc(ZE,21.15,s,P);P.push([XP+HW,s*207.15]);PATHS.push(P)}});
+ const g=new THREE.Group();scene.add(g);
+ const nrm=(P,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz)||1;return[-dz/l,dx/l]};
+ const mk=(pos,idx,m)=>{const q=new THREE.BufferGeometry();q.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));q.setIndex(idx);q.computeVertexNormals();const o=new THREE.Mesh(q,m);o.receiveShadow=true;g.add(o)};
+ PATHS.forEach(P=>{const top=[],ti=[];P.forEach((p,i)=>{const[nx,nz]=nrm(P,i);top.push(p[0]+nx*W/2,YT,p[1]+nz*W/2,p[0]-nx*W/2,YT,p[1]-nz*W/2);if(i){const k=2*i;ti.push(k-2,k,k-1,k-1,k,k+1)}});mk(top,ti,mP);
+  // edge strips (low concrete edging) down to the ground on both sides
+  [1,-1].forEach(e=>{const pos=[],idx=[];P.forEach((p,i)=>{const[nx,nz]=nrm(P,i),x=p[0]+e*nx*(W/2+.04),z=p[1]+e*nz*(W/2+.04);pos.push(x,YB,z,x,YT+.012,z);if(i){const k=2*i;idx.push(k-2,k-1,k,k-1,k+1,k)}});mk(pos,idx,mK)})});
+ // join the walk / ride network
+ const dseg=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1,t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/l2));return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz)};
+ const on=(x,z)=>{if(Math.abs(Math.abs(z)-200)>20)return false;for(const P of PATHS)for(let i=0;i<P.length-1;i++)if(dseg(x,z,P[i],P[i+1])<=W/2+.1)return true;return false};
+ const old=window.FPN;window.FPN=(x,z)=>(old&&old(x,z))||on(x,z);
+}catch(e){console.error('bridge footpaths',e)}},0);
 // ---- street light on the far side of the road (to the right when facing the house); glows at night
 {const mG=M({color:0x9ea5a9,roughness:.5,metalness:.7}),g=new THREE.Group();
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.065,.1,7.6,12),mG);pole.position.y=3.8;pole.castShadow=true;g.add(pole);
