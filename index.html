@@ -1502,6 +1502,7 @@ function mkBikeF(BC){try{
  const onNet=(x,z)=>{const R=R_();if(!R)return false;const az=Math.abs(z);if(SUBH(x,z)!==null)return true;
   if(x>=14.8&&x<=30.1&&az<=R.ZE)return true;
   if(window.FPN&&FPN(x,z))return true;   // footpath beside the railway
+  if(window.GRN&&GRN(x,z))return true;   // grass between the bridge footpaths and the road (round the curves and beside the bridge roads)
   if(window.STH&&STH(x,z)!==null)return true;   // station platforms and their stair ramps
   if(az>R.ZE&&x>=R.XS-R.RC-.2){const d=Math.hypot(x-(R.XS-R.RC),az-R.ZE);if(d>=R.RC-3.3&&d<=R.RC+3.3)return true}
   if(Math.abs(az-R.ZC)<=3.25&&x<=R.XS-R.RC+.3&&x>=R.XW)return true;
@@ -2026,27 +2027,46 @@ setTimeout(()=>{try{const R=window.RDN;if(!R)return;const ZC=R.ZC,XP=-40.15,HW=2
 }catch(e){console.error('footpath',e)}},0);
 // ---- ground-level footpaths from the community street to both bridges: on each side of the street (near and far footpaths) a path carries on past the
 //      end of the street, round the curve and along beside the bridge road, staying on the ground beside the ramp (never up onto the bridge),
-//      and joins the shared footpath along the railway line. Walkers, the kid's bike and the trike can use them.
-setTimeout(()=>{try{const R=window.RDN;if(!R)return;const CX=R.XS-R.RC,ZE=R.ZE,XP=-40.15,HW=2.5,W=2.4,YT=-.138,YB=-.19;
- const mP=new THREE.MeshStandardMaterial({color:0xc4c0b6,roughness:.9,side:THREE.DoubleSide}),mK=new THREE.MeshStandardMaterial({color:0xa9a59b,roughness:.9,side:THREE.DoubleSide});
+//      and joins the shared footpath along the railway line. Walkers, the kid's bike and the trike can use them. The curve and the flat part of the
+//      bridge road also get kerbs, carrying on the street's kerbs to the foot of each ramp.
+setTimeout(()=>{try{const R=window.RDN;if(!R)return;const CX=R.XS-R.RC,ZE=R.ZE,ZC=R.ZC,XP=-40.15,HW=2.5,W=1.6,YT=-.16,YB=-.19;
+ const mP=new THREE.MeshStandardMaterial({color:0xcdc3ac,roughness:.9,side:THREE.DoubleSide}),mK=new THREE.MeshStandardMaterial({color:0xa9a59b,roughness:.9,side:THREE.DoubleSide}),mKb=new THREE.MeshStandardMaterial({color:0xb9b6ad,roughness:.9});
+ // the old short link at the foot of the Kmart-side ramp (and its little slab into the road) is replaced by the new path
+ scene.updateMatrixWorld(true);const hide=[];scene.traverse(o=>{if(!o.isMesh||!o.geometry||!o.geometry.parameters)return;const p=o.geometry.parameters,q=new THREE.Vector3();o.getWorldPosition(q);
+  if(Math.abs(p.width-3.5)<.01&&Math.abs(p.height-.06)<.01&&Math.abs(q.z-(ZC-5.2))<.05&&Math.abs(q.x-(-2.2+XP)/2)<.05)hide.push(o);
+  if(Math.abs(p.width-3)<.01&&Math.abs(p.depth-2.2)<.01&&Math.abs(q.x+2.8)<.05&&Math.abs(q.z-(ZC-3.7))<.05)hide.push(o)});hide.forEach(o=>o.visible=false);
  const arc=(cz,r,s,P)=>{for(let a=0;a<=90;a+=5){const t=a*Math.PI/180;P.push([CX+r*Math.cos(t),s*(cz+r*Math.sin(t))])}};
  const PATHS=[];
  [-1,1].forEach(s=>{
-  // near side (house side of the street): off the end of the near footpath, round the inside of the curve, then beside the ramp wall on the community side
-  {const P=[[15.6,s*(ZE-3)]];arc(ZE+.85,7.45,s,P);P.push([s>0?-2.2:XP+HW,s*194.3]);PATHS.push(P)}
-  // far side: off the end of the far footpath, round the outside of the curve, then along the outer side of the bridge road at ground level
-  {const P=[[29.3,s*(ZE-3)]];arc(ZE,21.15,s,P);P.push([XP+HW,s*207.15]);PATHS.push(P)}});
+  // near side (house side of the street): straight on from the end of the near footpath, round the inside of the curve, then beside the ramp wall
+  {const P=[[15.6,s*(ZE-.6)],[15.6,s*ZE]];arc(ZE+.85,7.45,s,P);P.push([XP+HW,s*194.3]);PATHS.push(P)}
+  // far side: straight on from the end of the far footpath, round the outside of the curve, then along the outer side of the bridge road at ground level
+  {const P=[[29.3,s*(ZE-.6)]];arc(ZE,21.15,s,P);P.push([XP+HW,s*207.15]);PATHS.push(P)}});
  const g=new THREE.Group();scene.add(g);
  const nrm=(P,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz)||1;return[-dz/l,dx/l]};
  const mk=(pos,idx,m)=>{const q=new THREE.BufferGeometry();q.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));q.setIndex(idx);q.computeVertexNormals();const o=new THREE.Mesh(q,m);o.receiveShadow=true;g.add(o)};
- PATHS.forEach(P=>{const top=[],ti=[];P.forEach((p,i)=>{const[nx,nz]=nrm(P,i);top.push(p[0]+nx*W/2,YT,p[1]+nz*W/2,p[0]-nx*W/2,YT,p[1]-nz*W/2);if(i){const k=2*i;ti.push(k-2,k,k-1,k-1,k,k+1)}});mk(top,ti,mP);
-  // edge strips (low concrete edging) down to the ground on both sides
-  [1,-1].forEach(e=>{const pos=[],idx=[];P.forEach((p,i)=>{const[nx,nz]=nrm(P,i),x=p[0]+e*nx*(W/2+.04),z=p[1]+e*nz*(W/2+.04);pos.push(x,YB,z,x,YT+.012,z);if(i){const k=2*i;idx.push(k-2,k-1,k,k-1,k+1,k)}});mk(pos,idx,mK)})});
+ const strip=(P,w,y0,y1,m)=>{const top=[],ti=[];P.forEach((p,i)=>{const[nx,nz]=nrm(P,i);top.push(p[0]+nx*w/2,y1,p[1]+nz*w/2,p[0]-nx*w/2,y1,p[1]-nz*w/2);if(i){const k=2*i;ti.push(k-2,k,k-1,k-1,k,k+1)}});mk(top,ti,m);
+  [1,-1].forEach(e=>{const pos=[],idx=[];P.forEach((p,i)=>{const[nx,nz]=nrm(P,i),x=p[0]+e*nx*w/2,z=p[1]+e*nz*w/2;pos.push(x,y0,z,x,y1,z);if(i){const k=2*i;idx.push(k-2,k-1,k,k-1,k+1,k)}});mk(pos,idx,m)})};
+ PATHS.forEach(P=>strip(P,W,YB,YT,mP));
+ // the straight street and the curve meet at z = +-ZE at slightly different heights: a short overlapping patch of road there hides the crack
+ {const mA=new THREE.MeshStandardMaterial({color:0x3b3e43,roughness:.97});[-1,1].forEach(s=>{const o=new THREE.Mesh(new THREE.PlaneGeometry(6.8,1.2).rotateX(-Math.PI/2),mA);o.position.set(22.15,-.1815,s*ZE);o.receiveShadow=true;g.add(o)})}
+ // kerbs on both edges of the road round the curve and along the flat part of the bridge road (the ramp walls take over at the foot of the ramp)
+ [-1,1].forEach(s=>[R.RC-3.475,R.RC+3.475].forEach(r=>{const P=[];for(let a=0;a<=90;a+=3){const t=a*Math.PI/180;P.push([CX+r*Math.cos(t),s*(ZE+r*Math.sin(t))])}const zk=s*(ZE+r);for(let x=CX-1;x>=-2;x-=1)P.push([x,zk]);strip(P,.15,-.2,-.1,mKb)}));
  // join the walk / ride network
  const dseg=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1,t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/l2));return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz)};
- const on=(x,z)=>{if(Math.abs(Math.abs(z)-200)>20)return false;for(const P of PATHS)for(let i=0;i<P.length-1;i++)if(dseg(x,z,P[i],P[i+1])<=W/2+.1)return true;return false};
+ const on=(x,z)=>{if(Math.abs(Math.abs(z)-200)>20)return false;for(const P of PATHS)for(let i=0;i<P.length-1;i++)if(dseg(x,z,P[i],P[i+1])<=W/2+.15)return true;return false};
  const old=window.FPN;window.FPN=(x,z)=>(old&&old(x,z))||on(x,z);
 }catch(e){console.error('bridge footpaths',e)}},0);
+// ---- crossing the grass between the new bridge footpaths and the road: round both curves at the ends of the community street and along the
+//      bridge roads up to the railway path, you can step (or ride) off the footpath anywhere and cross the grass to the road (or back).
+setTimeout(()=>{try{const R=window.RDN,N=window.BKNET;if(!R||!N||N._grass)return;const CX=R.XS-R.RC,ZE=R.ZE,ZC=R.ZC;
+ const grass=(x,z)=>{const az=Math.abs(z);if(az<ZE-3||az>ZC+9)return false;
+  if(x>=CX&&az>=ZE){const d=Math.hypot(x-CX,az-ZE);return d>=5.6&&d<=22.6}                  /* round the curve, from the inside footpath to the outside one */
+  if(x<CX&&x>=-37.7){if(az<192.9||az>208.5)return false;if(x>=-2)return true;                /* flat stretch before the ramp: everything between the two paths */
+   return az<=195.4||az>=204.6}                                                               /* beside the ramp: the grass either side of it, at ground level */
+  return false};
+ window.GRN=grass;N._grass=true;
+}catch(e){console.error('bridge grass',e)}},50);
 // ---- street light on the far side of the road (to the right when facing the house); glows at night
 {const mG=M({color:0x9ea5a9,roughness:.5,metalness:.7}),g=new THREE.Group();
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.065,.1,7.6,12),mG);pole.position.y=3.8;pole.castShadow=true;g.add(pole);
@@ -4088,7 +4108,7 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  const hex=c=>'#'+(c>>>0).toString(16).padStart(6,'0');
  const LS={get(k,d){try{const v=localStorage.getItem('mp_'+k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem('mp_'+k,v)}catch(e){}}};
  const ME={name:LS.get('name',''),col:+LS.get('col',COLS[(Math.random()*COLS.length)|0])};
- const MP={on:false,room:'',self:'',jt:0,peers:new Map(),own:{},ct:{},iac:{},rx:false,mode:'live',snapGot:false,T:null};window.MP=MP;
+ const MP={on:false,room:'',self:'',jt:0,peers:new Map(),own:{},ct:{},iac:{},rx:false,mode:'live',snapGot:false,T:null};window.MP=MP;MP.me=()=>ME;
  const EXC=new Set(['Kids bike','Quad bike','Tricycle','Car']);   // riding is handled by the claim logic, not as a shared click
  const now=()=>performance.now();
  const AD=(a,b)=>{const T=Math.PI*2;return((a-b+Math.PI)%T+T)%T-Math.PI};
@@ -4318,6 +4338,119 @@ gD.scale.y=1;gD.visible=true;gD.position.y=gD.userData.y0+2.2*gpr;}const d2=gt2-
  if(new URLSearchParams(location.search).get('room'))setTimeout(()=>{pn.classList.add('show');ui()},1200);
  ui();
 }catch(e){console.error('multiplayer',e)}})();
+// ---- Hide and Seek (Play together): once everyone is in the room, anyone clicks Hide and Seek. One player is picked at random as the Seeker and everyone
+//      else hides. The Seeker's screen goes dark for 30 seconds while the Hiders hide; then the Seeker searches and clicks Found over any Hider close by,
+//      and that player joins the Seekers. Hiders can see the Seekers' name tags; Seekers only ever see avatars. The round ends when every Hider has been
+//      found, after 5 minutes of searching, or when someone clicks End game; then everyone is ranked by points (rules in HS_RULES below).
+(function(){try{if(!window.MP)return;
+ const HIDE=30,SEEK=300,FOUND_PTS=60,DIST_M=25,DIST_CAP=20,REACH=10;   /* seconds to hide, seconds of searching, points per find, metres per distance point, distance cap, Found range (m) */
+ const HS_RULES='<b>Points</b><ul><li><b>Hidden time:</b> 1 point for every second you stayed hidden after the Seeker started searching (up to '+SEEK+' points if you are never found). The first Seeker gets no hidden-time points.</li>'+
+  '<li><b>Hiders found:</b> '+FOUND_PTS+' points for each Hider you click Found on (as the first Seeker, or after you were found and joined the Seekers).</li>'+
+  '<li><b>Distance:</b> 1 point for every '+DIST_M+' m you walk or ride during the round, up to '+DIST_CAP+' points. Bus rides don\'t count.</li></ul>'+
+  '<b>Ties</b><p>Players with the same points are separated by, in order: more Hiders found, then longer hidden time, then longer distance. If they are still level they share the place, and the next place is skipped (1st, 1st, 3rd).</p>'+
+  '<b>Round</b><p>Hiders get '+HIDE+' seconds to hide while the Seeker\'s screen is dark. The Seeker can then click Found on a Hider within '+REACH+' m. The round ends when every Hider is found, after '+(SEEK/60)+' minutes of searching, or when someone clicks End game.</p>';
+ const now=()=>performance.now(),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),hex=c=>'#'+((c>>>0)&0xffffff).toString(16).padStart(6,'0');
+ const ME=()=>MP.me?MP.me():{name:'Guest',col:0xffc93c};
+ let G=null;window.HS=()=>G;   /* the current round */
+ // ---------- transport: our own 'hs' messages on the room connection
+ let TT=null;const send=(d,to)=>{if(MP.T)try{MP.T.send('hs',d,to)}catch(e){}};
+ setInterval(()=>{if(MP.T&&MP.T!==TT){TT=MP.T;try{TT.on('hs',onMsg)}catch(e){}}if(!MP.on&&G)stop(true)},300);
+ const players=()=>{const a=[{id:MP.self,name:ME().name||'Guest',col:ME().col}];MP.peers.forEach((P,id)=>{if(P.name)a.push({id,name:P.name,col:P.col})});return a};
+ // ---------- UI
+ const css=document.createElement('style');css.textContent=`
+#hsB{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:11;display:none;align-items:center;gap:8px;border:none;border-radius:99px;padding:10px 18px;background:var(--ac);color:var(--ac-fg);font:700 14px var(--font);box-shadow:var(--shadow);cursor:pointer}
+#hsB.show{display:flex}#hsB small{font-weight:600;opacity:.85;text-decoration:underline;cursor:pointer;margin-left:4px}
+#hsH{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:11;display:none;align-items:center;gap:10px;background:var(--panel-s);color:var(--fg);border:1px solid var(--bd);border-radius:99px;padding:7px 8px 7px 16px;font:600 13px var(--font);box-shadow:var(--shadow);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);white-space:nowrap;max-width:calc(100vw - 24px)}
+#hsH.show{display:flex}#hsH b{font-weight:800}#hsH .r{padding:3px 10px;border-radius:99px;font-weight:800;font-size:12px;color:#fff}#hsH button{border:1px solid var(--bd);background:var(--chip);color:var(--fg);border-radius:99px;padding:5px 11px;font:600 12px var(--font);cursor:pointer}
+#hsBl{position:fixed;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#06090d;color:#fff;font-family:var(--font);text-align:center;padding:20px}
+#hsBl.show{display:flex}#hsBl .n{font-size:96px;font-weight:800;line-height:1}#hsBl .t{font-size:20px;font-weight:700}#hsBl .s{font-size:14px;opacity:.7;max-width:420px}
+.hsF{position:fixed;z-index:12;transform:translate(-50%,-100%);border:none;border-radius:99px;padding:8px 16px;background:#e53935;color:#fff;font:800 14px var(--font);box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer;display:none}
+#hsR{position:fixed;inset:0;z-index:45;display:none;align-items:center;justify-content:center;background:rgba(6,10,14,.5);font-family:var(--font)}
+#hsR.show{display:flex}#hsR .c{width:460px;max-width:calc(100vw - 24px);max-height:calc(100% - 40px);overflow-y:auto;box-sizing:border-box;background:var(--panel-s);color:var(--fg);border:1px solid var(--bd);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+#hsR h2{margin:0 0 4px;font-size:18px}#hsR p{margin:0 0 10px;font-size:12.5px;color:var(--mute);line-height:1.45}#hsR table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 12px}
+#hsR th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mute);text-align:right;padding:4px 4px;font-weight:700}#hsR th:nth-child(2){text-align:left}#hsR td{padding:7px 4px;border-top:1px solid var(--bd);text-align:right}#hsR td:nth-child(2){text-align:left}
+#hsR td:first-child{font-weight:800;text-align:left;width:34px}#hsR tr.me td{background:var(--chip)}#hsR s{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;text-decoration:none}#hsR .pt{font-weight:800}
+#hsR details{font-size:12.5px;line-height:1.45;margin-bottom:12px}#hsR details summary{cursor:pointer;font-weight:700}#hsR ul{margin:6px 0 8px;padding-left:18px}#hsR details p{color:var(--fg);margin:4px 0 8px}
+#hsR .row{display:flex;gap:8px}#hsR .row button{flex:1;display:flex;justify-content:center;text-align:center;border:1px solid var(--bd);background:var(--chip);color:var(--fg);border-radius:12px;padding:10px 0;font:700 13px var(--font);cursor:pointer}#hsR .row button.p{background:var(--ac);color:var(--ac-fg);border-color:var(--ac)}`;
+ document.head.appendChild(css);
+ const el=(tag,id,html)=>{const e=document.createElement(tag);if(id)e.id=id;if(html)e.innerHTML=html;document.body.appendChild(e);['keydown','pointerdown','wheel'].forEach(n=>e.addEventListener(n,ev=>ev.stopPropagation()));return e};
+ const bS=el('button','hsB','🙈 Hide and Seek <small>Rules</small>'),hud=el('div','hsH'),bl=el('div','hsBl','<div class="t">You are the Seeker</div><div class="n">30</div><div class="s">Eyes closed! The Hiders are hiding. You can start searching when the countdown ends.</div>'),res=el('div','hsR','<div class="c"></div>');
+ bS.onclick=e=>{if(e.target.tagName==='SMALL'){showRules();return}start()};
+ function showRules(){res.querySelector('.c').innerHTML='<h2>Hide and Seek rules</h2><p>One player is picked at random to be the Seeker; everyone else hides. Hiders can see the Seekers\' names; Seekers only see avatars.</p><details open><summary>How the ranking works</summary>'+HS_RULES+'</details><div class="row"><button class="x">Close</button></div>';res.classList.add('show');res.querySelector('.x').onclick=()=>res.classList.remove('show')}
+ // while the Seeker's eyes are closed, keys don't reach the game (so they can't move); the dark overlay also covers the touch sticks
+ addEventListener('keydown',e=>{if(G&&G.ph==='hide'&&G.seek.has(MP.self)&&!e.ctrlKey&&!e.metaKey){e.stopImmediatePropagation();e.preventDefault()}},true);
+ // ---------- the round
+ function start(){if(!MP.on||G)return;const pl=players();if(pl.length<2){showCap('Hide and Seek needs at least 2 players in the room',3000);return}
+  const sk=pl[(Math.random()*pl.length)|0].id,gid=Date.now().toString(36)+'-'+MP.self;const d={t:'start',gid,sk,pl};send(d);begin(d)}
+ function begin(d){if(G&&G.ph!=='over'&&G.gid<=d.gid)return;if(G)stop(true);
+  G={gid:d.gid,pl:d.pl,first:d.sk,seek:new Set([d.sk]),found:{},by:{},left:new Set(),dist:{},t0:now(),ph:'hide',seekT:0,myD:0,lp:null,sent:0,end:null};
+  try{if(!walk&&!tour&&$('bWalk'))$('bWalk').click()}catch(e){}
+  const sn=nm(d.sk);if(d.sk===MP.self)showCap('You are the Seeker! Count to 30…',3500);else showCap(sn+' is the Seeker. Go and hide!',3500);res.classList.remove('show')}
+ const nm=id=>{const p=G&&G.pl.find(q=>q.id===id);return p?p.name:'Someone'};
+ const hiders=()=>G.pl.filter(p=>!G.seek.has(p.id)&&!G.left.has(p.id));
+ const seekEl=()=>G.ph==='seek'?(now()-G.seekT)/1000:0;
+ function found(who){if(!G||G.ph!=='seek'||!G.seek.has(MP.self)||G.seek.has(who))return;const h=Math.min(SEEK,Math.floor(seekEl()));const d={t:'found',gid:G.gid,who,by:MP.self,h};send(d);onFound(d)}
+ function onFound(d){if(!G||d.gid!==G.gid||G.seek.has(d.who)||!G.seek.has(d.by))return;G.seek.add(d.who);G.found[d.who]=d.h;G.by[d.by]=(G.by[d.by]||0)+1;
+  if(d.who===MP.self)showCap(nm(d.by)+' found you! You\'re a Seeker now. Help find the others',4000);else if(d.by===MP.self)showCap('Found one! +'+FOUND_PTS+' points',2500);else showCap('A Hider was found by '+(G.seek.has(MP.self)?nm(d.by):'a Seeker'),2500);
+  if(!hiders().length)endRound('all')}
+ function endRound(why,e){if(!G||G.end)return;const el_=e!=null?e:Math.min(SEEK,Math.floor(seekEl()));const d={t:'end',gid:G.gid,why,e:el_};send(d);onEnd(d)}
+ function onEnd(d){if(!G||d.gid!==G.gid||G.end)return;G.end={why:d.why,e:d.e};G.ph='over';G.dist[MP.self]=G.myD;send({t:'d',gid:G.gid,d:G.myD});
+  clearFound();setTimeout(results,1800)}
+ function stop(quiet){G=null;clearFound();bl.classList.remove('show');hud.classList.remove('show');if(!quiet)showCap('Hide and Seek ended',2000)}
+ function onMsg(d,from){if(!d||!d.t)return;
+  if(d.t==='start'){if(Array.isArray(d.pl))begin(d);return}
+  if(d.t==='state'){if(!G&&d.g&&!d.g.pl.some(p=>p.id===MP.self))showCap('A game of Hide and Seek is on. You can join the next round',3500);return}
+  if(!G||d.gid!==G.gid)return;
+  if(d.t==='found')onFound(d);else if(d.t==='end')onEnd(d);else if(d.t==='d'){G.dist[from]=+d.d||0;if(G.end&&res.classList.contains('show'))results()}}
+ // ---------- scoring
+ function scores(){const E=G.end?G.end.e:Math.floor(seekEl());return G.pl.map(p=>{const fd=G.by[p.id]||0,h=p.id===G.first?0:(p.id in G.found?G.found[p.id]:(G.left.has(p.id)&&G.lh&&G.lh[p.id]!=null?G.lh[p.id]:E)),d=G.dist[p.id]||0,dp=Math.min(DIST_CAP,Math.floor(d/DIST_M));
+  return{...p,fd,h,d,dp,pts:h+fd*FOUND_PTS+dp,role:p.id===G.first?'First Seeker':p.id in G.found?'Found':G.left.has(p.id)?'Left':'Never found'}}).sort((a,b)=>b.pts-a.pts||b.fd-a.fd||b.h-a.h||b.d-a.d)}
+ const sameRank=(a,b)=>a.pts===b.pts&&a.fd===b.fd&&a.h===b.h&&Math.round(a.d)===Math.round(b.d);
+ const ord=n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th');
+ const tm=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+ function results(){if(!G||!G.end)return;const S=scores();let place=1;
+  const rows=S.map((p,i)=>{if(i&&!sameRank(p,S[i-1]))place=i+1;return'<tr class="'+(p.id===MP.self?'me':'')+'"><td>'+ord(place)+'</td><td><s style="background:'+hex(p.col)+'"></s>'+esc(p.name)+(p.id===MP.self?' (you)':'')+'<br><span style="font-size:11px;color:var(--mute)">'+p.role+'</span></td><td>'+p.fd+'</td><td>'+tm(p.h)+'</td><td>'+Math.round(p.d)+' m</td><td class="pt">'+p.pts+'</td></tr>'}).join('');
+  const why={all:'Every Hider was found.',time:'Time is up: '+(SEEK/60)+' minutes of searching.',stop:'The round was ended early.',seekers:'All the Seekers left.'}[G.end.why]||'';
+  res.querySelector('.c').innerHTML='<h2>🏆 Hide and Seek results</h2><p>'+why+' Searching lasted '+tm(G.end.e)+'.</p><table><tr><th>#</th><th>Player</th><th>Found</th><th>Hidden</th><th>Distance</th><th>Points</th></tr>'+rows+'</table>'+
+   '<details><summary>How the points are worked out</summary>'+HS_RULES+'</details><div class="row"><button class="x">Close</button><button class="p">Play again</button></div>';
+  res.classList.add('show');res.querySelector('.x').onclick=()=>{res.classList.remove('show');G=null};res.querySelector('.p').onclick=()=>{res.classList.remove('show');G=null;start()}}
+ // ---------- Found buttons over nearby Hiders (Seekers only); no names on them
+ const FB=new Map();const clearFound=()=>{FB.forEach(b=>b.remove());FB.clear()};
+ const fbtn=id=>{let b=FB.get(id);if(!b){b=document.createElement('button');b.className='hsF';b.textContent='Found!';b.onclick=e=>{e.stopPropagation();found(id)};['pointerdown','keydown'].forEach(n=>b.addEventListener(n,ev=>ev.stopPropagation()));document.body.appendChild(b);FB.set(id,b)}return b};
+ const mePos=()=>{try{if(RT.on)return null;if(GM&&GM.x!=null)return[GM.x,GM.z];if(walk&&!tour)return[V.t.x,V.t.z]}catch(e){}return null};
+ const v3=new THREE.Vector3();
+ let lt=now();(function loop(){requestAnimationFrame(loop);const t=now(),dt=(t-lt)/1000;lt=t;
+  bS.classList.toggle('show',!!(MP.on&&!G&&players().length>=2));
+  // name tags: Hiders see the Seekers' names; Seekers (and anyone outside a round) see no names
+  const amHider=G&&G.ph!=='over'&&!G.seek.has(MP.self)&&G.pl.some(p=>p.id===MP.self);
+  MP.peers.forEach((P,id)=>{if(P.tag)P.tag.material.visible=!!(amHider&&G.seek.has(id))});
+  if(!G){hud.classList.remove('show');bl.classList.remove('show');return}
+  const inG=G.pl.some(p=>p.id===MP.self);
+  // players who left the room during the round
+  G.pl.forEach(p=>{if(p.id!==MP.self&&!MP.peers.has(p.id)&&!G.left.has(p.id)){G.left.add(p.id);(G.lh=G.lh||{})[p.id]=Math.min(SEEK,Math.floor(seekEl()));G.seek.delete(p.id)}});
+  if(G.ph==='hide'&&(t-G.t0)/1000>=HIDE){G.ph='seek';G.seekT=t;showCap(G.seek.has(MP.self)?'Ready or not, here you come! Find the Hiders':'The Seeker is coming! Stay hidden',3000)}
+  if(G.ph==='seek'){if(!hiders().length)endRound('all');else if(![...G.seek].length)endRound('seekers');else if(seekEl()>=SEEK)endRound('time',SEEK)}
+  // my distance
+  if(G.ph!=='over'&&inG){const p=mePos();if(p&&G.lp){const s=Math.hypot(p[0]-G.lp[0],p[1]-G.lp[1]);if(s<6)G.myD+=s}G.lp=p;if(t-G.sent>2000){G.sent=t;G.dist[MP.self]=G.myD;send({t:'d',gid:G.gid,d:+G.myD.toFixed(1)})}}
+  if(G.ph==='over'){hud.classList.remove('show');bl.classList.remove('show');return}
+  const amSeek=G.seek.has(MP.self);
+  // dark screen for the Seeker while the Hiders hide
+  const left=Math.max(0,HIDE-(t-G.t0)/1000);bl.classList.toggle('show',G.ph==='hide'&&amSeek);if(G.ph==='hide'&&amSeek)bl.querySelector('.n').textContent=Math.ceil(left);
+  // status bar
+  const hn=hiders().length,sn=G.seek.size;let html;
+  if(!inG)html='<span>Hide and Seek is on. You\'ll join the next round</span>';
+  else if(G.ph==='hide')html=amSeek?'<span class="r" style="background:#e53935">Seeker</span><span>Eyes closed · <b>'+Math.ceil(left)+'s</b></span>':'<span class="r" style="background:#2e7d32">Hider</span><span>Hide! Seeker comes in <b>'+Math.ceil(left)+'s</b></span>';
+  else html=(amSeek?'<span class="r" style="background:#e53935">Seeker</span><span>'+hn+' Hider'+(hn===1?'':'s')+' left':'<span class="r" style="background:#2e7d32">Hider</span><span>'+sn+' Seeker'+(sn===1?'':'s')+' looking')+' · <b>'+tm(Math.max(0,SEEK-seekEl()))+'</b></span>';
+  html+='<button class="e">End game</button>';if(hud._h!==html){hud._h=html;hud.innerHTML=html;hud.querySelector('.e').onclick=()=>{if(G.ph==='seek')endRound('stop');else{send({t:'end',gid:G.gid,why:'stop',e:0});onEnd({gid:G.gid,why:'stop',e:0})}}}
+  hud.classList.add('show');
+  // Found buttons: shown to Seekers over any Hider within reach and on screen
+  const want=new Set();
+  if(G.ph==='seek'&&amSeek){const me=mePos();if(me)hiders().forEach(p=>{const P=MP.peers.get(p.id);if(!P||!P.tag||!P.tag.visible)return;const q=P.tag.position;if(Math.hypot(q.x-me[0],q.z-me[1])>REACH)return;
+    v3.set(q.x,q.y+.15,q.z).project(cam);if(v3.z>1||Math.abs(v3.x)>1||Math.abs(v3.y)>1)return;const r=ren.domElement.getBoundingClientRect();const b=fbtn(p.id);b.style.left=(r.left+(v3.x+1)/2*r.width)+'px';b.style.top=(r.top+(1-v3.y)/2*r.height)+'px';b.style.display='block';want.add(p.id)})}
+  FB.forEach((b,id)=>{if(!want.has(id))b.style.display='none'})})();
+ // tell players who join during a round that one is on
+ const known=new Set();setInterval(()=>{if(!MP.on){known.clear();return}MP.peers.forEach((P,id)=>{if(!known.has(id)&&P.name){known.add(id);if(G&&G.ph!=='over')send({t:'state',g:{gid:G.gid,pl:G.pl}},id)}})},1000);
+}catch(e){console.error('hide and seek',e)}})();
 
 </script>
 </body></html>
